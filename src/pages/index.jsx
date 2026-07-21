@@ -15,6 +15,7 @@ import { KellyEvPage, RobustessePage, AuditPage, HistoriquePage } from "./risque
 import { PropfirmConvexPage } from "./risque/PropfirmConvex.jsx";
 // TRADING
 import { ChartLivePage, CockpitPage, MasterCockpitPage, OrchestrateurPage, NewsReactPage, LiveOptimPage } from "./trading/TradingLive.jsx";
+import { ForwardTestPage } from "./trading/ForwardTest.jsx";
 import { PerformancePage, VPFootprintPage, BehaviorTrackerPage, SpreadComparePage, HMMRegimePage, StrategiesPage, SignauxPage, SignalEnginePage, ExecQualityPage, RiskCalcPage } from "./trading/TradingTools.jsx";
 // OPTIMISATION
 import { FullAutoOptimPage } from "./optimisation/FullAutoOptim.jsx";
@@ -73,8 +74,10 @@ const REAL = {
   riskCalc: RiskCalcPage,
   newsReact: NewsReactPage,
   liveOptim: LiveOptimPage,
+  forwardTest: ForwardTestPage,
   // Optimisation
   factory: StrategyFactoryPage,
+  geneticOptim: GeneticOptimPage,
   fao: FullAutoOptimPage,
   postFao: PostFaoSynthPage,
   quantOptimizer: QuantOptimizerPage,
@@ -84,7 +87,6 @@ const REAL = {
   crossTf: CrossTFPage,
   crossSymbol: CrossSymbolPage,
   pairs: PairsPage,
-  geneticOptim: GeneticOptimPage,
   quantToolbox: QuantToolboxPage,
   // Macro
   recoFinale: RecoFinalePage,

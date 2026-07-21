@@ -49,12 +49,14 @@ export const SECTIONS = [
       { id: "riskCalc", label: "Risk Calc" },
       { id: "newsReact", label: "News React" },
       { id: "liveOptim", label: "Live Optim" },
+      { id: "forwardTest", label: "🟢 Forward Test (démo réel)" },
     ],
   },
   {
     id: "optimisation", label: "Optimisation", icon: "⚙",
     modules: [
       { id: "factory", label: "⚡ Usine à Stratégies" },
+      { id: "geneticOptim", label: "🧬 Optim Génétique" },
       { id: "fao", label: "Full Auto Optim" },
       { id: "postFao", label: "Post-FAO Synth" },
       { id: "quantOptimizer", label: "Quant Optimizer" },
@@ -64,7 +66,6 @@ export const SECTIONS = [
       { id: "crossTf", label: "Cross-TF Stability" },
       { id: "crossSymbol", label: "Cross-Symbol" },
       { id: "pairs", label: "Pairs Trading" },
-      { id: "geneticOptim", label: "🧬 Optim Génétique" },
       { id: "quantToolbox", label: "Quant Toolbox" },
     ],
   },

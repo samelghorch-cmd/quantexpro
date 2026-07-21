@@ -7,6 +7,6 @@
     "fetch": "node fetch.mjs"
   },
   "dependencies": {
-    "dukascopy-node": "^7.5.0"
+    "dukascopy-node": "^1.49.0"
   }
 }
