@@ -1,0 +1,118 @@
+// Registre des 8 sections / modules PROTOS — source de vérité de la navigation.
+// Chaque module : { id, label, comp } où comp = clé du composant dans pages/index.
+export const SECTIONS = [
+  {
+    id: "strategy", label: "Strategy Engine", icon: "◆",
+    modules: [
+      { id: "coreMode", label: "Core Mode Developer" },
+      { id: "strategyImporter", label: "Strategy Importer" },
+    ],
+  },
+  {
+    id: "analyse", label: "Analyse", icon: "▤",
+    modules: [
+      { id: "backtest", label: "Backtest" },
+      { id: "optimizer", label: "Optimizer" },
+      { id: "trades", label: "Trades" },
+      { id: "analyse", label: "Analyse" },
+    ],
+  },
+  {
+    id: "risque", label: "Risque", icon: "⚠",
+    modules: [
+      { id: "monteCarlo", label: "Monte Carlo" },
+      { id: "kellyEv", label: "Kelly / EV" },
+      { id: "robustesse", label: "Robustesse" },
+      { id: "audit", label: "Audit" },
+      { id: "walkForward", label: "Walk-Forward" },
+      { id: "historique", label: "Historique" },
+      { id: "propfirm", label: "Propfirm Convex" },
+    ],
+  },
+  {
+    id: "trading", label: "Trading", icon: "▲",
+    modules: [
+      { id: "chartLive", label: "Chart Live" },
+      { id: "performance", label: "Performance" },
+      { id: "liveTv", label: "Live TV" },
+      { id: "cockpit", label: "Cockpit" },
+      { id: "masterCockpit", label: "Master Cockpit" },
+      { id: "vpFootprint", label: "VP Footprint" },
+      { id: "behaviorTracker", label: "Behavior Tracker" },
+      { id: "spreadCompare", label: "Spread Compare" },
+      { id: "hmmRegime", label: "HMM Regime" },
+      { id: "strategies", label: "Stratégies" },
+      { id: "orchestrateur", label: "Orchestrateur" },
+      { id: "signaux", label: "Signaux" },
+      { id: "signalEngine", label: "Signal Engine" },
+      { id: "execQuality", label: "Exec Quality" },
+      { id: "riskCalc", label: "Risk Calc" },
+      { id: "newsReact", label: "News React" },
+      { id: "liveOptim", label: "Live Optim" },
+    ],
+  },
+  {
+    id: "optimisation", label: "Optimisation", icon: "⚙",
+    modules: [
+      { id: "factory", label: "⚡ Usine à Stratégies" },
+      { id: "fao", label: "Full Auto Optim" },
+      { id: "postFao", label: "Post-FAO Synth" },
+      { id: "quantOptimizer", label: "Quant Optimizer" },
+      { id: "validator", label: "Validator" },
+      { id: "sensitivity", label: "Sensitivity 2D" },
+      { id: "pareto", label: "Pareto Front" },
+      { id: "crossTf", label: "Cross-TF Stability" },
+      { id: "crossSymbol", label: "Cross-Symbol" },
+      { id: "pairs", label: "Pairs Trading" },
+      { id: "quantToolbox", label: "Quant Toolbox" },
+    ],
+  },
+  {
+    id: "macro", label: "Macro", icon: "◍",
+    modules: [
+      { id: "recoFinale", label: "Reco Finale" },
+      { id: "cpcv", label: "CPCV Explorer" },
+      { id: "donneesSynth", label: "Données Synth" },
+      { id: "featureMining", label: "Feature Mining" },
+      { id: "symbolicGp", label: "Symbolic GP" },
+      { id: "tailRisk", label: "Tail Risk" },
+      { id: "correlations", label: "Correlations" },
+      { id: "regimeClock", label: "Regime Clock" },
+      { id: "microstructureLive", label: "Microstructure Live" },
+      { id: "macroMap", label: "Macro Map" },
+      { id: "seasonal", label: "Seasonal" },
+      { id: "macroCalendar", label: "Macro Calendar" },
+      { id: "events", label: "Events" },
+      { id: "cryptoWhales", label: "Crypto Whales" },
+      { id: "shipTracker", label: "Ship Tracker" },
+      { id: "optionsGamma", label: "Options Gamma" },
+      { id: "cot", label: "COT" },
+      { id: "yieldCurve", label: "Yield Curve" },
+      { id: "usdLiquidity", label: "USD Liquidity" },
+      { id: "riskOnOff", label: "Risk On/Off" },
+      { id: "inflation", label: "Inflation" },
+      { id: "surpriseIndex", label: "Surprise Index" },
+    ],
+  },
+  {
+    id: "outils", label: "Outils", icon: "⛭",
+    modules: [
+      { id: "dataManager", label: "🗄️ Data Manager" },
+      { id: "quantToolboxTool", label: "Quant Toolbox" },
+      { id: "vpin", label: "VPIN" },
+      { id: "analyseQuant", label: "Analyse Quant" },
+      { id: "onchain", label: "Onchain" },
+      { id: "logs", label: "Logs" },
+      { id: "performanceTool", label: "Performance" },
+    ],
+  },
+  {
+    id: "export", label: "Export", icon: "⇱",
+    modules: [
+      { id: "strategyBuilder", label: "Strategy Builder" },
+    ],
+  },
+];
+
+export const ALL_MODULES = SECTIONS.flatMap((s) => s.modules.map((m) => ({ ...m, section: s.id })));
+export const MODULE_COUNT = ALL_MODULES.length;
