@@ -3,7 +3,7 @@
 // Une fois l'univers téléchargé, l'Usine à Stratégies tourne instantanément dessus.
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.jsx";
-import { ASSET_CLASSES, TF_MAP, fetchCandles, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate } from "../../engine/marketData.js";
+import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate } from "../../engine/marketData.js";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
@@ -55,6 +55,29 @@ export function DataManagerPage() {
   const removeOne = async (id) => { await deleteCachedSeries(id); await refresh(); };
   const clearAll = async () => { await clearMarketCache(); await refresh(); };
 
+  // Import de séries profondes Dukascopy (JSON produit par tools/dukascopy) — 15-20 ans d'historique.
+  const [importMsg, setImportMsg] = useState(null);
+  const onImportFile = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportMsg({ label: `Import de ${file.name}…` });
+    try {
+      const data = JSON.parse(await file.text());
+      const list = Array.isArray(data) ? data : [data]; // 1 série ou tableau de séries
+      let ok = 0, fail = 0;
+      for (const s of list) {
+        try { await importSeries(s.symbolKey, s.tf, s.bars, { provider: s.provider || "dukascopy" }); ok++; }
+        catch { fail++; }
+      }
+      await refresh();
+      setImportMsg({ done: true, label: `${ok} série(s) importée(s)${fail ? `, ${fail} échec(s)` : ""}` });
+    } catch (err) {
+      setImportMsg({ done: true, label: `Échec import : ${err.message}` });
+    }
+    e.target.value = "";
+    setTimeout(() => setImportMsg(null), 5000);
+  }, [refresh]);
+
   const totalBars = cached.reduce((s, c) => s + (c.bars || 0), 0);
   const totalBytes = cached.reduce((s, c) => s + (c.bytes || 0), 0);
   const avgHealth = cached.length ? Math.round(cached.reduce((s, c) => s + (c.health || 0), 0) / cached.length) : 0;
@@ -103,8 +126,13 @@ export function DataManagerPage() {
         <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <Button primary onClick={() => download(false)} disabled={running}>{running ? "⏳ Téléchargement…" : `⬇ Télécharger (${assets.length * tfs.length} séries)`}</Button>
           <Button onClick={() => download(true)} disabled={running}>↻ Tout rafraîchir</Button>
+          <label style={{ cursor: "pointer", fontSize: 12, padding: "6px 12px", borderRadius: 6, border: `1px solid ${T.border}`, color: T.text, background: "transparent" }}>
+            📥 Importer JSON (Dukascopy 15-20 ans)
+            <input type="file" accept="application/json,.json" onChange={onImportFile} style={{ display: "none" }} />
+          </label>
           <span style={{ fontSize: 11, color: T.textFaint }}>Réutilise le cache existant sauf « Tout rafraîchir »</span>
         </div>
+        {importMsg && <div style={{ marginTop: 8, fontSize: 11, color: importMsg.done ? T.green : T.textDim }}>{importMsg.label}</div>}
         {progress && (
           <div style={{ marginTop: 12 }}>
             <div style={{ fontSize: 11, color: progress.done ? T.green : T.textDim, marginBottom: 4 }}>{progress.label}</div>

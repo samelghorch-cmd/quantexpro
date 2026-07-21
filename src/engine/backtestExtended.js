@@ -2,6 +2,7 @@
 // à la logique de runBacktest (qui ne gère que stop ATR + signal inverse).
 // Utilisé par le pipeline d'optimisation (FAO, Quant Optimizer).
 import { CONTRACTS } from "./contracts.js";
+import { annualFactor, periodsPerYear } from "./annualize.js";
 
 // params : { slAtr, tpAtr, beAtr, direction, contracts, capital }
 //  slAtr : multiple d'ATR pour le stop (0 = pas de SL)
@@ -90,7 +91,7 @@ export function computeMetrics(trades, equityCurve, capital, bars) {
   for (let i = 1; i < equityCurve.length; i++) returns.push((equityCurve[i] - equityCurve[i - 1]) / capital);
   const meanRet = returns.reduce((s, r) => s + r, 0) / (returns.length || 1);
   const stdRet = Math.sqrt(returns.reduce((s, r) => s + (r - meanRet) ** 2, 0) / (returns.length || 1));
-  const ann = Math.sqrt(252 * 78);
+  const ann = annualFactor(bars);
   const sharpe = stdRet ? (meanRet / stdRet) * ann : 0;
   const downside = Math.sqrt(returns.filter((r) => r < 0).reduce((s, r) => s + r * r, 0) / (returns.length || 1));
   const sortino = downside ? (meanRet / downside) * ann : 0;
@@ -100,7 +101,7 @@ export function computeMetrics(trades, equityCurve, capital, bars) {
 
   const totalPnLPct = (totalPnL / capital) * 100;
   const barsSpan = equityCurve.length || 1;
-  const years = barsSpan / (252 * 78);
+  const years = barsSpan / periodsPerYear(bars);
   const cagr = years > 0 ? (Math.pow((capital + totalPnL) / capital, 1 / Math.max(years, 1e-6)) - 1) * 100 : 0;
   const calmar = maxDD > 0 ? cagr / (maxDD * 100) : 0;
 

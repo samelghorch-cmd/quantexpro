@@ -153,6 +153,21 @@ export async function fetchCandles(symbolKey, tf, { force = false } = {}) {
   return { bars, symbol: sym, cached: false, report };
 }
 
+// ---- Import de séries externes profondes (Dukascopy 15-20 ans, cf. tools/dukascopy) ----
+// Écrit des barres OHLCV sous le cacheId canonique du symbole → l'app (backtests, Usine, Data
+// Manager) les utilise exactement comme une série chargée. Format attendu : bars = [{t,o,h,l,c,v}].
+// Note : 500 Go de ticks ne tiennent pas dans le navigateur ; on n'importe ici que l'OHLCV agrégé
+// (léger : ~20 ans en 1h ≈ quelques Mo), produit en local par le script Node d'ingestion.
+export async function importSeries(symbolKey, tf, bars, { provider } = {}) {
+  const sym = findSymbol(symbolKey);
+  if (!sym) throw new Error(`Symbole inconnu : ${symbolKey} (doit exister dans ASSET_CLASSES)`);
+  if (!Array.isArray(bars) || !bars.length) throw new Error("Aucune barre à importer");
+  const { bars: clean, report } = cleanBars(bars, { assetClass: sym.classId });
+  await writeCache(sym.provider, sym.ticker, tf, { bars: clean, report },
+    { symbolKey, label: sym.label, classLabel: sym.classLabel, provider: provider || "dukascopy", ticker: sym.ticker, tf, source: provider || "dukascopy" });
+  return { count: clean.length, report, span: clean.length ? [clean[0].t, clean[clean.length - 1].t] : null };
+}
+
 // ---- Helpers Data Manager ----
 export async function listCachedSeries() {
   try {

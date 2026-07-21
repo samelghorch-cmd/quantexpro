@@ -1,0 +1,12 @@
+{
+  "name": "quantexpro-dukascopy-ingest",
+  "private": true,
+  "type": "module",
+  "description": "Ingestion Dukascopy (15-20 ans OHLCV) → JSON importable dans QuantExPro. Outil séparé de l'app.",
+  "scripts": {
+    "fetch": "node fetch.mjs"
+  },
+  "dependencies": {
+    "dukascopy-node": "^7.5.0"
+  }
+}

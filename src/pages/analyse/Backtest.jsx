@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
 import { advancedMetrics } from "../../engine/backtestMetrics.js";
+import { logBacktest } from "../../engine/strategyStore.js";
 import { tradesToCSV, downloadCSV } from "../../engine/exportUtils.js";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
@@ -12,7 +13,7 @@ import { NextStepBar } from "../../components/shared/NextStepBar.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function BacktestPage() {
-  const { bars, ctx, library, symbol, pipeline, setPipe, addJournal } = usePipeline();
+  const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, addJournal } = usePipeline();
   const [stratId, setStratId] = useState(pipeline.selectedStrategyId || 3);
   const sp = pipeline.strategyParams || {};
   const [cfg, setCfg] = useState({
@@ -40,7 +41,10 @@ export function BacktestPage() {
     setResult(full);
     setPipe({ lastBacktest: full, selectedStrategyId: stratId, strategyParams: params });
     addJournal({ type: "backtest", strat: strat.name, pnl: res.totalPnL, sharpe: res.sharpe, trades: res.nTrades });
-  }, [library, stratId, symbol, cfg, bars, ctx, setPipe, addJournal]);
+    // Journal durable (survit au rechargement) — cohérence inter-outils
+    logBacktest({ tool: "Backtest", name: strat.name, strategyId: strat.id, symbol, tf, dataMode, params, metrics: { ...res, score } })
+      .catch(() => { /* IDB indisponible → run non journalisé, sans blocage */ });
+  }, [library, stratId, symbol, tf, dataMode, cfg, bars, ctx, setPipe, addJournal]);
 
   const cards = useMemo(() => {
     if (!result) return [];

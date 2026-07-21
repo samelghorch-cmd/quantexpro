@@ -1,5 +1,6 @@
 // Extrait de v4core.js — moteur de backtest (PnL réaliste) + batch.
 import { CONTRACTS } from "./contracts.js";
+import { annualFactor } from "./annualize.js";
 
 export function runBacktest(bars, ctx, strategyEval, options) {
   const { contract, contracts, useAtrStop, atrMult, direction, capital } = options;
@@ -63,7 +64,7 @@ export function runBacktest(bars, ctx, strategyEval, options) {
   for (let i = 1; i < equityCurve.length; i++) returns.push((equityCurve[i] - equityCurve[i - 1]) / capital);
   const meanRet = returns.reduce((s, r) => s + r, 0) / (returns.length || 1);
   const stdRet = Math.sqrt(returns.reduce((s, r) => s + (r - meanRet) ** 2, 0) / (returns.length || 1));
-  const sharpe = stdRet ? (meanRet / stdRet) * Math.sqrt(252 * 78) : 0;
+  const sharpe = stdRet ? (meanRet / stdRet) * annualFactor(bars) : 0;
   let maxDD = 0, peak = capital;
   equityCurve.forEach(e => { if (e > peak) peak = e; const dd = (peak - e) / peak; if (dd > maxDD) maxDD = dd; });
   return { trades, totalPnL, winRate, avgWin, avgLoss, profitFactor, sharpe, maxDD, equityCurve, finalEquity: equity };
