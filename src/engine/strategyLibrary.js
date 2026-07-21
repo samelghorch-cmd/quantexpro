@@ -214,12 +214,15 @@ export const STRAT_FAMILIES = {
     return { long: m[i - 1] < low && m[i] >= low, short: m[i - 1] > high && m[i] <= high };
   },
   // === VPIN spike (microstructure) ===
+  // Toxicité du flux via la CDF du VPIN (percentile > 90 % = flux toxique),
+  // qu'on fade avec le RSI : survente + flux toxique → long, surachat + flux toxique → short.
   vpinSpike: () => (ctx, i) => {
-    const v = ctx.vpin;
-    if (!v || isNaN(v[i]) || isNaN(v[i - 1])) return { long: false, short: false };
+    const cdf = ctx.vpinCdf;
+    if (!cdf || isNaN(cdf[i])) return { long: false, short: false };
     const rsi = ctx.rsi[14];
     if (!rsi || isNaN(rsi[i])) return { long: false, short: false };
-    return { long: v[i] > 0.3 && rsi[i] < 40, short: v[i] > 0.3 && rsi[i] > 60 };
+    const toxic = cdf[i] > 0.9;
+    return { long: toxic && rsi[i] < 40, short: toxic && rsi[i] > 60 };
   },
   // === Session bias ===
   sessionBias: (hourStart, hourEnd) => (ctx, i) => {

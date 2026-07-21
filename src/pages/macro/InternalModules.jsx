@@ -7,6 +7,7 @@ import { varCvar } from "../../engine/quantToolbox/index.js";
 import { generateBasket, basketCorrelation } from "../../engine/multiAssetSynthetic.js";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { generateOrderBook } from "../../engine/microstructure.js";
+import { computeVPIN } from "../../engine/vpin.js";
 import { CorrelationMatrix } from "../../components/charts/CorrelationMatrix.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
@@ -196,6 +197,7 @@ export function MicrostructureLivePage() {
   const { bars, symbol, CONTRACTS } = usePipeline();
   const [tick, setTick] = useState(0);
   const ob = useMemo(() => bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol].tick, 12, bars.length + tick) : null, [bars, symbol, CONTRACTS, tick]);
+  const vp = useMemo(() => computeVPIN(bars, { buckets: 200, window: 50, method: "bvc", cdfWindow: 250 }), [bars]);
   if (!ob) return null;
   const totalBid = ob.bids.reduce((s, b) => s + b.size, 0), totalAsk = ob.asks.reduce((s, a) => s + a.size, 0);
   const imbalance = ((totalBid - totalAsk) / (totalBid + totalAsk)) * 100;
@@ -214,13 +216,23 @@ export function MicrostructureLivePage() {
           })}
         </div>
       </Panel>
-      <Panel title="Déséquilibre du carnet">
-        <MetricGrid min={110}>
-          <MetricCard label="Bid total" value={totalBid} color={T.green} />
-          <MetricCard label="Ask total" value={totalAsk} color={T.red} />
-          <MetricCard label="Imbalance" value={fmtPct(imbalance)} color={imbalance >= 0 ? T.green : T.red} />
-        </MetricGrid>
-      </Panel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <Panel title="Déséquilibre du carnet" right={<SimBadge />}>
+          <MetricGrid min={110}>
+            <MetricCard label="Bid total" value={totalBid} color={T.green} />
+            <MetricCard label="Ask total" value={totalAsk} color={T.red} />
+            <MetricCard label="Imbalance" value={fmtPct(imbalance)} color={imbalance >= 0 ? T.green : T.red} />
+          </MetricGrid>
+        </Panel>
+        <Panel title="Toxicité du flux — VPIN">
+          <MetricGrid min={110}>
+            <MetricCard label="VPIN" value={fmt(vp.lastVPIN, 3)} color={vp.lastCDF >= 0.9 ? T.red : vp.lastCDF >= 0.7 ? T.yellow : T.green} />
+            <MetricCard label="CDF" value={Number.isNaN(vp.lastCDF) ? "—" : `${(vp.lastCDF * 100).toFixed(0)}%`} color={vp.tox.color} />
+            <MetricCard label="État" value={vp.tox.label} color={vp.tox.color} />
+          </MetricGrid>
+          <div style={{ marginTop: 6, fontSize: 10, color: T.textFaint, lineHeight: 1.5 }}>Signal réel (barres du marché) : au-delà du 90ᵉ percentile, le flux est toxique — risque de retournement violent / configuration d'avant-krach.</div>
+        </Panel>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,9 @@
 // Kelly/EV, Robustesse, Audit, Historique — outils de risque sur le dernier backtest.
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { drawdownDistribution, varCvar } from "../../engine/quantToolbox/index.js";
-import { Panel, MetricCard, MetricGrid, DataTable, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { deflatedSharpe } from "../../engine/backtestMetrics.js";
+import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { T } from "../../components/shared/theme.js";
 
@@ -14,6 +15,9 @@ export function KellyEvPage() {
   if (!bt) return <NoBt />;
   const r = bt.res;
   const kellyFull = r.kelly * 100;
+  const payoff = r.avgLoss ? r.avgWin / r.avgLoss : 0;         // R:R réel (gain moyen / perte moyenne)
+  const breakevenWR = payoff > 0 ? 100 / (1 + payoff) : NaN;   // winrate minimal pour être à l'équilibre
+  const edge = r.winRate - breakevenWR;                        // marge réelle = winrate − seuil
   const scenarios = [0.25, 0.5, 1, 1.5, 2].map((f) => ({
     frac: f, sizing: Math.max(0, kellyFull * f),
     label: f === 0.5 ? "Half-Kelly (recommandé)" : f === 1 ? "Full Kelly" : `${f}× Kelly`,
@@ -27,8 +31,13 @@ export function KellyEvPage() {
           <MetricCard label="Expectancy R" value={fmt(r.expectancyR)} color={r.expectancyR >= 0 ? T.green : T.red} />
           <MetricCard label="EV / Trade" value={fmtUsd(r.evTrade)} color={r.evTrade >= 0 ? T.green : T.red} />
           <MetricCard label="Win Rate" value={fmtPct(r.winRate)} />
-          <MetricCard label="Payoff (R)" value={fmt(r.avgLoss ? r.avgWin / r.avgLoss : 0)} />
+          <MetricCard label="Payoff (R)" value={fmt(payoff)} hint="Gain moyen ÷ perte moyenne (le R:R réellement réalisé)." />
+          <MetricCard label="Winrate seuil (BE)" value={fmtPct(breakevenWR)} color={T.yellow} hint="Winrate minimal pour être à l'équilibre à ce payoff = 1/(1+R)." />
+          <MetricCard label="Edge (WR − seuil)" value={fmtPct(edge)} color={edge > 0 ? T.green : T.red} hint="La seule chose qui compte : de combien ton winrate dépasse le seuil imposé par ton R:R." />
         </MetricGrid>
+        <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint, lineHeight: 1.5 }}>
+          Le winrate seul ne veut rien dire : à un payoff de {fmt(payoff)}R, il faut <b style={{ color: T.yellow }}>{fmtPct(breakevenWR)}</b> de réussite <i>juste pour ne pas perdre</i>. Un système à 40 % de winrate avec un payoff de 2R est gagnant ; un système à 70 % avec un payoff de 0,3R est perdant. Ce qui compte, c'est l'<b>edge</b> ({fmtPct(edge)}) et l'espérance ({fmt(r.expectancyR)}R/trade).
+        </div>
       </Panel>
       <Panel title="Scénarios de sizing">
         <DataTable columns={[
@@ -44,12 +53,34 @@ export function KellyEvPage() {
 
 export function RobustessePage() {
   const { pipeline } = usePipeline();
+  const [nTrials, setNTrials] = useState(100);
   const bt = pipeline.lastBacktest;
+  const pnls = useMemo(() => (bt ? bt.res.trades.map((t) => t.pnl) : []), [bt]);
+  const dd = useMemo(() => (bt ? drawdownDistribution(bt.res.equityCurve) : null), [bt]);
+  const vc = useMemo(() => (bt ? varCvar(pnls) : null), [bt, pnls]);
+  const ds = useMemo(() => deflatedSharpe(pnls, Number(nTrials)), [pnls, nTrials]);
   if (!bt) return <NoBt />;
-  const dd = useMemo(() => drawdownDistribution(bt.res.equityCurve), [bt]);
-  const vc = useMemo(() => varCvar(bt.res.trades.map((t) => t.pnl)), [bt]);
+  const dsrPct = Number.isNaN(ds.dsr) ? NaN : ds.dsr * 100;
+  const dsrColor = dsrPct >= 95 ? T.green : dsrPct >= 90 ? T.yellow : T.red;
+  const dsrVerdict = dsrPct >= 95 ? "SOLIDE" : dsrPct >= 90 ? "LIMITE" : "PROBABLEMENT SUR-OPTIMISÉ";
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <Panel title="Deflated Sharpe Ratio — garde-fou anti-overfitting" right={
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 10, color: T.textDim }}>Nb de configs testées</span>
+          <Select value={String(nTrials)} onChange={(x) => setNTrials(Number(x))} options={[{ value: "1", label: "1 (aucun tri)" }, { value: "10", label: "10" }, { value: "100", label: "100" }, { value: "1000", label: "1 000" }, { value: "10000", label: "10 000" }]} />
+        </div>
+      }>
+        <MetricGrid min={150}>
+          <MetricCard label="Sharpe observé (par trade)" value={fmt(ds.sr, 3)} />
+          <MetricCard label="Sharpe seuil (max sous H0)" value={fmt(ds.srStar, 3)} color={T.yellow} hint="Sharpe max attendu par pure chance sur N essais." />
+          <MetricCard label="Deflated Sharpe Ratio" value={Number.isNaN(dsrPct) ? "—" : `${dsrPct.toFixed(1)}%`} color={dsrColor} hint="Probabilité que le Sharpe soit réel après N essais." />
+          <MetricCard label="Verdict" value={dsrVerdict} color={dsrColor} />
+        </MetricGrid>
+        <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint, lineHeight: 1.5 }}>
+          C'est ce qui sépare un quant d'un trader : quand ton Usine teste <b style={{ color: T.orange }}>{Number(nTrials).toLocaleString("fr-FR")}</b> configurations, le meilleur Sharpe est mécaniquement gonflé par la chance. Le DSR (López de Prado 2014) déflate le seuil de significativité par le Sharpe maximum attendu sous l'hypothèse « aucun edge », en tenant compte de la longueur d'historique, du skew et du kurtosis. Un DSR &lt; 90 % = le résultat ne survit probablement pas au biais de sélection.
+        </div>
+      </Panel>
       <Panel title="Robustesse — Drawdown Distribution">
         {dd && (
           <MetricGrid min={140}>

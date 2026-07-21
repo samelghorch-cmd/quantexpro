@@ -41,6 +41,31 @@ export function minTRL(pnls, srStar = 0, conf = 0.95) {
   return { minTrl, sr };
 }
 
+// Espérance du Sharpe MAXIMUM sous H0 (aucun skill) sur nTrials essais indépendants.
+// López de Prado (2014), "The Deflated Sharpe Ratio". sigmaSR = dispersion des SR sous H0.
+export function expectedMaxSharpe(nTrials, sigmaSR) {
+  if (!(nTrials > 1) || !(sigmaSR > 0)) return 0;
+  const gamma = 0.5772156649015329; // constante d'Euler-Mascheroni
+  const z1 = invNormCdf(1 - 1 / nTrials);
+  const z2 = invNormCdf(1 - 1 / (nTrials * Math.E));
+  return sigmaSR * ((1 - gamma) * z1 + gamma * z2);
+}
+
+// Deflated Sharpe Ratio — probabilité que le Sharpe observé soit RÉEL après avoir testé
+// nTrials configurations. C'est LE garde-fou anti-overfitting : un Sharpe élevé trouvé
+// parmi des milliers d'essais est probablement de la chance. On déflate le seuil PSR par
+// le Sharpe maximum attendu sous l'hypothèse nulle sur nTrials essais.
+export function deflatedSharpe(pnls, nTrials = 1) {
+  if (!pnls || pnls.length < 3) return { dsr: NaN, sr: 0, srStar: 0, sigmaSR: NaN, nTrials };
+  const sr = tradeSharpe(pnls);
+  const { skew, kurt } = moments(pnls);
+  const T = pnls.length;
+  // Écart-type d'échantillonnage du Sharpe (même noyau que la PSR), = dispersion des SR sous H0.
+  const sigmaSR = Math.sqrt(Math.max(1e-12, (1 - skew * sr + ((kurt - 1) / 4) * sr * sr) / (T - 1)));
+  const srStar = expectedMaxSharpe(nTrials, sigmaSR);
+  return { dsr: probabilisticSharpe(pnls, srStar), sr, srStar, sigmaSR, nTrials };
+}
+
 // Beta de la stratégie contre le buy&hold de l'actif (régression des rendements)
 export function betaVsAsset(equityCurve, bars, capital) {
   if (!equityCurve || equityCurve.length < 3 || !bars || bars.length < 3) return NaN;
