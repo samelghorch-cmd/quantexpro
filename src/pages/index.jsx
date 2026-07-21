@@ -24,6 +24,7 @@ import { ValidatorPage } from "./optimisation/Validator.jsx";
 import { Sensitivity2DPage, ParetoPage, CrossTFPage, CrossSymbolPage, PairsPage } from "./optimisation/AdvancedOptim.jsx";
 import { QuantToolboxPage } from "./optimisation/QuantToolbox.jsx";
 import { StrategyFactoryPage } from "./optimisation/StrategyFactory.jsx";
+import { GeneticOptimPage } from "./optimisation/GeneticOptim.jsx";
 // MACRO
 import { RecoFinalePage } from "./macro/RecoFinale.jsx";
 import { CPCVPage, DonneesSynthPage, FeatureMiningPage, SymbolicGPPage, TailRiskPage, CorrelationsPage, RegimeClockPage, MicrostructureLivePage, MacroMapPage, SeasonalPage } from "./macro/InternalModules.jsx";
@@ -35,6 +36,7 @@ import { VPINPage, AnalyseQuantPage, LogsPage } from "./outils/Outils.jsx";
 import { DataManagerPage } from "./outils/DataManager.jsx";
 // EXPORT
 import { StrategyBuilderPage } from "./export/StrategyBuilder.jsx";
+import { SavedStrategiesPage } from "./export/SavedStrategies.jsx";
 
 const REAL = {
   // Strategy Engine
@@ -82,6 +84,7 @@ const REAL = {
   crossTf: CrossTFPage,
   crossSymbol: CrossSymbolPage,
   pairs: PairsPage,
+  geneticOptim: GeneticOptimPage,
   quantToolbox: QuantToolboxPage,
   // Macro
   recoFinale: RecoFinalePage,
@@ -116,6 +119,7 @@ const REAL = {
   performanceTool: PerformancePage,
   // Export
   strategyBuilder: StrategyBuilderPage,
+  savedStrategies: SavedStrategiesPage,
 };
 
 export const PAGES = Object.fromEntries(

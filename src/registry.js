@@ -64,6 +64,7 @@ export const SECTIONS = [
       { id: "crossTf", label: "Cross-TF Stability" },
       { id: "crossSymbol", label: "Cross-Symbol" },
       { id: "pairs", label: "Pairs Trading" },
+      { id: "geneticOptim", label: "🧬 Optim Génétique" },
       { id: "quantToolbox", label: "Quant Toolbox" },
     ],
   },
@@ -110,6 +111,7 @@ export const SECTIONS = [
     id: "export", label: "Export", icon: "⇱",
     modules: [
       { id: "strategyBuilder", label: "Strategy Builder" },
+      { id: "savedStrategies", label: "💾 Mes Stratégies" },
     ],
   },
 ];
