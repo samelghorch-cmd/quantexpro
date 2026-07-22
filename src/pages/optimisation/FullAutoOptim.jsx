@@ -8,7 +8,7 @@ import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function FullAutoOptimPage() {
-  const { bars, ctx, library, symbol, pipeline, setPipe, log } = usePipeline();
+  const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, log, attachToActive } = usePipeline();
   const [stratId, setStratId] = useState(pipeline.selectedStrategyId || 3);
   const [cfg, setCfg] = useState({ nSamples: 150, minWR: 35, maxDD: 40 });
   const [busy, setBusy] = useState(false);
@@ -22,9 +22,12 @@ export function FullAutoOptimPage() {
       const res = runFAO(bars, ctx, strat, { nSamples: cfg.nSamples, minWR: cfg.minWR, maxDD: cfg.maxDD, contract: symbol });
       setPipe({ faoResults: { ...res, strat }, selectedStrategyId: stratId });
       log("FAO", `${res.combos.length} setups retenus / ${res.attempts} testés (${strat.name})`);
+      // Rattache l'étape FAO (essais + meilleurs setups) au dossier actif.
+      attachToActive("fao", "Full Auto Optim", { symbol, tf, dataMode, attempts: res.attempts, best: res.best, combos: res.combos, baseline: res.baseline },
+        { name: strat.name, strategyId: strat.id, params: res.best?.params });
       setBusy(false);
     }, 20);
-  }, [library, stratId, cfg, bars, ctx, symbol, setPipe, log]);
+  }, [library, stratId, cfg, bars, ctx, symbol, tf, dataMode, setPipe, log, attachToActive]);
 
   const fao = pipeline.faoResults;
   const columns = [

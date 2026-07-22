@@ -7,7 +7,7 @@ import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 
 export function RecoFinalePage() {
-  const { pipeline, setPipe, log } = usePipeline();
+  const { pipeline, setPipe, log, attachToActive, gradeActive } = usePipeline();
   const [reco, setReco] = useState(pipeline.recoFinale);
 
   const run = useCallback(() => {
@@ -22,7 +22,10 @@ export function RecoFinalePage() {
     setReco(res);
     setPipe({ recoFinale: res });
     log("Reco Finale", `Verdict ${res.verdict} — score ${res.finalScore.toFixed(0)}`);
-  }, [pipeline, setPipe, log]);
+    // Rattache l'étape + FIGE la note (verdict + score + lettre A-F) dans le dossier actif.
+    attachToActive("reco", "Reco Finale", { nTrials, ...res });
+    gradeActive({ verdict: res.verdict, score: res.finalScore, components: res.components });
+  }, [pipeline, setPipe, log, attachToActive, gradeActive]);
 
   const hasInputs = pipeline.lastBacktest || pipeline.quantOptimizerBest || pipeline.postFaoTop10;
 

@@ -5,11 +5,12 @@
 //   • "backtests"  : journal durable de chaque backtest lancé par n'importe quel outil (cohérence inter-outils)
 // Fallback gracieux si IDB indisponible.
 const DB_NAME = "tradobot-data";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 export const SERIES = "series";
 export const STRATEGIES = "strategies";
 export const BACKTESTS = "backtests";
-const STORES = [SERIES, STRATEGIES, BACKTESTS];
+export const DOSSIERS = "dossiers"; // v3 : dossier complet du cycle de vie d'une stratégie (params + résultats d'outils + note + démo)
+const STORES = [SERIES, STRATEGIES, BACKTESTS, DOSSIERS];
 let dbPromise = null;
 
 function openDB() {

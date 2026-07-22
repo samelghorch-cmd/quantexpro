@@ -39,6 +39,7 @@ import { DataManagerPage } from "./outils/DataManager.jsx";
 // EXPORT
 import { StrategyBuilderPage } from "./export/StrategyBuilder.jsx";
 import { SavedStrategiesPage } from "./export/SavedStrategies.jsx";
+import { DossiersPage } from "./export/Dossiers.jsx";
 
 const REAL = {
   // Strategy Engine
@@ -123,6 +124,7 @@ const REAL = {
   performanceTool: PerformancePage,
   // Export
   strategyBuilder: StrategyBuilderPage,
+  dossiers: DossiersPage,
   savedStrategies: SavedStrategiesPage,
 };
 

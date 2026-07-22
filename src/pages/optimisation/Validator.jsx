@@ -9,7 +9,7 @@ import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 
 export function ValidatorPage() {
-  const { bars, ctx, pipeline, setPipe, log } = usePipeline();
+  const { bars, ctx, pipeline, setPipe, log, attachToActive } = usePipeline();
   const [nPaths, setNPaths] = useState(300);
   const [busy, setBusy] = useState(false);
 
@@ -30,9 +30,12 @@ export function ValidatorPage() {
       const res = runValidator(bars, ctx, strat, withPnls, bt.totalPnL, { nPaths });
       setPipe({ validatorVerdict: res });
       log("Validator", `Verdict ${res.verdict} (${res.gates.map((g) => `${g.name}:${g.verdict}`).join(", ")})`);
+      // Rattache la validation (verdict + gates) au dossier actif.
+      attachToActive("validator", "Validator", { verdict: res.verdict, gates: res.gates, nPaths },
+        { name: strat.name, strategyId: strat.id, params: bestParams });
       setBusy(false);
     }, 20);
-  }, [strat, bestParams, bars, ctx, nPaths, pipeline.symbol, setPipe, log]);
+  }, [strat, bestParams, bars, ctx, nPaths, pipeline.symbol, setPipe, log, attachToActive]);
 
   const v = pipeline.validatorVerdict;
 

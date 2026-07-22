@@ -113,6 +113,7 @@ export const SECTIONS = [
     id: "export", label: "Export", icon: "⇱",
     modules: [
       { id: "strategyBuilder", label: "Strategy Builder" },
+      { id: "dossiers", label: "📁 Dossiers Stratégie" },
       { id: "savedStrategies", label: "💾 Mes Stratégies" },
     ],
   },

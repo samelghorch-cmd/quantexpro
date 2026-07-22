@@ -13,7 +13,8 @@ import { T } from "../../components/shared/theme.js";
 const stateColor = (s) => (s === "LONG" ? T.green : s === "SHORT" ? T.red : T.textFaint);
 
 export function ForwardTestPage() {
-  const { bars, ctx, library, symbol, tf, assetKey, dataMode, setDataMode, usingReal, reloadData, dataMeta, dataLoading } = usePipeline();
+  const { bars, ctx, library, symbol, tf, assetKey, dataMode, setDataMode, usingReal, reloadData, dataMeta, dataLoading, saveDemoSession } = usePipeline();
+  const session = useRef(null); // session de démo accumulée dans le dossier actif
   const [stratId, setStratId] = usePersistentState("fwd:stratId", 3);
   const [slAtr, setSlAtr] = usePersistentState("fwd:sl", 2);
   const [tpAtr, setTpAtr] = usePersistentState("fwd:tp", 3);
@@ -52,8 +53,19 @@ export function ForwardTestPage() {
     setStartTs(bars[bars.length - 1]?.t || Date.now());
     setStartEquity(100000);
     setLastPoll(Date.now()); setTicks(0);
+    session.current = { startedAt: Date.now(), symbol, tf, dataMode, snapshots: [], trades: [], id: null };
     setRunning(true);
-  }, [bars]);
+  }, [bars, symbol, tf, dataMode]);
+
+  // Accumule la data de démo (bougies + trades papier) dans le dossier actif, à chaque tick.
+  useEffect(() => {
+    if (!running || !session.current || !fwd) return;
+    session.current.snapshots.push({ t: Date.now(), price: fwd.lastPrice, equity: fwd.equity, sessionPnL: fwd.sessionPnL, state: fwd.liveState });
+    session.current.trades = fwd.sessionTrades || [];
+    session.current.finalMetrics = { sessionPnL: fwd.sessionPnL, equity: fwd.equity, nTrades: (fwd.sessionTrades || []).length };
+    saveDemoSession({ ...session.current }, { name: strat?.name, strategyId: stratId, params }).then((id) => { if (id && session.current) session.current.id = id; });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticks]);
 
   const stop = useCallback(async () => {
     setRunning(false);
@@ -63,7 +75,14 @@ export function ForwardTestPage() {
       setSavedMsg("✓ Session journalisée");
       setTimeout(() => setSavedMsg(""), 2500);
     }
-  }, [fwd, strat, stratId, symbol, tf, dataMode, params]);
+    // Finalise la session de démo dans le dossier actif (data complète conservée).
+    if (session.current) {
+      session.current.endedAt = Date.now();
+      if (fwd) session.current.finalMetrics = { sessionPnL: fwd.sessionPnL, equity: fwd.equity, nTrades: (fwd.sessionTrades || []).length };
+      await saveDemoSession({ ...session.current }, { name: strat?.name, strategyId: stratId, params }).catch(() => {});
+      session.current = null;
+    }
+  }, [fwd, strat, stratId, symbol, tf, dataMode, params, saveDemoSession]);
 
   // Garde-fou : le forward-test n'a de sens que sur données réelles.
   if (!usingReal) {

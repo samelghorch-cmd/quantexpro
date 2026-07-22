@@ -13,7 +13,7 @@ import { NextStepBar } from "../../components/shared/NextStepBar.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function BacktestPage() {
-  const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, addJournal } = usePipeline();
+  const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, addJournal, attachToActive } = usePipeline();
   const [stratId, setStratId] = useState(pipeline.selectedStrategyId || 3);
   const sp = pipeline.strategyParams || {};
   const [cfg, setCfg] = useState({
@@ -44,7 +44,10 @@ export function BacktestPage() {
     // Journal durable (survit au rechargement) — cohérence inter-outils
     logBacktest({ tool: "Backtest", name: strat.name, strategyId: strat.id, symbol, tf, dataMode, params, metrics: { ...res, score } })
       .catch(() => { /* IDB indisponible → run non journalisé, sans blocage */ });
-  }, [library, stratId, symbol, tf, dataMode, cfg, bars, ctx, setPipe, addJournal]);
+    // Rattache le résultat COMPLET (équity + trades) au dossier de stratégie actif — aucune perte.
+    attachToActive("backtest", "Backtest", { symbol, tf, dataMode, params, score, res, adv },
+      { name: strat.name, strategyId: strat.id, params });
+  }, [library, stratId, symbol, tf, dataMode, cfg, bars, ctx, setPipe, addJournal, attachToActive]);
 
   const cards = useMemo(() => {
     if (!result) return [];

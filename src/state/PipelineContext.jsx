@@ -6,6 +6,7 @@ import { generateSyntheticCandles, aggregateBars } from "../engine/syntheticData
 import { buildContext } from "../engine/context.js";
 import { buildStrategyLibrary } from "../engine/strategyLibrary.js";
 import { fetchCandles } from "../engine/marketData.js";
+import { createDossier, getDossier, attachStage, setGrade as setDossierGrade, upsertDemoSession } from "../engine/dossierStore.js";
 
 const Ctx = createContext(null);
 
@@ -40,6 +41,15 @@ export function PipelineProvider({ children }) {
   });
   const [logs, setLogs] = useState([]);
   const [journal, setJournal] = useState([]);
+
+  // Dossier de stratégie ACTIF — chaque outil y rattache son résultat (aucune perte). Persisté.
+  const [activeDossierId, setActiveDossierId] = useState(() => {
+    try { return localStorage.getItem("activeDossierId") || null; } catch { return null; }
+  });
+  const setActiveDossier = useCallback((id) => {
+    setActiveDossierId(id);
+    try { id ? localStorage.setItem("activeDossierId", id) : localStorage.removeItem("activeDossierId"); } catch { /* noop */ }
+  }, []);
 
   const log = useCallback((module, message, level = "info") => {
     setLogs((l) => [{ t: Date.now(), module, message, level }, ...l].slice(0, 500));
@@ -80,6 +90,24 @@ export function PipelineProvider({ children }) {
     setJournal((j) => [{ t: Date.now(), ...entry }, ...j].slice(0, 300));
   }, []);
 
+  // Garantit un dossier actif (auto-création au 1er outil), puis rattache le résultat complet de l'outil.
+  const ensureActiveDossier = useCallback(async ({ name, strategyId, params } = {}) => {
+    if (activeDossierId) { const d = await getDossier(activeDossierId).catch(() => null); if (d) return activeDossierId; }
+    const d = await createDossier({ name, strategyId, symbol, tf, dataMode, params });
+    setActiveDossier(d.id);
+    return d.id;
+  }, [activeDossierId, symbol, tf, dataMode, setActiveDossier]);
+
+  const attachToActive = useCallback(async (stageKey, toolLabel, fullResult, meta = {}) => {
+    try { const id = await ensureActiveDossier(meta); return await attachStage(id, stageKey, toolLabel, fullResult); } catch { return null; }
+  }, [ensureActiveDossier]);
+  const gradeActive = useCallback(async (grade, meta = {}) => {
+    try { const id = await ensureActiveDossier(meta); return await setDossierGrade(id, grade); } catch { return null; }
+  }, [ensureActiveDossier]);
+  const saveDemoSession = useCallback(async (session, meta = {}) => {
+    try { const id = await ensureActiveDossier(meta); return await upsertDemoSession(id, session); } catch { return null; }
+  }, [ensureActiveDossier]);
+
   const value = {
     activeModule, navigate,
     _store: store, _setStore: setStore,
@@ -88,6 +116,7 @@ export function PipelineProvider({ children }) {
     dataMode, setDataMode, assetKey, setAssetKey, liveBars, dataLoading, dataError, dataMeta,
     usingReal, reloadData: () => loadLive(true),
     pipeline, setPipe, logs, log, journal, addJournal,
+    activeDossierId, setActiveDossier, attachToActive, gradeActive, saveDemoSession,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
