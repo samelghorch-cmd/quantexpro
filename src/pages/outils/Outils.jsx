@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { IND } from "../../engine/indicators.js";
 import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.js";
+import { annualFactor } from "../../engine/annualize.js";
 import { findSymbol } from "../../engine/marketData.js";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
@@ -100,7 +101,8 @@ export function AnalyseQuantPage() {
     rets.forEach((r) => { const d = r - mean; m3 += d ** 3; m4 += d ** 4; });
     m3 /= rets.length; m4 /= rets.length;
     const hurst = ctx.hurst100[ctx.hurst100.length - 1];
-    return { mean: mean * 10000, vol: sd * Math.sqrt(252 * 78) * 100, skew: m3 / sd ** 3, kurt: m4 / sd ** 4 - 3, hurst, adx: ctx.adx14.adx[ctx.adx14.adx.length - 1] };
+    // annualFactor dérive le facteur du vrai espacement des barres (fix du 252×78 codé en dur).
+    return { mean: mean * 10000, vol: sd * annualFactor(bars) * 100, skew: m3 / sd ** 3, kurt: m4 / sd ** 4 - 3, hurst, adx: ctx.adx14.adx[ctx.adx14.adx.length - 1] };
   }, [bars, ctx]);
   return (
     <Panel title="Analyse Quant — statistiques de marché" right={<SimBadge />}>

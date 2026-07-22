@@ -23,7 +23,7 @@ export function Sidebar({ active, onSelect, collapsed, onToggle }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: T.bg1, zIndex: 2 }}>
         <div>
           <div style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: 0.3 }}>
-            Trado<span style={{ color: T.orange }}>Bot</span>
+            Quant<span style={{ color: T.orange }}>EX</span>Pro
           </div>
           <div style={{ fontSize: 9, color: T.textFaint, letterSpacing: 1, textTransform: "uppercase" }}>Quant Platform · v5</div>
         </div>

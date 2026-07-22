@@ -1,4 +1,4 @@
-# TradoBot Quant — Dashboard v5
+# QuantEXPro — Plateforme Quant
 
 Réplique fidèle de la plateforme quant "PROTOS" : 8 sections de sidebar, 69 modules réellement fonctionnels, pipeline scientifique complet. React 18 + Vite, aucune dépendance de chart ou ML externe (tout en SVG/Canvas custom).
 

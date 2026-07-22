@@ -1,4 +1,4 @@
-// Charte visuelle TradoBot v5 — dark premium, accent orange.
+// Charte visuelle QuantEXPro — dark premium, accent orange.
 export const T = {
   orange: "#FF6B00",
   orangeSoft: "#FF6B0022",

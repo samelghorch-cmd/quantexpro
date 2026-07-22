@@ -1,4 +1,4 @@
-// TradoBot — Collecteur 24/7 (paper-trading en continu sur données réelles Binance).
+// QuantEXPro — Collecteur 24/7 (paper-trading en continu sur données réelles Binance).
 // Service Node SANS dépendance npm : il RÉUTILISE le moteur JS du dashboard (mêmes stratégies
 // exactement qu'au backtest — aucune divergence), poll Binance à intervalle, fait tourner chaque
 // stratégie « job » en démo, accumule la data au fil du temps, et l'expose via une petite API HTTP.
@@ -98,7 +98,7 @@ const server = http.createServer(async (req, res) => {
   const parts = url.pathname.split("/").filter(Boolean);
 
   try {
-    if (url.pathname === "/" || url.pathname === "/health") return send(res, 200, { ok: true, service: "tradobot-collector", jobs: Object.keys(jobs).length, pollMs: POLL_MS });
+    if (url.pathname === "/" || url.pathname === "/health") return send(res, 200, { ok: true, service: "quantexpro-collector", jobs: Object.keys(jobs).length, pollMs: POLL_MS });
 
     if (parts[0] === "jobs" && parts.length === 1) {
       if (req.method === "GET") return send(res, 200, { jobs: Object.values(jobs).map(summary) });

@@ -55,7 +55,7 @@ export function StrategyBuilderPage() {
 
   const mql5 = useMemo(() => {
     const p = bestParams || {};
-    return `// EA généré par TradoBot Quant v5 — ${strat?.name || "Strategy"}
+    return `// EA généré par QuantEXPro — ${strat?.name || "Strategy"}
 // Symbole : ${symbol}
 input int    MagicNumber   = 5000;
 input double SL_ATR_Mult   = ${p.slAtr ?? 2};
