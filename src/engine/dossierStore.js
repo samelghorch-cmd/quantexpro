@@ -6,6 +6,16 @@ import { idbPut, idbGet, idbAll, idbDelete, idbClear, DOSSIERS } from "./dataSto
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+// File d'écriture : toutes les opérations lecture-modification-écriture sont sérialisées,
+// sinon deux outils écrivant en même temps (ex. Forward Test + Reco) se perdraient mutuellement
+// leurs mises à jour (lost update).
+let writeChain = Promise.resolve();
+function serialized(fn) {
+  const p = writeChain.then(fn, fn);
+  writeChain = p.catch(() => {});
+  return p;
+}
+
 // Lettre A-F dérivée du score Reco Finale (0-100) et du verdict.
 export function gradeLetter(score, verdict) {
   const v = String(verdict || "").toUpperCase();
@@ -43,46 +53,54 @@ export async function listDossiers() {
 }
 export async function deleteDossier(id) { return idbDelete(id, DOSSIERS); }
 export async function clearDossiers() { return idbClear(DOSSIERS); }
-export async function updateDossier(id, patch) {
-  const d = await getDossier(id);
-  if (!d) return null;
-  const rec = { ...d, ...patch, updatedAt: Date.now() };
-  await idbPut(rec, DOSSIERS);
-  return rec;
+export function updateDossier(id, patch) {
+  return serialized(async () => {
+    const d = await getDossier(id);
+    if (!d) return null;
+    const rec = { ...d, ...patch, updatedAt: Date.now() };
+    await idbPut(rec, DOSSIERS);
+    return rec;
+  });
 }
 
 // Rattache le résultat COMPLET d'un outil au dossier (aucune perte entre outils).
 // stageKey : "backtest" | "fao" | "postFao" | "quantOpt" | "validator" | "reco" | "geneticOptim" | …
-export async function attachStage(dossierId, stageKey, toolLabel, fullResult) {
-  const d = await getDossier(dossierId);
-  if (!d) return null;
-  const stages = { ...(d.stages || {}), [stageKey]: { ranAt: Date.now(), tool: toolLabel, ...fullResult } };
-  const toolsApplied = Array.from(new Set([...(d.toolsApplied || []), toolLabel]));
-  const rec = { ...d, stages, toolsApplied, updatedAt: Date.now() };
-  await idbPut(rec, DOSSIERS);
-  return rec;
+export function attachStage(dossierId, stageKey, toolLabel, fullResult) {
+  return serialized(async () => {
+    const d = await getDossier(dossierId);
+    if (!d) return null;
+    const stages = { ...(d.stages || {}), [stageKey]: { ranAt: Date.now(), tool: toolLabel, ...fullResult } };
+    const toolsApplied = Array.from(new Set([...(d.toolsApplied || []), toolLabel]));
+    const rec = { ...d, stages, toolsApplied, updatedAt: Date.now() };
+    await idbPut(rec, DOSSIERS);
+    return rec;
+  });
 }
 
 // Fige la note issue de la Reco Finale + lettre A-F.
-export async function setGrade(dossierId, { verdict, score, components } = {}) {
-  const d = await getDossier(dossierId);
-  if (!d) return null;
-  const grade = { verdict, score, letter: gradeLetter(score, verdict), components: components || [], gradedAt: Date.now() };
-  const rec = { ...d, grade, updatedAt: Date.now() };
-  await idbPut(rec, DOSSIERS);
-  return rec;
+export function setGrade(dossierId, { verdict, score, components } = {}) {
+  return serialized(async () => {
+    const d = await getDossier(dossierId);
+    if (!d) return null;
+    const grade = { verdict, score, letter: gradeLetter(score, verdict), components: components || [], gradedAt: Date.now() };
+    const rec = { ...d, grade, updatedAt: Date.now() };
+    await idbPut(rec, DOSSIERS);
+    return rec;
+  });
 }
 
 // Ajoute / met à jour une session de démo live (data accumulée au fil de l'eau).
-export async function upsertDemoSession(dossierId, session) {
-  const d = await getDossier(dossierId);
-  if (!d) return null;
-  const sessions = [...(d.demoSessions || [])];
-  const idx = session.id ? sessions.findIndex((s) => s.id === session.id) : -1;
-  const rec2 = { id: session.id || uid(), updatedAt: Date.now(), ...session };
-  if (idx >= 0) sessions[idx] = { ...sessions[idx], ...rec2 };
-  else sessions.push(rec2);
-  const rec = { ...d, demoSessions: sessions, updatedAt: Date.now() };
-  await idbPut(rec, DOSSIERS);
-  return rec2.id;
+export function upsertDemoSession(dossierId, session) {
+  return serialized(async () => {
+    const d = await getDossier(dossierId);
+    if (!d) return null;
+    const sessions = [...(d.demoSessions || [])];
+    const idx = session.id ? sessions.findIndex((s) => s.id === session.id) : -1;
+    const rec2 = { id: session.id || uid(), updatedAt: Date.now(), ...session };
+    if (idx >= 0) sessions[idx] = { ...sessions[idx], ...rec2 };
+    else sessions.push(rec2);
+    const rec = { ...d, demoSessions: sessions, updatedAt: Date.now() };
+    await idbPut(rec, DOSSIERS);
+    return rec2.id;
+  });
 }

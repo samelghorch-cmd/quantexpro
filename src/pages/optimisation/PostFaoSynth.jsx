@@ -7,7 +7,7 @@ import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function PostFaoSynthPage() {
-  const { bars, ctx, pipeline, setPipe, log } = usePipeline();
+  const { bars, ctx, pipeline, setPipe, log, attachToActive } = usePipeline();
   const [busy, setBusy] = useState(false);
   const fao = pipeline.faoResults;
 
@@ -18,9 +18,12 @@ export function PostFaoSynthPage() {
       const res = runPostFAO(fao, bars, ctx, fao.strat, 100000);
       setPipe({ postFaoTop10: res });
       log("Post-FAO", `Top ${res.ranked.length} rescalé — best score ${res.best?.score100?.toFixed(0)}`);
+      // Rattache le Top rescalé au dossier actif (aucune perte entre outils).
+      attachToActive("postFao", "Post-FAO Synth", { best: res.best, ranked: res.ranked },
+        { name: fao.strat?.name, strategyId: fao.strat?.id, params: res.best?.params });
       setBusy(false);
     }, 20);
-  }, [fao, bars, ctx, setPipe, log]);
+  }, [fao, bars, ctx, setPipe, log, attachToActive]);
 
   const post = pipeline.postFaoTop10;
   const columns = [

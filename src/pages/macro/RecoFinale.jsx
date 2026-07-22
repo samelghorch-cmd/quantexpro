@@ -22,9 +22,10 @@ export function RecoFinalePage() {
     setReco(res);
     setPipe({ recoFinale: res });
     log("Reco Finale", `Verdict ${res.verdict} — score ${res.finalScore.toFixed(0)}`);
-    // Rattache l'étape + FIGE la note (verdict + score + lettre A-F) dans le dossier actif.
-    attachToActive("reco", "Reco Finale", { nTrials, ...res });
-    gradeActive({ verdict: res.verdict, score: res.finalScore, components: res.components });
+    // Rattache l'étape PUIS fige la note — séquencé : les deux écritures lisent/écrivent le même
+    // dossier, en parallèle la seconde écraserait la première (lost update).
+    attachToActive("reco", "Reco Finale", { nTrials, ...res })
+      .then(() => gradeActive({ verdict: res.verdict, score: res.finalScore, components: res.components }));
   }, [pipeline, setPipe, log, attachToActive, gradeActive]);
 
   const hasInputs = pipeline.lastBacktest || pipeline.quantOptimizerBest || pipeline.postFaoTop10;

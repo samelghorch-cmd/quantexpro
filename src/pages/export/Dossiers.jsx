@@ -28,6 +28,10 @@ function StageSummary({ k, s }) {
       ...(s.gates || []).map((g, i) => <Badge key={i} color={verdictColor(g.verdict)}>{g.name}: {g.verdict}</Badge>));
   } else if (k === "reco") {
     items.push(<Badge color={verdictColor(s.verdict)}>{s.verdict}</Badge>, line("Score", fmt(s.finalScore, 0)), line("Essais", s.nTrials));
+  } else if (k === "postFao") {
+    items.push(line("Top", s.ranked?.length ?? "—"), line("Best score", fmt(s.best?.score100, 0)), line("PF", fmt(s.best?.profitFactor)));
+  } else if (k === "quantOpt") {
+    items.push(line("Essais TPE", s.nTrials), line("Rejetés", s.rejected), line("Score Quant", fmt(s.best?.score, 0)));
   } else {
     items.push(line("—", ""));
   }

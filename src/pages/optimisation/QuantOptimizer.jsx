@@ -9,7 +9,7 @@ import { LineChart } from "../../components/charts/LineChart.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function QuantOptimizerPage() {
-  const { bars, ctx, library, symbol, pipeline, setPipe, log } = usePipeline();
+  const { bars, ctx, library, symbol, pipeline, setPipe, log, attachToActive } = usePipeline();
   const [stratId, setStratId] = useState(pipeline.faoResults?.strat?.id || pipeline.selectedStrategyId || 3);
   const [nTrials, setNTrials] = useState(60);
   const [busy, setBusy] = useState(false);
@@ -23,9 +23,12 @@ export function QuantOptimizerPage() {
       const res = runQuantOptimizer(bars, ctx, strat, { nTrials, contract: symbol, baseline });
       setPipe({ quantOptimizerBest: { ...res, strat } });
       log("Quant Optimizer", `${nTrials} essais TPE — best Score Quant ${res.best.score.toFixed(0)} (${res.rejected} rejetés)`);
+      // Rattache l'optimisation TPE au dossier actif (aucune perte entre outils).
+      attachToActive("quantOpt", "Quant Optimizer", { nTrials, rejected: res.rejected, best: res.best },
+        { name: strat.name, strategyId: strat.id, params: res.best?.params });
       setBusy(false);
     }, 20);
-  }, [library, stratId, nTrials, bars, ctx, symbol, pipeline, setPipe, log]);
+  }, [library, stratId, nTrials, bars, ctx, symbol, pipeline, setPipe, log, attachToActive]);
 
   const qo = pipeline.quantOptimizerBest;
   const columns = [
