@@ -4,9 +4,10 @@
 // Le dossier « actif » reçoit automatiquement le résultat de chaque outil lancé.
 import { useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier } from "../../engine/dossierStore.js";
+import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, updateDossier, upsertDemoSession } from "../../engine/dossierStore.js";
+import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.js";
 import { downloadJSON } from "../../engine/exportUtils.js";
-import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 
 const gradeColor = (letter) => ({ A: T.green, B: T.green, C: T.yellow, D: T.orange, E: T.red, F: T.red }[letter] || T.textDim);
@@ -34,6 +35,95 @@ function StageSummary({ k, s }) {
 }
 
 const STAGE_LABELS = { backtest: "Backtest", fao: "Full Auto Optim", postFao: "Post-FAO", quantOpt: "Quant Optimizer", validator: "Validator", reco: "Reco Finale", geneticOptim: "Optim Génétique" };
+
+const TICKERS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT"];
+const INTERVALS = ["5m", "15m", "1h", "4h", "1d"];
+
+// Panneau 24/7 : lance la stratégie du dossier sur le collecteur cloud et synchronise la data collectée.
+function Cloud24Panel({ d, refresh }) {
+  const [url, setUrl] = useState(getCollectorUrl());
+  const [health, setHealth] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [ticker, setTicker] = useState("BTCUSDT");
+  const [interval, setIntervalV] = useState("1h");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const probe = useCallback(async () => {
+    if (!getCollectorUrl()) { setHealth(null); setJobs([]); return; }
+    try { setHealth(await collectorHealth()); setJobs(await listJobs()); }
+    catch (e) { setHealth({ error: String(e.message || e) }); setJobs([]); }
+  }, []);
+  useEffect(() => { probe(); }, [probe]);
+
+  const job = jobs.find((j) => j.id === d.cloudJobId);
+
+  const launch = async () => {
+    setBusy(true); setMsg("");
+    try {
+      const j = await createJob({ name: d.name, strategyId: d.strategyId, ticker, interval, params: d.params });
+      await updateDossier(d.id, { cloudJobId: j.id });
+      setMsg("✓ Lancé en 24/7"); await probe(); await refresh();
+    } catch (e) { setMsg("⚠️ " + (e.message || e)); }
+    setBusy(false);
+  };
+  const sync = async () => {
+    setBusy(true); setMsg("");
+    try {
+      const full = await getJob(d.cloudJobId);
+      const r = full.result || {};
+      await upsertDemoSession(d.id, { id: `cloud-${d.cloudJobId}`, source: "24/7", startedAt: full.createdAt, symbol: full.ticker, tf: full.interval,
+        snapshots: (r.equityCurve || []).map((e, i) => ({ i, equity: e })), trades: r.trades || [],
+        finalMetrics: { sessionPnL: r.totalPnL, totalPnL: r.totalPnL, nTrades: r.nTrades, winRate: r.winRate, profitFactor: r.profitFactor, sharpe: r.sharpe } });
+      setMsg(`✓ Synchronisé (${(r.trades || []).length} trades · ${(r.equityCurve || []).length} pts)`); await refresh();
+    } catch (e) { setMsg("⚠️ " + (e.message || e)); }
+    setBusy(false);
+  };
+  const stop = async () => {
+    setBusy(true); setMsg("");
+    try { await deleteJob(d.cloudJobId); } catch { /* déjà arrêté */ }
+    await updateDossier(d.id, { cloudJobId: null });
+    await probe(); await refresh(); setBusy(false);
+  };
+
+  return (
+    <Panel title="24/7 Cloud — collecte permanente (démo réelle)" right={health && !health.error ? <Badge color={T.green}>● connecté</Badge> : <Badge color={T.textFaint}>○ non connecté</Badge>}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…up.railway.app" style={{ flex: 1, minWidth: 220, background: T.bg0, color: T.text, border: `1px solid ${T.border}`, padding: "7px 9px", borderRadius: 6, fontSize: 12 }} />
+        <Button onClick={() => { setCollectorUrl(url); probe(); }}>Enregistrer & tester</Button>
+      </div>
+      {health?.error && <div style={{ fontSize: 11, color: T.red, marginBottom: 8 }}>⚠️ {health.error}</div>}
+      {!getCollectorUrl() ? (
+        <div style={{ fontSize: 11.5, color: T.textFaint, lineHeight: 1.6 }}>Déploie le collecteur (voir <code style={{ color: T.orange }}>collector/README.md</code> — Railway), puis colle son URL ici. Il fera tourner la stratégie de ce dossier <b>en continu, même app fermée</b> ; récupère la data avec « Synchroniser ».</div>
+      ) : !job ? (
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 3 }}>PAIRE (Binance)</div><Select value={ticker} onChange={setTicker} options={TICKERS} /></div>
+          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 3 }}>TIMEFRAME</div><Select value={interval} onChange={setIntervalV} options={INTERVALS} /></div>
+          <Button primary onClick={launch} disabled={busy || d.strategyId == null}>{busy ? "…" : "🚀 Lancer en 24/7"}</Button>
+          {d.strategyId == null && <span style={{ fontSize: 10.5, color: T.textFaint }}>Ce dossier n'a pas de stratégie — lance d'abord un backtest.</span>}
+        </div>
+      ) : (
+        <div>
+          <MetricGrid min={120}>
+            <MetricCard label="Job" value={job.name} sub={`${job.ticker} · ${job.interval}`} />
+            <MetricCard label="Collectes" value={job.polls} sub={`${job.bars} bougies`} />
+            <MetricCard label="Trades" value={job.metrics?.nTrades ?? "—"} />
+            <MetricCard label="PnL démo" value={fmtUsd(job.metrics?.totalPnL ?? 0)} color={(job.metrics?.totalPnL ?? 0) >= 0 ? T.green : T.red} />
+            <MetricCard label="Sharpe" value={fmt(job.metrics?.sharpe)} />
+            <MetricCard label="Mise à jour" value={job.updatedAt ? new Date(job.updatedAt).toLocaleTimeString("fr-FR") : "—"} />
+          </MetricGrid>
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <Button primary onClick={sync} disabled={busy}>{busy ? "…" : "⤓ Synchroniser dans le dossier"}</Button>
+            <Button onClick={stop} disabled={busy}>⏹ Arrêter</Button>
+          </div>
+          {job.lastError && <div style={{ fontSize: 10.5, color: T.red, marginTop: 6 }}>⚠️ {job.lastError}</div>}
+        </div>
+      )}
+      {msg && <div style={{ fontSize: 11, color: msg.startsWith("✓") ? T.green : T.red, marginTop: 8 }}>{msg}</div>}
+      <div style={{ marginTop: 8, fontSize: 10, color: T.textFaint }}>Aucun ordre réel, aucune clé — klines publiques Binance, 100 % paper-trading.</div>
+    </Panel>
+  );
+}
 
 export function DossiersPage() {
   const { activeDossierId, setActiveDossier } = usePipeline();
@@ -153,6 +243,8 @@ export function DossiersPage() {
               </MetricGrid>
             )}
           </Panel>
+
+          <Cloud24Panel d={d} refresh={refresh} />
         </div>
       )}
     </div>
