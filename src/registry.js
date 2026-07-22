@@ -102,6 +102,7 @@ export const SECTIONS = [
       { id: "dataManager", label: "🗄️ Data Manager" },
       { id: "quantToolboxTool", label: "Quant Toolbox" },
       { id: "vpin", label: "VPIN" },
+      { id: "vpinLive", label: "🔴 VPIN Live Cockpit" },
       { id: "analyseQuant", label: "Analyse Quant" },
       { id: "onchain", label: "Onchain" },
       { id: "logs", label: "Logs" },
