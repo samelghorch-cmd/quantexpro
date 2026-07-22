@@ -1,9 +1,10 @@
 // Reco Finale — décision finale scorée agrégeant tous les étages du pipeline.
-import { minTRL, qualityLZ } from "./backtestMetrics.js";
+import { minTRL, qualityLZ, deflatedSharpe } from "./backtestMetrics.js";
 import { quantScore } from "./quantOptimizer.js";
 
 // Combine les scores disponibles ; chaque composante manquante est neutre (50).
-export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult } = {}) {
+// nTrials = nombre de configurations testées pour aboutir à cette stratégie (déflation anti-overfitting).
+export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult, nTrials = 1 } = {}) {
   const components = [];
 
   // 1. Composite Post-FAO (0-100)
@@ -46,6 +47,17 @@ export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult
     components.push({ name: "Quality LZ (complexité)", value: lzScore, weight: 0.15 });
   }
 
+  // 6. Deflated Sharpe Ratio — anti-overfitting : déflate le Sharpe par le nombre d'essais.
+  let dsrScore = null;
+  if (backtestResult) {
+    const pnls = backtestResult.trades.map((t) => t.pnl);
+    const { dsr } = deflatedSharpe(pnls, nTrials || 1);
+    if (!Number.isNaN(dsr)) {
+      dsrScore = dsr * 100;
+      components.push({ name: "Deflated Sharpe (anti-overfit)", value: dsrScore, weight: 0.18, extra: `${(nTrials || 1).toLocaleString("fr-FR")} essais` });
+    }
+  }
+
   const totalW = components.reduce((s, c) => s + c.weight, 0) || 1;
   const finalScore = components.reduce((s, c) => s + c.value * c.weight, 0) / totalW;
 
@@ -56,6 +68,8 @@ export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult
 
   // Blocage dur si le validator a dit NO-GO
   if (validator?.verdict === "NO-GO" && verdict === "GO") verdict = "REWORK";
+  // Blocage dur anti-overfitting : un DSR faible (< 50 %) interdit le GO même si le score global passe.
+  if (dsrScore != null && dsrScore < 50 && verdict === "GO") verdict = "REWORK";
 
   return { finalScore, verdict, components };
 }

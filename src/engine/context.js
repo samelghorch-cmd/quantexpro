@@ -85,7 +85,7 @@ export function buildContext(bars) {
   ctx.kurt50 = IND.kurt(close, 50);
   ctx.vpin = IND.vpin(close, volume, 5000, 20);
   // VPIN réel (BVC + CDF de toxicité) — causal : la CDF ne regarde que les buckets passés.
-  const _vp = computeVPIN(bars, { buckets: 200, window: 50, method: "bvc", cdfWindow: 250 });
+  const _vp = computeVPIN(bars, { buckets: 200, window: 50, method: "auto", cdfWindow: 250 });
   ctx.vpinBvc = _vp.vpinByBar;   // VPIN par barre (Bulk Volume Classification)
   ctx.vpinCdf = _vp.cdfByBar;    // percentile de toxicité ∈ [0,1] — le signal opérationnel
   ctx.tsi = IND.momentum(close, 25);

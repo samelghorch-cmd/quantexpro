@@ -48,6 +48,8 @@ export function aggregateBars(bars, factor) {
       l: Math.min(...chunk.map(b => b.l)),
       c: chunk[chunk.length - 1].c,
       v: chunk.reduce((s, b) => s + b.v, 0),
+      // Préserve le volume acheteur agressif (classification réelle) s'il est présent.
+      ...(chunk[0].vBuy !== undefined ? { vBuy: chunk.reduce((s, b) => s + (b.vBuy || 0), 0) } : {}),
     });
   }
   return out;

@@ -114,7 +114,8 @@ async function fetchBinance(ticker, tf) {
     endTime = data[0][0] - 1;
     if (data.length < 1000) break;
   }
-  return all.map((k) => ({ t: k[0], o: +k[1], h: +k[2], l: +k[3], c: +k[4], v: +k[5] }));
+  // k[9] = taker buy base volume (achats agressifs) → classification order-flow RÉELLE (pas d'estimation).
+  return all.map((k) => ({ t: k[0], o: +k[1], h: +k[2], l: +k[3], c: +k[4], v: +k[5], vBuy: +k[9] }));
 }
 
 async function fetchYahoo(ticker, tf) {

@@ -11,11 +11,13 @@ export function RecoFinalePage() {
   const [reco, setReco] = useState(pipeline.recoFinale);
 
   const run = useCallback(() => {
+    const nTrials = pipeline.faoResults?.attempts ?? pipeline.postFaoTop10?.length ?? 1;
     const res = computeRecoFinale({
       postFao: pipeline.postFaoTop10,
       quantOpt: pipeline.quantOptimizerBest,
       validator: pipeline.validatorVerdict,
       backtestResult: pipeline.quantOptimizerBest?.best?.res || pipeline.lastBacktest?.res,
+      nTrials,
     });
     setReco(res);
     setPipe({ recoFinale: res });
@@ -32,7 +34,7 @@ export function RecoFinalePage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <Panel title="Décision finale scorée" right={<div style={{ display: "flex", gap: 10, alignItems: "center" }}><SimBadge /><Button primary onClick={run}>▶ Calculer la Reco</Button></div>}>
-            <div style={{ fontSize: 11, color: T.textDim }}>Agrège : Composite Post-FAO · Score Quant (5 modules ML) · Robustesse Validator · MinTRL (Bailey·LdP) · Quality LZ.</div>
+            <div style={{ fontSize: 11, color: T.textDim }}>Agrège : Composite Post-FAO · Score Quant (5 modules ML) · Robustesse Validator · MinTRL (Bailey·LdP) · Quality LZ · Deflated Sharpe (anti-overfit). Un DSR &lt; 50 % interdit le GO.</div>
           </Panel>
 
           {reco && (

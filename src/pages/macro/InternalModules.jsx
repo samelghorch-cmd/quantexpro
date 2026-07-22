@@ -8,6 +8,8 @@ import { generateBasket, basketCorrelation } from "../../engine/multiAssetSynthe
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { generateOrderBook } from "../../engine/microstructure.js";
 import { computeVPIN } from "../../engine/vpin.js";
+import { findSymbol } from "../../engine/marketData.js";
+import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
 import { CorrelationMatrix } from "../../components/charts/CorrelationMatrix.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
@@ -194,15 +196,18 @@ export function RegimeClockPage() {
 }
 
 export function MicrostructureLivePage() {
-  const { bars, symbol, CONTRACTS } = usePipeline();
+  const { bars, symbol, CONTRACTS, assetKey } = usePipeline();
+  const liveSym = findSymbol(assetKey);
+  const liveTicker = liveSym?.provider === "binance" ? liveSym.ticker : null;
   const [tick, setTick] = useState(0);
   const ob = useMemo(() => bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol].tick, 12, bars.length + tick) : null, [bars, symbol, CONTRACTS, tick]);
-  const vp = useMemo(() => computeVPIN(bars, { buckets: 200, window: 50, method: "bvc", cdfWindow: 250 }), [bars]);
+  const vp = useMemo(() => computeVPIN(bars, { buckets: 200, window: 50, method: "auto", cdfWindow: 250 }), [bars]);
   if (!ob) return null;
   const totalBid = ob.bids.reduce((s, b) => s + b.size, 0), totalAsk = ob.asks.reduce((s, a) => s + a.size, 0);
   const imbalance = ((totalBid - totalAsk) / (totalBid + totalAsk)) * 100;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14, alignItems: "start" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14, alignItems: "start" }}>
       <Panel title="Microstructure Live (order book synthétique)" right={<div style={{ display: "flex", gap: 8 }}><SimBadge /><Button onClick={() => setTick((t) => t + 1)}>↻ Rafraîchir</Button></div>}>
         <div style={{ fontFamily: T.mono, fontSize: 12 }}>
           {ob.asks.slice().reverse().map((a, i) => {
@@ -233,6 +238,9 @@ export function MicrostructureLivePage() {
           <div style={{ marginTop: 6, fontSize: 10, color: T.textFaint, lineHeight: 1.5 }}>Signal réel (barres du marché) : au-delà du 90ᵉ percentile, le flux est toxique — risque de retournement violent / configuration d'avant-krach.</div>
         </Panel>
       </div>
+      </div>
+
+      <LiveVpinPanel ticker={liveTicker} label={liveSym?.label} />
     </div>
   );
 }

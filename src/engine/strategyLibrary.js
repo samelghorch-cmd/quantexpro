@@ -452,6 +452,8 @@ export function buildStrategyLibrary() {
     const vol = ctx.volume[i] > (ctx.volume[i-1] + ctx.volume[i-2]) / 2 * 1.3;
     return { long: lw > 2 * body && vol, short: uw > 2 * body && vol };
   });
+  // Fade de toxicité VPIN : flux toxique (CDF > 90e pct) + RSI extrême → on fade.
+  add(117, "VPIN Toxicity Fade",     "f", STRAT_FAMILIES.vpinSpike());
 
   // 69-86 · Volatilité + Statistique
   add(69, "BB inside KC Squeeze",    "e", STRAT_FAMILIES.squeeze(20, 2, 1.5));

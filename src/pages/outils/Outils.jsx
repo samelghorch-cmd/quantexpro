@@ -3,17 +3,22 @@ import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { IND } from "../../engine/indicators.js";
 import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.js";
+import { findSymbol } from "../../engine/marketData.js";
+import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, ScoreGauge, Select, fmt, fmtPct } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function VPINPage() {
-  const { bars, symbol } = usePipeline();
-  const [method, setMethod] = useState("bvc");
+  const { bars, symbol, assetKey } = usePipeline();
+  const liveSym = findSymbol(assetKey);
+  const liveTicker = liveSym?.provider === "binance" ? liveSym.ticker : null;
+  const [method, setMethod] = useState("auto");
   const [presetSel, setPresetSel] = useState("auto");
   const cls = presetSel === "auto" ? resolveVpinClass(symbol) : presetSel;
   const preset = VPIN_PRESETS[cls] || VPIN_PRESETS.synthetic;
   const v = useMemo(() => computeVPIN(bars, { buckets: preset.buckets, window: preset.window, sigmaWindow: preset.sigmaWindow, method, cdfWindow: 250 }), [bars, method, preset.buckets, preset.window, preset.sigmaWindow]);
+  const methodLabel = v.method === "real" ? "Classification réelle (Binance)" : v.method === "tick" ? "Tick-rule" : "Bulk Volume Classification";
 
   const cdfPct = Number.isNaN(v.lastCDF) ? NaN : v.lastCDF * 100;
   const tox = v.tox;
@@ -27,7 +32,7 @@ export function VPINPage() {
         <div style={{ flex: 1, minWidth: 220 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <span style={{ fontSize: 20, fontWeight: 800, color: tox.color, fontFamily: T.mono, letterSpacing: 0.5 }}>{tox.label}</span>
-            <Badge color={T.blue}>{method === "bvc" ? "Bulk Volume Classification" : "Tick-rule"}</Badge>
+            <Badge color={v.method === "real" ? T.green : T.blue}>{methodLabel}</Badge>
           </div>
           <div style={{ fontSize: 12.5, color: T.textDim, lineHeight: 1.5 }}>
             Toxicité du flux d'ordres au percentile <b style={{ color: tox.color }}>{Number.isNaN(cdfPct) ? "—" : cdfPct.toFixed(0)}%</b> de sa propre distribution historique.
@@ -52,7 +57,7 @@ export function VPINPage() {
               { value: "energy", label: "Énergie" },
             ]} /></div>
           <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 3 }}>MÉTHODE DE CLASSIFICATION</div>
-            <Select value={method} onChange={setMethod} options={[{ value: "bvc", label: "Bulk Volume Classification (papier)" }, { value: "tick", label: "Tick-rule (grossier)" }]} /></div>
+            <Select value={method} onChange={setMethod} options={[{ value: "auto", label: "Auto (réel si dispo)" }, { value: "bvc", label: "Bulk Volume Classification (papier)" }, { value: "tick", label: "Tick-rule (grossier)" }]} /></div>
           <div style={{ fontSize: 10.5, color: T.textFaint, maxWidth: 260, lineHeight: 1.4 }}>{preset.label} · fenêtre {preset.window} · σ {preset.sigmaWindow}</div>
         </div>
         <MetricGrid min={140}>
@@ -77,6 +82,8 @@ export function VPINPage() {
           <div style={{ marginTop: 4, fontSize: 10, color: T.textFaint }}>Orange = CDF · jaune = 0,90 (élevé) · rouge = 0,99 (toxique)</div>
         </Panel>
       </div>
+
+      <LiveVpinPanel ticker={liveTicker} label={liveSym?.label} window={preset.window} />
     </div>
   );
 }

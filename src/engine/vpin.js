@@ -57,12 +57,21 @@ function rollingStd(deltas, window) {
   return out;
 }
 
-// Fraction d'ACHAT de chaque barre selon la méthode choisie.
+// Fraction d'ACHAT de chaque barre selon la méthode.
+// real : V_buy = vBuy / V   (volume acheteur agressif RÉEL — ex. taker-buy Binance, aucune estimation)
 // bvc  : V_buy = V · Φ(ΔP / σ_ΔP)   (Bulk Volume Classification, méthode du papier)
-// tick : V_buy = V si ΔP>0, 0 si ΔP<0, V/2 si nul  (tick-rule, historique/comparaison)
-export function classifyBuyFraction(closes, method = "bvc", sigmaWindow = 50) {
-  const n = closes.length;
+// tick : V_buy = V si ΔP>0, 0 si ΔP<0, V/2 si nul  (tick-rule, grossier)
+export function classifyBuyFraction(bars, method = "bvc", sigmaWindow = 50) {
+  const n = bars.length;
   const frac = new Array(n).fill(0.5);
+  if (method === "real") {
+    for (let i = 0; i < n; i++) {
+      const v = bars[i].v, vb = bars[i].vBuy;
+      frac[i] = (v > 0 && vb !== undefined) ? Math.max(0, Math.min(1, vb / v)) : 0.5;
+    }
+    return frac;
+  }
+  const closes = bars.map((b) => b.c);
   const deltas = new Array(n).fill(0);
   for (let i = 1; i < n; i++) deltas[i] = closes[i] - closes[i - 1];
   if (method === "tick") {
@@ -75,6 +84,11 @@ export function classifyBuyFraction(closes, method = "bvc", sigmaWindow = 50) {
     frac[i] = !s || Number.isNaN(s) ? 0.5 : normCdf(deltas[i] / s);
   }
   return frac;
+}
+
+// Vrai si les barres portent un volume acheteur réel exploitable (ex. crypto Binance).
+export function hasRealFlow(bars) {
+  return Array.isArray(bars) && bars.some((b) => b && b.vBuy !== undefined && b.v > 0);
 }
 
 // Percentile empirique glissant de `value` dans l'historique `hist` (buckets précédents).
@@ -107,17 +121,18 @@ export function toxicityLevel(cdf) {
  * @returns { vpinByBar, cdfByBar, buckets, lastVPIN, lastCDF, tox, method, bucketVolume, avgVPIN, maxVPIN }
  */
 export function computeVPIN(bars, opt = {}) {
-  const { buckets: nBucketsTarget = 200, window = 50, method = "bvc", sigmaWindow = 50, cdfWindow = 250 } = opt;
+  const { buckets: nBucketsTarget = 200, window = 50, method = "auto", sigmaWindow = 50, cdfWindow = 250 } = opt;
   const n = bars?.length || 0;
-  const empty = { vpinByBar: new Array(n).fill(NaN), cdfByBar: new Array(n).fill(NaN), buckets: [], lastVPIN: NaN, lastCDF: NaN, tox: toxicityLevel(NaN), method, bucketVolume: 0, avgVPIN: NaN, maxVPIN: NaN };
+  // "auto" → classification réelle si les barres portent un volume acheteur, sinon BVC.
+  const effMethod = method === "auto" ? (hasRealFlow(bars) ? "real" : "bvc") : method;
+  const empty = { vpinByBar: new Array(n).fill(NaN), cdfByBar: new Array(n).fill(NaN), buckets: [], lastVPIN: NaN, lastCDF: NaN, tox: toxicityLevel(NaN), method: effMethod, bucketVolume: 0, avgVPIN: NaN, maxVPIN: NaN };
   if (n < window + 5) return empty;
 
-  const closes = bars.map((b) => b.c);
   const vols = bars.map((b) => Math.max(0, b.v || 0));
   const totalV = vols.reduce((a, b) => a + b, 0);
   if (totalV <= 0) return empty;
 
-  const buyFrac = classifyBuyFraction(closes, method, sigmaWindow);
+  const buyFrac = classifyBuyFraction(bars, effMethod, sigmaWindow);
   const bucketVolume = totalV / nBucketsTarget;
 
   const vpinByBar = new Array(n).fill(NaN);
@@ -171,7 +186,7 @@ export function computeVPIN(bars, opt = {}) {
   return {
     vpinByBar, cdfByBar, buckets: bucketList,
     lastVPIN, lastCDF, tox: toxicityLevel(lastCDF),
-    method, bucketVolume,
+    method: effMethod, bucketVolume,
     avgVPIN: valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : NaN,
     maxVPIN: valid.length ? Math.max(...valid) : NaN,
   };
