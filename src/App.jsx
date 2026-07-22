@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Component } from "react";
 import { PipelineProvider, usePipeline } from "./state/PipelineContext.jsx";
 import { Sidebar } from "./components/layout/Sidebar.jsx";
 import { TickerBar } from "./components/layout/TickerBar.jsx";
@@ -6,6 +6,24 @@ import { T } from "./components/shared/theme.js";
 import { ALL_MODULES } from "./registry.js";
 import { PAGES } from "./pages/index.jsx";
 import { GlobalControls } from "./components/layout/GlobalControls.jsx";
+
+// Garde-fou : isole les erreurs d'UN module pour que le reste de la plateforme ne plante jamais.
+class ModuleErrorBoundary extends Component {
+  constructor(p) { super(p); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 30 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: T.red }}>⚠️ Ce module a rencontré une erreur</div>
+          <div style={{ marginTop: 8, fontSize: 12.5, color: T.textDim, lineHeight: 1.6 }}>Le reste de la plateforme fonctionne normalement — change de module, ou recharge la page. Détail technique :</div>
+          <pre style={{ marginTop: 10, fontSize: 11, color: T.textFaint, background: T.panelAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, overflow: "auto", whiteSpace: "pre-wrap", maxHeight: 220 }}>{String(this.state.error?.stack || this.state.error?.message || this.state.error)}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function App() {
   return (
@@ -35,7 +53,9 @@ function Shell() {
             <GlobalControls />
           </div>
           <div style={{ flex: 1, overflow: "auto", padding: 18 }}>
-            {Page ? <Page /> : <div style={{ color: T.textDim }}>Module introuvable.</div>}
+            <ModuleErrorBoundary key={activeModule}>
+              {Page ? <Page /> : <div style={{ color: T.textDim }}>Module introuvable.</div>}
+            </ModuleErrorBoundary>
           </div>
         </div>
       </div>
