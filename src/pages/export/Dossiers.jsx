@@ -41,7 +41,7 @@ const INTERVALS = ["5m", "15m", "1h", "4h", "1d"];
 
 // Panneau 24/7 : lance la stratégie du dossier sur le collecteur cloud et synchronise la data collectée.
 function Cloud24Panel({ d, refresh }) {
-  const [url, setUrl] = useState(getCollectorUrl());
+  const [url, setUrl] = useState(getCollectorUrl() || "http://localhost:8787");
   const [health, setHealth] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [ticker, setTicker] = useState("BTCUSDT");
