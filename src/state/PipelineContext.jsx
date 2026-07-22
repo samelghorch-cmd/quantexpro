@@ -6,7 +6,7 @@ import { generateSyntheticCandles, aggregateBars } from "../engine/syntheticData
 import { buildContext } from "../engine/context.js";
 import { buildStrategyLibrary } from "../engine/strategyLibrary.js";
 import { fetchCandles } from "../engine/marketData.js";
-import { createDossier, getDossier, attachStage, setGrade as setDossierGrade, upsertDemoSession } from "../engine/dossierStore.js";
+import { createDossier, getDossier, updateDossier, attachStage, setGrade as setDossierGrade, upsertDemoSession } from "../engine/dossierStore.js";
 
 const Ctx = createContext(null);
 
@@ -92,10 +92,20 @@ export function PipelineProvider({ children }) {
 
   // Garantit un dossier actif (auto-création au 1er outil), puis rattache le résultat complet de l'outil.
   const ensureActiveDossier = useCallback(async ({ name, strategyId, params } = {}) => {
-    if (activeDossierId) { const d = await getDossier(activeDossierId).catch(() => null); if (d) return activeDossierId; }
-    const d = await createDossier({ name, strategyId, symbol, tf, dataMode, params });
-    setActiveDossier(d.id);
-    return d.id;
+    if (activeDossierId) {
+      const d = await getDossier(activeDossierId).catch(() => null);
+      if (d) {
+        // Réutilise le dossier actif SAUF si on backteste une stratégie différente (évite d'écraser le dossier d'une autre stratégie).
+        const matches = strategyId == null || d.strategyId == null || d.strategyId === strategyId;
+        if (matches) {
+          if (d.strategyId == null && strategyId != null) await updateDossier(activeDossierId, { strategyId, name: name || d.name }); // adopte une stratégie si le dossier était vierge
+          return activeDossierId;
+        }
+      }
+    }
+    const nd = await createDossier({ name, strategyId, symbol, tf, dataMode, params });
+    setActiveDossier(nd.id);
+    return nd.id;
   }, [activeDossierId, symbol, tf, dataMode, setActiveDossier]);
 
   const attachToActive = useCallback(async (stageKey, toolLabel, fullResult, meta = {}) => {
