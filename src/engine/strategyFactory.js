@@ -124,6 +124,7 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
   const allRefined = [];
   const perPair = [];
   let pairsDone = 0;
+  let rejectedByDsr = 0;
   const totalPairs = pairs.length;
 
   emit({ phase: "compute", label: `Analyse en cours sur ${nWorkers} cœurs…`, pct: 0, pairsDone, totalPairs });
@@ -139,7 +140,8 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
         const msg = e.data;
         if (msg.type === "pair-done") {
           allRefined.push(...msg.refined);
-          perPair.push({ key: msg.key, asset: msg.assetLabel, tf: msg.tfLabel, screened: msg.screenedCount, refinedCount: msg.refined.length });
+          rejectedByDsr += msg.rejectedByDsr || 0;
+          perPair.push({ key: msg.key, asset: msg.assetLabel, tf: msg.tfLabel, screened: msg.screenedCount, refinedCount: msg.refined.length, nTrials: msg.nTrials, rejectedByDsr: msg.rejectedByDsr || 0 });
           pairsDone++;
           emit({ phase: "compute", label: `${msg.assetLabel} ${msg.tfLabel} terminé`, pct: (pairsDone / totalPairs) * 100, pairsDone, totalPairs });
         } else if (msg.type === "batch-done") {
@@ -170,6 +172,13 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
     leaderboard: allRefined.slice(0, 60),
     bestByAsset: Object.values(bestByAsset).sort((a, b) => b.score - a.score),
     portfolio, perPair,
-    stats: { nVariants: allRefined.length, nPairs: pairs.length, nWorkers, covered: space.total, evaluated: pairs.length * (700 + topK * 54) },
+    stats: {
+      nVariants: allRefined.length, nPairs: pairs.length, nWorkers,
+      covered: space.total,
+      evaluated: pairs.length * (700 + topK * 54),
+      rejectedByDsr,
+      // nTrials typique par paire (screening + grille) — celui utilisé pour déflater le Sharpe.
+      nTrialsPerPair: allRefined[0]?.nTrials ?? (700 + 54),
+    },
   };
 }

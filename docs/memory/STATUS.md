@@ -11,12 +11,12 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **132** · backend **51** |
-| Commit HEAD | `bd8bbda` — P0 clôturé (MT5+RBAC+audit + Prompt Mode UI) |
-| CI GitHub | ✅ **VERTE** (`bd8bbda`) |
-| Déploiement | Render (API) + Neon (Postgres) ; bus opt-in ; LLM opt-in Ollama |
-| P0 | ✅ **A + B + C + D + E** clôturés |
-| Prochaine action | **P1** — DSR dans Usine, Anti-Library, Statistical Edge, stress portfolio |
+| Tests | JS **138** · backend **51** |
+| Commit HEAD | P1-DSR Usine (en cours de push) |
+| CI GitHub | ✅ verte au dernier P0 |
+| P0 | ✅ A–E clôturés |
+| P1 | 🔄 **P1-DSR** livré · reste Anti-Library, stress, TCA, tearsheet, Statistical Edge |
+| Prochaine action | **P1-ANT** — Anti-Library store + filtre Usine/FAO |
 
 ---
 
@@ -51,6 +51,7 @@
 | 2026-07-24 | **P0-E** : MT5 pull/ACK + RBAC + audit immuable + EA `QuantEXProBridge.mq5` |
 | 2026-07-24 | **UI Prompt Mode** : Strategy Engine → `/v1/strategy/from-prompt` |
 | 2026-07-24 | **P0 clôturé** — re-vérification zéro-erreur (JS 132, backend 51, ruff, mypy) |
+| 2026-07-24 | **P1-DSR** : DSR + nTrials dans Usine (filtre &lt;50 % avant leaderboard, colonne UI, 6 tests) → JS **138** |
 
 ---
 

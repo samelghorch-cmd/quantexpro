@@ -14,7 +14,7 @@
 | **Stack actuelle** | React 18 + Vite · JS · moteur `src/engine/*` · collector Node Railway |
 | **Cible institutionnelle** | Next.js/TS · Python + TimescaleDB · bus ZDL · VPS MT5 · Qwen local |
 | **Dev** | `npm run dev` → http://localhost:5173 |
-| **Tests** | `npm test` → **132 verts** · backend `pytest` → **51 verts** |
+| **Tests** | `npm test` → **138 verts** · backend `pytest` → **51 verts** |
 
 ---
 
@@ -54,8 +54,8 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 
 ## 5. Priorités actuelles (ordre strict)
 
-1. **Sprint 0 / P0** — ✅ A (moteur) · ✅ B (TimescaleDB) · ✅ C (bus ZDL) · ✅ D (LLM + UI Prompt Mode) · ✅ E (MT5 + RBAC/audit)  
-2. **P1** — DSR dans Usine · Anti-Library · Statistical Edge · stress portfolio · TCA · tearsheet  
+1. **Sprint 0 / P0** — ✅ A–E clôturés  
+2. **P1** — ✅ DSR dans Usine · reste : Anti-Library · Statistical Edge · stress portfolio · TCA · tearsheet  
 3. **P2** — L2 Binance · Dukascopy · export MQL5 · Labs UI  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.

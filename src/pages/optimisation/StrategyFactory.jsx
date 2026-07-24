@@ -67,6 +67,7 @@ export function StrategyFactoryPage() {
     { key: "params", label: "SL/TP/BE/Dir", render: (r) => `${r.params.slAtr}/${r.params.tpAtr || "—"}/${r.params.beAtr || "—"}/${r.params.direction[0].toUpperCase()}` },
     { key: "robust", label: "Robust.", align: "right", render: (r) => r.oos ? `${fmt(r.robustness, 0)}%` : "—", color: robustColor },
     { key: "isoos", label: "Sharpe IS→OOS", align: "right", render: (r) => r.oos ? `${fmt(r.isMetrics.sharpe, 1)}→${fmt(r.metrics.sharpe, 1)}` : fmt(r.metrics.sharpe, 1), color: (r) => r.metrics.sharpe >= 1 ? T.green : T.textDim },
+    { key: "dsr", label: "DSR", align: "right", render: (r) => r.dsr == null ? "—" : fmtPct(r.dsr * 100), color: (r) => r.dsr == null ? T.textFaint : r.dsr >= 0.9 ? T.green : r.dsr >= 0.5 ? T.yellow : T.red },
     { key: "pf", label: "PF", align: "right", render: (r) => fmt(r.metrics.profitFactor) },
     { key: "dd", label: "MaxDD", align: "right", render: (r) => fmtPct(r.metrics.maxDD * 100), color: () => T.red },
     { key: "pnl", label: "PnL OOS%", align: "right", render: (r) => fmtPct(r.metrics.totalPnLPct), color: (r) => r.metrics.totalPnLPct >= 0 ? T.green : T.red },
@@ -162,6 +163,8 @@ export function StrategyFactoryPage() {
           <Panel title="Résultat de la recherche">
             <MetricGrid min={140}>
               <MetricCard label="Variantes retenues" value={fmtInt(result.stats.nVariants)} color={T.orange} />
+              <MetricCard label="Rejetées DSR" value={fmtInt(result.stats.rejectedByDsr || 0)} color={T.red} hint="DSR &lt; 50 % (overfit)" />
+              <MetricCard label="nTrials / paire" value={fmtInt(result.stats.nTrialsPerPair || 0)} hint="essais pour déflater le Sharpe" />
               <MetricCard label="Paires actif×TF" value={result.stats.nPairs} />
               <MetricCard label="Cœurs utilisés" value={result.stats.nWorkers} />
               <MetricCard label="Espace couvert" value={`${(result.stats.covered / 1e6).toFixed(1)} M`} hint="stratégie×actif×TF×params" />
@@ -217,6 +220,7 @@ export function StrategyFactoryPage() {
               <b style={{ color: T.textDim }}>Score OOS / PnL OOS / MaxDD</b> = mesurés sur les 30% de données <b>jamais vues</b> pendant l'optimisation.
               <b style={{ color: T.textDim }}> Robust.</b> = tenue hors-échantillon vs in-sample (100% = tient parfaitement ; &lt;40% = surajusté).
               <b style={{ color: T.textDim }}> Sharpe IS→OOS</b> = dégradation entre l'optimisé et le réel.
+              <b style={{ color: T.textDim }}> DSR</b> = Deflated Sharpe (López de Prado) : probabilité que le Sharpe survive après <b>nTrials</b> essais — les variantes &lt; 50 % sont <b>filtrées avant le leaderboard</b>.
               Le classement privilégie ce qui marche sur données inconnues. Performances passées — ne préjugent pas du futur, aucun gain garanti.
             </div>
           </Panel>

@@ -4,6 +4,7 @@
 import { buildStrategyLibrary } from "./strategyLibrary.js";
 import { buildContext } from "./context.js";
 import { runFactoryBacktest, factoryScore, pickMetrics, COST_MODELS } from "./costModel.js";
+import { evaluateFactoryDsr, passesFactoryDsr, trialsForFactoryPair } from "./factoryDsr.js";
 
 const LIB = buildStrategyLibrary();
 
@@ -55,7 +56,11 @@ function processPair(pair, topK) {
   self.postMessage({ type: "progress", key, phase: "screen", screened: screened.length });
 
   // --- REFINE sur le TRAIN, puis VALIDATION sur le TEST (OOS) ---
+  // nTrials = essais de sélection sur cette paire (screening + grille de refine).
+  // Sert à déflater le Sharpe (DSR) : plus on a testé, plus le seuil de significativité monte.
+  const nTrials = trialsForFactoryPair(screened.length, GRID.length);
   const refined = [];
+  let rejectedByDsr = 0;
   for (const surv of survivors) {
     const strat = LIB.find((x) => x.id === surv.stratId);
     let best = null;
@@ -74,6 +79,13 @@ function processPair(pair, topK) {
     // Garde uniquement ce qui tient hors-échantillon
     if (oosOk && (oosScore <= 0 || oosM.nTrades < 5)) continue;
 
+    // Filtre DSR (P1) : même seuil que Reco Finale — un DSR < 50 % = overfit probable.
+    const dsrRes = evaluateFactoryDsr(oosM.trades, nTrials);
+    if (!passesFactoryDsr(dsrRes, { oos: oosOk })) {
+      rejectedByDsr++;
+      continue;
+    }
+
     refined.push({
       stratId: surv.stratId, name: surv.name, cat: surv.cat,
       asset: assetLabel, tf: tfLabel, classId, key,
@@ -82,13 +94,16 @@ function processPair(pair, topK) {
       trainScore: Math.round(best.trainScore),
       oosScore: Math.round(oosScore),
       robustness, oos: oosOk,
+      nTrials,
+      dsr: Number.isFinite(dsrRes.dsr) ? dsrRes.dsr : null,
+      srStar: Number.isFinite(dsrRes.srStar) ? dsrRes.srStar : null,
       metrics: pickMetrics(oosM),                  // métriques affichées = hors-échantillon
       isMetrics: pickMetrics(best.trainMetrics),   // référence in-sample
       daily: dailyReturns(oosM.trades),            // corrélation portefeuille sur période OOS
     });
   }
   refined.sort((a, b) => b.score - a.score);
-  return { key, assetLabel, tfLabel, screenedCount: screened.length, refined, oos: oosOk };
+  return { key, assetLabel, tfLabel, screenedCount: screened.length, refined, oos: oosOk, nTrials, rejectedByDsr };
 }
 
 self.onmessage = (e) => {
