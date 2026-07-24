@@ -29,6 +29,7 @@ from .routers import (
     health,
     mt5,
     orderbook,
+    quant,
     strategy,
     stream,
     ticks,
@@ -79,6 +80,7 @@ def create_app() -> FastAPI:
     app.include_router(audit.router)
     app.include_router(edges.router)
     app.include_router(anti_library.router)
+    app.include_router(quant.router)
 
     @app.exception_handler(RequestValidationError)
     async def _on_validation_error(

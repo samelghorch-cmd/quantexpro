@@ -133,7 +133,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P5-TS-FEEDS** `feedStatus.js` → `feedStatus.ts` (types stricts + probes) ✅
 - [x] **P5-TS-MORE** `oscillators.js` → `oscillators.ts` (Z-Score / Hurst / régimes) ✅
 - [x] **P5-TS-EDGES** `validatedEdges` + `edgesSync` → TypeScript ✅
-- [ ] **P5-HMM-PY** Port HMM Python (cible audit · badge heuristique JS conservé)
+- [x] **P5-HMM-PY** Port HMM Python paritaire (`/v1/quant/hmm` · golden seed9) ✅
 - [ ] **P5-OPS** Go-live ops (`alembic upgrade head` 0004/0005 · MT5 paper→demo)
 
 ---

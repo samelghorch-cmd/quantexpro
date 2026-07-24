@@ -59,7 +59,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 3. **P2** — ✅ clôturé  
 4. **P3** — ✅ ZDL-SYNC · COLLECTOR-INGEST · MT5-VPS pack  
 5. **P4** — ✅ clôturé (AF → RESEARCH)  
-6. **P5** — 🔄 TS-FEEDS ✅ · TS-MORE ✅ · TS-EDGES ✅ · HMM-PY · OPS  
+6. **P5** — 🔄 TS-FEEDS ✅ · TS-MORE ✅ · TS-EDGES ✅ · HMM-PY ✅ · OPS  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 

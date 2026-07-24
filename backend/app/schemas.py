@@ -402,3 +402,36 @@ class DeactivateAntiIn(BaseModel):
 
     concept_id: str = Field(min_length=1, max_length=64)
 
+
+# ---- Quant HMM (P5-HMM-PY) -------------------------------------------------------
+
+
+class HmmRequest(BaseModel):
+    """Série de log-returns pour ``hmm_regimes`` (parité JS)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    returns: list[float] = Field(min_length=40, max_length=50_000)
+    n_states: int = Field(default=4, ge=2, le=4)
+    iters: int = Field(default=15, ge=1, le=100)
+
+
+class HmmCentroid(BaseModel):
+    vol: float
+    efficiency: float
+
+
+class HmmResponse(BaseModel):
+    states: list[int]
+    counts: list[int]
+    labels: list[str]
+    ids: list[str]
+    centroids: list[HmmCentroid]
+    mu: list[float]
+    sigma: list[float]
+    current: int
+    current_label: str
+    heuristic: bool = True
+    n_states: int
+    engine: str = "python"
+

@@ -139,7 +139,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| HMM régimes (Trend/Range/Vol/Choppy) | ✅ `hmmRegimes` 4 états · HMM Regime / Regime Clock / Quant Toolbox | 🟢 heuristique JS (badge) ; Python HMM cible P5 |
+| HMM régimes (Trend/Range/Vol/Choppy) | ✅ `hmmRegimes` JS + `POST /v1/quant/hmm` Python | 🟢 parité P5 · badge heuristique UI |
 | USD Liquidity, Yield, Inflation | ✅ FRED proxy `macroData.js` | ✅ (gratuit) |
 | COT | ✅ `cotData.js` | ✅ |
 | Crypto Whales, Ship Tracker | Empty state externe | Connecteurs P2 |
@@ -197,7 +197,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
 | P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
-| P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` 4 états · pages HMM / Regime Clock / Toolbox |
+| P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` JS + `/v1/quant/hmm` Python |
 | P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.ts` · Statistical Edge multi-courbes + CSV |
 | P4-CORE | Core Mode KAMA / LinReg / Ichimoku | ✅ | `IND.kama/linreg` · RULE_SOURCES · overlays Core Mode |
 | P4-PAT | Patterns TF M1–MN | ✅ | `patternsLibrary.js` · filtres famille + UI Core Mode |
@@ -205,6 +205,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P5-TS-FEEDS | feedStatus → TypeScript | ✅ | `feedStatus.ts` · types FeedHealth / probes |
 | P5-TS-MORE | oscillators → TypeScript | ✅ | `oscillators.ts` · Z-Score / Hurst / régimes |
 | P5-TS-EDGES | validatedEdges + edgesSync → TS | ✅ | `ValidatedEdge` · API payload · merge remote |
+| P5-HMM-PY | HMM Python paritaire | ✅ | `app/quant/hmm.py` · `/v1/quant/hmm` · golden seed9 |
 
 ---
 
@@ -212,7 +213,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 > Historique Sprint 0 / P0 (2026-07-22) — **commité**. Aucun WIP bloquant au 2026-07-24.
 
-**Prochaine action recommandée :** P5-HMM-PY ou P5-OPS.
+**Prochaine action recommandée :** P5-OPS (alembic 0004/0005 · MT5 paper→demo).
 
 ---
 
@@ -221,7 +222,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
 2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés). **P5-TS-FEEDS** · **P5-TS-MORE** · **P5-TS-EDGES** livrés.
 3. **Charte couleurs :** conserver orange TradoBot en **accent marque** ; ajouter tokens `#00e676` / `#ff1744` pour sémantique long/short dans `theme.js` (non-breaking).
-4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge.
+4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge. **HMM :** port Python livré (même algo soft-clustering — pas Baum-Welch).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
 
 ---

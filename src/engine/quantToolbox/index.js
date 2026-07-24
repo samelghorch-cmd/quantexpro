@@ -86,8 +86,8 @@ export function garchVol(returns) {
 }
 
 // ---------- HMM 4 régimes institutionnels (Trend / Range / Vol / Choppy) ----------
-// Heuristique JS : soft-clustering EM sur features causales (vol roulante + efficacité
-// directionnelle). Badge « Approximation JS » obligatoire côté UI — pas un HMM Python.
+// Heuristique soft-clustering EM (vol × efficacité). Badge « Approximation JS »
+// obligatoire côté UI. Port Python paritaire : POST /v1/quant/hmm (P5-HMM-PY).
 export const HMM_REGIME_LABELS = ["Trend", "Range", "Vol", "Choppy"];
 export const HMM_REGIME_IDS = ["trend", "range", "vol", "choppy"];
 
