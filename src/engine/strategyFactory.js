@@ -4,7 +4,7 @@
 import { fetchCandles, findSymbol } from "./marketData.js";
 import { TF_MAP } from "./marketData.js";
 import { buildStrategyLibrary } from "./strategyLibrary.js";
-import { blockedStrategyIds, ensureSeeded } from "./antiLibrary.js";
+import { blockedStrategyIds, ensureSeeded } from "./antiLibrary.ts";
 import { stressPortfolio } from "./portfolioStress.js";
 
 // Espace de recherche par défaut (respecte « tous les actifs connectés » avec un actif fort par classe).

@@ -11,7 +11,7 @@ import {
   filterLibrary,
   blockedStrategyIds,
   loadAntiLibrary,
-} from "../../src/engine/antiLibrary.js";
+} from "../../src/engine/antiLibrary.ts";
 
 beforeEach(() => {
   const store = new Map();

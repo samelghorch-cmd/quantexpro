@@ -1,14 +1,59 @@
-// P4-ANT-SYNC — pont Anti-Library ↔ `/v1/anti-library`.
+// P4-ANT-SYNC / P6-TS-MORE — pont Anti-Library ↔ `/v1/anti-library`.
 import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
-import { ensureSeeded, loadAntiLibrary } from "./antiLibrary.js";
+import {
+  ensureSeeded,
+  loadAntiLibrary,
+  type AntiEntry,
+} from "./antiLibrary.js";
 
 const LS_KEY = "quantexpro:antiLibrary:v1";
 
-export function isAntiApiConfigured() {
+export interface ApiAntiPayload {
+  concept_id: string;
+  client_id: string | null;
+  label: string;
+  reason: string | null;
+  name_pattern: string | null;
+  strategy_ids: number[];
+  seeded: boolean;
+  active: boolean;
+}
+
+export interface ApiAntiRow {
+  concept_id: string;
+  client_id?: string | null;
+  label?: string;
+  reason?: string | null;
+  name_pattern?: string | null;
+  strategy_ids?: number[] | null;
+  seeded?: boolean;
+  active?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface AntiMergeResult {
+  merged: AntiEntry[];
+  added: number;
+  updated: number;
+}
+
+type ApiFetchFn = (
+  path: string,
+  opts?: RequestInit & { preferApiKey?: boolean; skipAuth?: boolean },
+) => Promise<unknown>;
+
+export interface AntiSyncOpts {
+  entries?: AntiEntry[];
+  fetchImpl?: ApiFetchFn;
+  active?: boolean;
+}
+
+export function isAntiApiConfigured(): boolean {
   return Boolean(getApiBaseUrl() && getApiKey());
 }
 
-export function toApiAntiEntry(entry) {
+export function toApiAntiEntry(entry: AntiEntry | null | undefined): ApiAntiPayload | null {
   if (!entry?.conceptId) return null;
   return {
     concept_id: entry.conceptId,
@@ -22,12 +67,12 @@ export function toApiAntiEntry(entry) {
   };
 }
 
-export function fromApiAntiEntry(row) {
+export function fromApiAntiEntry(row: ApiAntiRow | null | undefined): AntiEntry | null {
   if (!row?.concept_id) return null;
   return {
     id: row.client_id || `al-api-${row.concept_id}`,
     conceptId: row.concept_id,
-    label: row.label,
+    label: row.label || row.concept_id,
     reason: row.reason || "",
     namePattern: row.name_pattern || "",
     strategyIds: Array.isArray(row.strategy_ids)
@@ -39,14 +84,17 @@ export function fromApiAntiEntry(row) {
   };
 }
 
-function persist(entries) {
+function persist(entries: AntiEntry[]): void {
   if (typeof localStorage !== "undefined") {
     localStorage.setItem(LS_KEY, JSON.stringify(entries));
   }
 }
 
 /** Merge remote → local by conceptId (remote wins if newer). */
-export function mergeRemoteAntiLibrary(remoteRows, localEntries = null) {
+export function mergeRemoteAntiLibrary(
+  remoteRows: ApiAntiRow[] | null | undefined,
+  localEntries: AntiEntry[] | null = null,
+): AntiMergeResult {
   const local = [...(localEntries || ensureSeeded())];
   const byId = new Map(local.map((e) => [e.conceptId, e]));
   let added = 0;
@@ -54,7 +102,6 @@ export function mergeRemoteAntiLibrary(remoteRows, localEntries = null) {
   for (const row of remoteRows || []) {
     const incoming = fromApiAntiEntry(row);
     if (!incoming) continue;
-    // Skip inactive remotes for local active registry
     if (row.active === false) {
       if (byId.has(incoming.conceptId)) {
         byId.delete(incoming.conceptId);
@@ -83,18 +130,20 @@ export function mergeRemoteAntiLibrary(remoteRows, localEntries = null) {
   return { merged, added, updated };
 }
 
-export async function pushAntiLibraryToApi(opts = {}) {
+export async function pushAntiLibraryToApi(
+  opts: AntiSyncOpts = {},
+): Promise<{ received: number; written: number } | unknown> {
   if (!isAntiApiConfigured()) {
     throw new Error("Configure l'URL API + clé PM/Risk (Data Manager).");
   }
   const entries = opts.entries || ensureSeeded();
-  const payload = entries.map(toApiAntiEntry).filter(Boolean);
+  const payload = entries.map(toApiAntiEntry).filter((x): x is ApiAntiPayload => Boolean(x));
   if (!payload.length) return { received: 0, written: 0 };
   const fetchImpl = opts.fetchImpl || apiFetch;
   return fetchImpl("/v1/anti-library", { method: "POST", body: JSON.stringify(payload) });
 }
 
-export async function pullAntiLibraryFromApi(opts = {}) {
+export async function pullAntiLibraryFromApi(opts: AntiSyncOpts = {}): Promise<AntiMergeResult> {
   if (!isAntiApiConfigured()) {
     throw new Error("Configure l'URL API + clé (Data Manager).");
   }
@@ -102,10 +151,13 @@ export async function pullAntiLibraryFromApi(opts = {}) {
   const active = opts.active !== false;
   const rows = await fetchImpl(`/v1/anti-library?active=${active ? "true" : "false"}&limit=500`);
   if (!Array.isArray(rows)) throw new Error("Réponse anti-library invalide");
-  return mergeRemoteAntiLibrary(rows);
+  return mergeRemoteAntiLibrary(rows as ApiAntiRow[]);
 }
 
-export async function deactivateAntiOnApi(conceptId, opts = {}) {
+export async function deactivateAntiOnApi(
+  conceptId: string,
+  opts: AntiSyncOpts = {},
+): Promise<unknown> {
   if (!isAntiApiConfigured()) {
     throw new Error("Configure l'URL API + clé PM/Risk.");
   }

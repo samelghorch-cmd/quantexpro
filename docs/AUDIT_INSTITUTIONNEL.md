@@ -83,7 +83,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
 | Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
 | Alpha Forge + Valid Edges | ✅ `validatedEdges.ts` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
-| Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
+| Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.ts` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
 | Scraper Reddit/X/QC/SSRN | ✅ RSS research allowlisté (arXiv · NBER · BIS) · X/Reddit/QC ⛔ ToS | 🟢 légal ; SSRN via arXiv/NBER |
 | Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
 

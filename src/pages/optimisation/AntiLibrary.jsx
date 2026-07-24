@@ -7,12 +7,12 @@ import {
   clearAntiLibrary,
   SEED_CONCEPTS,
   blockedStrategyIds,
-} from "../../engine/antiLibrary.js";
+} from "../../engine/antiLibrary.ts";
 import {
   pushAntiLibraryToApi,
   pullAntiLibraryFromApi,
   isAntiApiConfigured,
-} from "../../engine/antiLibrarySync.js";
+} from "../../engine/antiLibrarySync.ts";
 import { buildStrategyLibrary } from "../../engine/strategyLibrary.js";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field } from "../../components/shared/ui.jsx";

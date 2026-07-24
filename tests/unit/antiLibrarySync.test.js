@@ -7,8 +7,8 @@ import {
   pushAntiLibraryToApi,
   pullAntiLibraryFromApi,
   isAntiApiConfigured,
-} from "../../src/engine/antiLibrarySync.js";
-import { clearAntiLibrary, ensureSeeded, loadAntiLibrary } from "../../src/engine/antiLibrary.js";
+} from "../../src/engine/antiLibrarySync.ts";
+import { clearAntiLibrary, ensureSeeded, loadAntiLibrary } from "../../src/engine/antiLibrary.ts";
 
 beforeEach(() => {
   const store = new Map();

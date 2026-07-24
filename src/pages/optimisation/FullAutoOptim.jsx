@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runFAO } from "../../engine/fao.js";
-import { findBlockingEntry } from "../../engine/antiLibrary.js";
+import { findBlockingEntry } from "../../engine/antiLibrary.ts";
 import { Panel, Button, Field, NumberInput, DataTable, MetricCard, MetricGrid, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
