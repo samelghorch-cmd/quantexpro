@@ -3,7 +3,7 @@
 // Tout le calcul lourd est ici → l'UI reste fluide.
 import { buildStrategyLibrary } from "./strategyLibrary.js";
 import { buildContext } from "./context.js";
-import { runFactoryBacktest, factoryScore, pickMetrics, COST_MODELS } from "./costModel.js";
+import { runFactoryBacktest, factoryScore, pickMetrics, COST_MODELS } from "./costModel.ts";
 import { evaluateFactoryDsr, passesFactoryDsr, trialsForFactoryPair } from "./factoryDsr.js";
 
 const LIB = buildStrategyLibrary();

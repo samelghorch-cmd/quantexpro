@@ -14,7 +14,7 @@ import {
   TCA_WORSE_RATIO,
   TCA_BETTER_RATIO,
 } from "../../engine/tca.ts";
-import { COST_MODELS } from "../../engine/costModel.js";
+import { COST_MODELS } from "../../engine/costModel.ts";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
@@ -125,7 +125,7 @@ export function TcaPage() {
         <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>TCA — Transaction Cost Analysis</div>
         <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.5 }}>
           Slippage <b style={{ color: T.orange }}>observé</b> (next-open démo / backtest, ou fills manuels) vs modèle
-          théorique <code style={{ color: T.textFaint }}>costModel.js</code> / contrats.
+          théorique <code style={{ color: T.textFaint }}>costModel.ts</code> / contrats.
           Ratio &gt; {TCA_WORSE_RATIO} → modèle trop optimiste ; &lt; {TCA_BETTER_RATIO} → exécution meilleure que prévu.
         </div>
       </Panel>

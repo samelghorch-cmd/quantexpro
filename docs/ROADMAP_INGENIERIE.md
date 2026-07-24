@@ -81,7 +81,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P1-DSR** DSR + nTrials dans **Usine** (`factoryDsr.js` + `factory.worker.js` + UI) ✅
 - [x] **P1-ANT** Anti-Library store + filtre Usine/FAO (`antiLibrary.js` + UI) ✅
 - [x] **P1-PORT** Stress scenarios portefeuille (`portfolioStress.js` — 2008/2010/2020) ✅
-- [x] **P1-TCA** TCA module (slippage observé vs `costModel.js`) ✅
+- [x] **P1-TCA** TCA module (slippage observé vs `costModel.ts`) ✅
 - [x] **P1-PDF** Tearsheet PDF par dossier (`tearsheet.js` + `pdfLite.js`) ✅
 - [x] **P1-EDGE** Statistical Edge Module 1 (grille 10 métriques + CSV) ✅
 
@@ -167,6 +167,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P9-TS-SIGNAL** `signalConsole.js` → `signalConsole.ts` (slots · consensus · WS bars) ✅
 - [x] **P9-TS-TCA** `tca.js` → `tca.ts` (slippage observé vs costModel) ✅
 - [x] **P9-TS-RULE** `ruleBuilder.js` → `ruleBuilder.ts` (+ collector strip-types) ✅
+- [x] **P9-TS-COST** `costModel.js` → `costModel.ts` (classes · factory backtest) ✅
 
 ---
 

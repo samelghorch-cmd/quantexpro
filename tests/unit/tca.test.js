@@ -14,7 +14,7 @@ import {
   TCA_WORSE_RATIO,
   TCA_BETTER_RATIO,
 } from "../../src/engine/tca.ts";
-import { COST_MODELS } from "../../src/engine/costModel.js";
+import { COST_MODELS } from "../../src/engine/costModel.ts";
 
 beforeEach(() => {
   const store = new Map();
