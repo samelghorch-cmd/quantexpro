@@ -14,7 +14,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any
 
-from sqlalchemy import Float, Index, PrimaryKeyConstraint, String
+from sqlalchemy import BigInteger, Float, Index, Integer, PrimaryKeyConstraint, String
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -90,4 +90,55 @@ class OrderbookL2Snapshot(Base):
     asks: Mapped[list[Any]] = mapped_column(JSONB, nullable=False)
     ingested_at: Mapped[dt.datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+
+
+class AuditEvent(Base):
+    """Journal d'audit immuable (append-only) : who / what / hash du payload."""
+
+    __tablename__ = "audit_events"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    ts: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+    actor: Mapped[str] = mapped_column(String(64), nullable=False)
+    role: Mapped[str] = mapped_column(String(16), nullable=False)
+    action: Mapped[str] = mapped_column(String(64), nullable=False)
+    resource: Mapped[str] = mapped_column(String(128), nullable=False)
+    payload_hash: Mapped[str] = mapped_column(String(64), nullable=False)  # sha256 hex
+    details: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
+
+class MT5Order(Base):
+    """Ordre/signal destiné au pont MT5. ``client_order_id`` = clé d'idempotence."""
+
+    __tablename__ = "mt5_orders"
+
+    client_order_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False)
+    side: Mapped[str] = mapped_column(String(8), nullable=False)  # buy | sell | close
+    order_type: Mapped[str] = mapped_column(String(8), nullable=False)  # market | limit
+    volume: Mapped[float] = mapped_column(Float, nullable=False)
+    price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    sl: Mapped[float | None] = mapped_column(Float, nullable=True)
+    tp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    mode: Mapped[str] = mapped_column(String(8), nullable=False)  # paper | demo | live
+    status: Mapped[str] = mapped_column(String(12), nullable=False, default="pending")
+    strategy_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    comment: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Acquittement d'exécution (renvoyé par l'EA).
+    ticket: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    filled_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    filled_at: Mapped[dt.datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    reject_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+    updated_at: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+
+    __table_args__ = (
+        Index("ix_mt5_orders_status_mode", "status", "mode"),
     )

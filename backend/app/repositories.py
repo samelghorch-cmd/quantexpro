@@ -14,12 +14,12 @@ import datetime as dt
 from collections.abc import Sequence
 from typing import cast
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import Bar1m, Bar5m, OrderbookL2Snapshot, Tick
-from .schemas import BarIn, OrderbookL2In, TickIn, Timeframe
+from .models import AuditEvent, Bar1m, Bar5m, MT5Order, OrderbookL2Snapshot, Tick
+from .schemas import BarIn, ExecutionIn, OrderbookL2In, SignalIn, TickIn, Timeframe
 
 _BAR_MODEL: dict[Timeframe, type[Bar1m] | type[Bar5m]] = {
     Timeframe.m1: Bar1m,
@@ -144,3 +144,73 @@ async def read_bars(
     query = query.order_by(model.ts.asc()).limit(limit)
     result = await session.execute(query)
     return cast("list[Bar1m | Bar5m]", list(result.scalars().all()))
+
+
+# ---- Pont MT5 ---------------------------------------------------------------------
+
+
+async def create_signal(session: AsyncSession, signal: SignalIn, mode: str) -> bool:
+    """Crée un signal (idempotent sur ``client_order_id``). Retourne True si nouvellement créé."""
+    row = {
+        "client_order_id": signal.client_order_id,
+        "symbol": signal.symbol,
+        "side": signal.side.value,
+        "order_type": signal.order_type.value,
+        "volume": signal.volume,
+        "price": signal.price,
+        "sl": signal.sl,
+        "tp": signal.tp,
+        "mode": mode,
+        "status": "pending",
+        "strategy_id": signal.strategy_id,
+        "comment": signal.comment,
+    }
+    stmt = pg_insert(MT5Order).values(row).on_conflict_do_nothing(
+        index_elements=["client_order_id"]
+    )
+    result = await session.execute(stmt)
+    return bool((getattr(result, "rowcount", 0) or 0) > 0)
+
+
+async def list_pending_signals(session: AsyncSession, mode: str, limit: int) -> list[MT5Order]:
+    query = (
+        select(MT5Order)
+        .where(MT5Order.status == "pending", MT5Order.mode == mode)
+        .order_by(MT5Order.created_at.asc())
+        .limit(limit)
+    )
+    result = await session.execute(query)
+    return list(result.scalars().all())
+
+
+async def apply_execution(session: AsyncSession, execution: ExecutionIn) -> bool:
+    """Applique un ACK d'exécution à un ordre 'pending'. Retourne True si un ordre a été modifié."""
+    new_status = "filled" if execution.status.value == "filled" else "rejected"
+    values: dict[str, object] = {
+        "status": new_status,
+        "ticket": execution.ticket,
+        "filled_price": execution.filled_price,
+        "reject_reason": execution.reject_reason,
+        "updated_at": dt.datetime.now(dt.UTC),
+    }
+    if new_status == "filled":
+        values["filled_at"] = dt.datetime.now(dt.UTC)
+    stmt = (
+        update(MT5Order)
+        .where(MT5Order.client_order_id == execution.client_order_id)
+        .where(MT5Order.status == "pending")
+        .values(**values)
+    )
+    result = await session.execute(stmt)
+    return bool((getattr(result, "rowcount", 0) or 0) > 0)
+
+
+async def list_audit(
+    session: AsyncSession, *, limit: int, after_id: int | None
+) -> list[AuditEvent]:
+    query = select(AuditEvent)
+    if after_id is not None:
+        query = query.where(AuditEvent.id > after_id)
+    query = query.order_by(AuditEvent.id.asc()).limit(limit)
+    result = await session.execute(query)
+    return list(result.scalars().all())

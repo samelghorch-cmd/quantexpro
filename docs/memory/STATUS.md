@@ -9,28 +9,27 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Branche git | `main` (+ locale `claude/hopeful-swartz-913305`) |
-| Tests | **132 passed** (109 + 23 dossiers) |
-| Commit HEAD | Chantier 4 P0-D LLM local (à pousser) |
-| Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` (token en keychain → push auto) |
-| CI GitHub | ✅ verte au dernier push (`c2b3107`) |
-| Tests | JS **132** · backend **34** (13 + 6 bus + 15 LLM) |
-| Déploiement | Render (API) + Neon (Postgres) ; bus opt-in `QX_BUS_ENABLED` + Redis gratuit (Upstash) |
-| ⚠️ Sécurité | Révoquer les 2 tokens GitHub partagés en chat (github.com/settings/tokens). |
-| Prochaine action | Chantier 5 : **P0-E pont MT5 + RBAC/audit** OU brancher l'UI Prompt Mode (frontend) sur `/v1/strategy/from-prompt` — au choix user |
-| Prochaine action | Chantier 3 : **Bus ZDL Redis Streams (P0-C)** dans `backend/app/bus/` (publish bar-close, consumer ACK, retry backoff) |
+| Branche git | `main` |
+| Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
+| Tests | JS **132** · backend **51** |
+| Commit HEAD | P0 finalisation (P0-E + Prompt Mode UI) — en cours de push |
+| CI GitHub | À vérifier après push final P0 |
+| Déploiement | Render (API) + Neon (Postgres) ; bus opt-in ; LLM opt-in Ollama |
+| P0 | ✅ **A + B + C + D + E** clôturés |
+| Prochaine action | **P1** — DSR dans Usine, Anti-Library, Statistical Edge, stress portfolio |
 
 ---
 
-## Sprint 0 (en cours)
+## Sprint 0 / P0 (terminé)
 
-| ID | Tâche | Owner | État |
-|----|-------|-------|------|
-| S0.1 | `npm test` + `npm run build` | — | ✅ tests OK (2026-07-24) |
-| S0.2 | Commit WIP custom + tests/CI | — | ✅ `b4f9a28` (2026-07-24) |
-| S0.3 | Push → activer CI GitHub | — | ⛔ bloqué : pas de remote (action user) |
-| S0.4 | VPIN causal (`vpin.js`) | Engine | ✅ amorce fixe `calibBars` (2026-07-24) |
-| S0.5 | Tests dossiers IndexedDB | Engine + Reviewer | ✅ 23 tests (2026-07-24) |
+| ID | Tâche | État |
+|----|-------|------|
+| S0.1–S0.5 | tests, commit WIP, VPIN causal, dossiers IndexedDB | ✅ |
+| P0-A | Moteur & qualité (VPIN, dossiers, CI) | ✅ |
+| P0-B | Backend TimescaleDB + API idempotente | ✅ |
+| P0-C | Bus ZDL Redis Streams + WS `/stream/bars` | ✅ |
+| P0-D | LLM local + UI Prompt Mode | ✅ |
+| P0-E | Pont MT5 (EA) + RBAC + audit append-only | ✅ |
 
 ---
 
@@ -40,6 +39,7 @@
 - Migration Next.js / TS = **P1+**, pas Sprint 0.  
 - Orange `#FF6B00` = marque ; verts/rouges sémantiques long/short à ajouter.  
 - Heuristiques ML (XGBoost/HMM JS) = badge « approximation », pas hedge-fund.  
+- Hébergement gratuit « pour l’instant » = Render + Neon (pas Railway).  
 
 ---
 
@@ -47,21 +47,13 @@
 
 | Date | Événement |
 |------|-----------|
-| 2026-07-22 | Coupure tokens Claude — WIP custom strategies + tests laissé local |
-| 2026-07-24 | Reprise Cursor : audit institutionnel + roadmap écrits |
-| 2026-07-24 | Mémoire multi-agents + Obsidian sync (cette session) |
-| 2026-07-24 | **P0-T4 VPIN causal livré** : `bucketVolume` sur amorce fixe ; sentinelle → invariance stricte |
-| 2026-07-24 | **P0-T5 tests dossiers livrés** : `dossierStore.test.js` (fake-indexeddb, writeChain, cycle 6 étapes) → **132 tests verts** ; Chantier 1 (P0-A) terminé |
-| 2026-07-24 | **Chantier 1 committé** `b4f9a28` (lot P0-A) |
-| 2026-07-24 | **Chantier 2 — Backend P0-B livré** : `backend/` FastAPI async + SQLAlchemy 2.0 + Pydantic v2 + Alembic hypertables ; ingest idempotent + lecture keyset ; 13 tests backend verts |
-| 2026-07-24 | **Déploiement gratuit** : migration rendue portable (hypertables optionnelles), `render.yaml` + `docs/DEPLOIEMENT.md` (Render+Neon / Fly.io), job CI backend Python ajouté |
-| 2026-07-24 | **Vérif zéro-erreur P0-A/P0-B** : JS 132 tests + couverture seuils + build OK ; backend ruff ✅ + mypy strict 0 ✅ + pytest 13 ✅ + import app ✅. CI backend durcie (ruff+mypy). |
-| 2026-07-24 | **Dépôt GitHub créé + push** (`samelghorch-cmd/quantexpro`). CI d'abord rouge (npm ci lockfile esbuild 0.21 vs 0.28) → fix : CI alignée sur npm 11 → **CI verte** (`7a41ea7`). |
-| 2026-07-24 | **Chantier 3 — Bus ZDL P0-C livré** : `backend/app/bus/` Redis Streams (publish bar-close, consumer group ACK, retry backoff, DLQ, reclaim XAUTOCLAIM, reconnexion, backpressure), WS `/stream/bars`, worker `python -m app.bus.consumer`. Opt-in `QX_BUS_ENABLED`. Backend : ruff+mypy strict 0, **19 tests** verts. Poussé `c2b3107`, CI verte. |
-| 2026-07-24 | **Chantier 4 — LLM local P0-D livré** : `backend/app/llm/` endpoint `POST /v1/strategy/from-prompt` (client OpenAI-compatible local Ollama/llama.cpp, opt-in `QX_LLM_ENABLED`), schéma **miroir de `validateRules`** (parité Rule Builder), extraction JSON robuste. Backend : ruff+mypy strict 0, **34 tests** verts. |
+| 2026-07-24 | P0-A → P0-D livrés + CI verte (voir historique git) |
+| 2026-07-24 | **P0-E** : MT5 pull/ACK + RBAC + audit immuable + EA `QuantEXProBridge.mq5` |
+| 2026-07-24 | **UI Prompt Mode** : Strategy Engine → `/v1/strategy/from-prompt` |
+| 2026-07-24 | **P0 clôturé** — re-vérification zéro-erreur (JS 132, backend 51, ruff, mypy) |
 
 ---
 
 ## Notes session
 
-- 2026-07-24 : Mémoire organisée — `MEMORY.md`, `STATUS.md`, `AGENTS.md`, `.cursor/rules/*`, 4 agents (engine / frontend / infra / reviewer). Obsidian QuantExPro + Carte PC synchronisés.
+- 2026-07-24 : Mémoire organisée — `MEMORY.md`, `STATUS.md`, `AGENTS.md`, agents Cursor.

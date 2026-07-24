@@ -52,6 +52,12 @@ class Settings(BaseSettings):
     # Sécurité : clés d'API acceptées (header X-API-Key). Vide → l'API refuse tout accès
     # authentifié en production (fail-safe) mais reste ouverte en development.
     api_keys: tuple[str, ...] = Field(default_factory=tuple)
+    # RBAC : clés associées à un rôle (pm | analyst | risk | ea). Format env :
+    #   QX_API_KEY_ROLES="cléPM:pm,cléRisk:risk,cléEA:ea"
+    api_key_roles: dict[str, str] = Field(default_factory=dict)
+
+    # Pont MT5.
+    mt5_default_mode: str = Field(default="paper")  # paper | demo | live
 
     # Pagination des lectures de séries.
     default_page_limit: int = Field(default=1000, ge=1, le=50000)
@@ -83,6 +89,24 @@ class Settings(BaseSettings):
             return tuple(part.strip() for part in value.split(",") if part.strip())
         if isinstance(value, (list, tuple)):
             return tuple(str(part).strip() for part in value if str(part).strip())
+        return value
+
+    @field_validator("api_key_roles", mode="before")
+    @classmethod
+    def _parse_key_roles(cls, value: object) -> object:
+        """Accepte une chaîne ``k1:pm,k2:risk`` ou un dict déjà structuré."""
+        if value is None or value == "":
+            return {}
+        if isinstance(value, str):
+            out: dict[str, str] = {}
+            for pair in value.split(","):
+                pair = pair.strip()
+                if not pair:
+                    continue
+                key, _, role = pair.partition(":")
+                if key.strip() and role.strip():
+                    out[key.strip()] = role.strip().lower()
+            return out
         return value
 
     @field_validator("env")

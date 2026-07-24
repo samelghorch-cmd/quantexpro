@@ -176,3 +176,103 @@ class StrategyResponse(BaseModel):
 
     strategy: dict[str, Any]
     source: str
+
+
+# ---- Pont MT5 --------------------------------------------------------------------
+
+
+class MT5Side(StrEnum):
+    buy = "buy"
+    sell = "sell"
+    close = "close"
+
+
+class MT5OrderType(StrEnum):
+    market = "market"
+    limit = "limit"
+
+
+class MT5Mode(StrEnum):
+    paper = "paper"
+    demo = "demo"
+    live = "live"
+
+
+class MT5ExecStatus(StrEnum):
+    filled = "filled"
+    rejected = "rejected"
+
+
+class SignalIn(BaseModel):
+    """Signal de trading soumis au pont MT5 (idempotent via ``client_order_id``)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    client_order_id: str = Field(min_length=1, max_length=64)
+    symbol: Symbol
+    side: MT5Side
+    volume: float = Field(gt=0)
+    order_type: MT5OrderType = MT5OrderType.market
+    price: Price | None = None
+    sl: Price | None = None
+    tp: Price | None = None
+    mode: MT5Mode | None = None
+    strategy_id: int | None = None
+    comment: str | None = Field(default=None, max_length=64)
+
+    @model_validator(mode="after")
+    def _limit_needs_price(self) -> SignalIn:
+        if self.order_type is MT5OrderType.limit and self.price is None:
+            raise ValueError("un ordre 'limit' exige un 'price'")
+        return self
+
+
+class SignalAck(BaseModel):
+    client_order_id: str
+    status: str
+    mode: str
+
+
+class PendingSignal(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    client_order_id: str
+    symbol: str
+    side: str
+    order_type: str
+    volume: float
+    price: float | None = None
+    sl: float | None = None
+    tp: float | None = None
+    mode: str
+    comment: str | None = None
+
+
+class ExecutionIn(BaseModel):
+    """Acquittement d'exécution renvoyé par l'EA MT5."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    client_order_id: str = Field(min_length=1, max_length=64)
+    status: MT5ExecStatus
+    ticket: int | None = None
+    filled_price: float | None = Field(default=None, gt=0)
+    reject_reason: str | None = Field(default=None, max_length=255)
+
+
+class ExecutionResult(BaseModel):
+    client_order_id: str
+    status: str
+
+
+class AuditOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    ts: dt.datetime
+    actor: str
+    role: str
+    action: str
+    resource: str
+    payload_hash: str
+    details: dict[str, Any] | None = None

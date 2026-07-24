@@ -58,18 +58,21 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 |-------|-----|------|
 | Endpoint OpenAI-compatible local | Client httpx (Ollama/llama.cpp/vLLM), retry, opt-in `QX_LLM_ENABLED` | ✅ |
 | `POST /v1/strategy/from-prompt` → JSON Rule Builder | Schéma Pydantic **miroir de `validateRules`** (parité) | ✅ |
-| UI Prompt Mode | Frontend (module Strategy Engine) à brancher sur l'endpoint | ⬜ (frontend) |
+| UI Prompt Mode | Frontend `PromptMode.jsx` branché sur `/v1/strategy/from-prompt` | ✅ |
 
 > Livré : `app/llm/` (rules mirror + prompt + client + service), extraction JSON robuste
 > (fences/prose), 15 tests (schéma + service avec faux client, sans modèle). Doc Ollama.
 
-### P0-E — MT5 & gouvernance
+### P0-E — MT5 & gouvernance — ✅ livré (`backend/app/routers/mt5.py`, `mt5/`)
 
-| Tâche | DoD |
-|-------|-----|
-| EA bridge : réception signal JSON | Logs + ACK HTTP |
-| Auth API keys par environnement | Pas de secrets en repo |
-| Audit log table append-only | who, what, payload hash |
+| Tâche | DoD | État |
+|-------|-----|------|
+| EA bridge : signal JSON + ACK HTTP | EA `mt5/QuantEXProBridge.mq5` (pull `/signals/pending` → exécute → ACK `/executions`) | ✅ |
+| Auth API keys par environnement | `QX_API_KEYS` / `QX_API_KEY_ROLES` (aucun secret en repo) | ✅ |
+| Audit log append-only | table `audit_events` + trigger anti UPDATE/DELETE, hash SHA-256 payload, `GET /v1/audit` | ✅ |
+| RBAC rôles PM/Analyste/Risque(/EA) | `require_role`, signaux réservés PM/Risque, EA = pull/ACK | ✅ |
+
+> Idempotence via `client_order_id`, modes paper→demo→live. 17 tests (RBAC, audit, MT5).
 
 ---
 

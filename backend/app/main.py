@@ -20,7 +20,7 @@ from .bus.redis_bus import close_bus
 from .config import get_settings
 from .db import dispose_engine
 from .logging_config import configure_logging
-from .routers import bars, health, orderbook, strategy, stream, ticks
+from .routers import audit, bars, health, mt5, orderbook, strategy, stream, ticks
 
 _logger = logging.getLogger(__name__)
 
@@ -62,6 +62,8 @@ def create_app() -> FastAPI:
     app.include_router(orderbook.router)
     app.include_router(stream.router)
     app.include_router(strategy.router)
+    app.include_router(mt5.router)
+    app.include_router(audit.router)
 
     @app.exception_handler(RequestValidationError)
     async def _on_validation_error(

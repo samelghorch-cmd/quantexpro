@@ -4,6 +4,7 @@ import { ALL_MODULES } from "../registry.js";
 
 // STRATEGY ENGINE
 import { CoreModeDeveloperPage } from "./strategyEngine/CoreModeDeveloper.jsx";
+import { PromptModePage } from "./strategyEngine/PromptMode.jsx";
 import { StrategyImporterPage } from "./strategyEngine/StrategyImporter.jsx";
 // ANALYSE
 import { BacktestPage } from "./analyse/Backtest.jsx";
@@ -44,6 +45,7 @@ import { DossiersPage } from "./export/Dossiers.jsx";
 const REAL = {
   // Strategy Engine
   coreMode: CoreModeDeveloperPage,
+  promptMode: PromptModePage,
   strategyImporter: StrategyImporterPage,
   // Analyse
   backtest: BacktestPage,

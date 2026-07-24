@@ -159,9 +159,9 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P0-T4 | VPIN causal | ✅ | Fait : `bucketVolume` calibré sur fenêtre d'amorce fixe (`calibBars`) ; invariance troncature vérifiée ; aucune régénération de golden requise |
 | P0-T5 | Cycle vie dossiers IndexedDB | ✅ | Fait : `tests/unit/dossierStore.test.js` (23 tests) — fake-indexeddb, writeChain, gradeLetter, cycle 6 étapes |
 | P0-ZDL | Bus ZDL + TimescaleDB | 🟡 | **P0a ✅** schéma TS + API ingest/lecture (`backend/`) ; **P0c bus ✅** Redis Streams (publish bar-close, ACK, retry backoff, DLQ, reclaim, WS `/stream/bars`) — 19 tests backend ; **reste :** sync dashboard↔API + retirer IndexedDB comme source primaire |
-| P0-LLM | Qwen2.5-Coder-7B local | 🟡 | **Backend ✅** endpoint `POST /v1/strategy/from-prompt` (client OpenAI-compatible local, opt-in `QX_LLM_ENABLED`), sortie validée par schéma **miroir de `validateRules`** (parité Rule Builder), 15 tests. **Reste :** UI Prompt Mode + brancher Ollama/serveur d'inférence |
-| P0-MT5 | Pont VPS MT5 | 🔴 | EA MQL5 + bridge REST/WS ; commencer par **signaux paper** puis ordres démo |
-| P0-RBAC | Rôles + audit log | 🔴 | Après API Python ; table `audit_events` append-only |
+| P0-LLM | Qwen2.5-Coder-7B local | ✅ | Backend `POST /v1/strategy/from-prompt` + UI Prompt Mode (`PromptMode.jsx`) ; schéma miroir `validateRules` |
+| P0-MT5 | Pont VPS MT5 | 🟡 | **Backend ✅** endpoints signals/pending/executions (pull+ACK, idempotent, modes paper→demo→live) + EA `mt5/QuantEXProBridge.mq5`. **Reste :** déploiement VPS + tests live démo |
+| P0-RBAC | Rôles + audit log | ✅ | `require_role` (pm/analyst/risk/ea), `audit_events` append-only (trigger + hash SHA-256), `GET /v1/audit` |
 
 ### 🟡 P1 — Risque institutionnel
 
@@ -217,10 +217,10 @@ Interruption Claude ~2026-07-22 ; les changements locaux sont **cohérents** ave
 |---------|----------|------|
 | Backtest causal & métriques | 5 | VPIN calibration corrigée (P0-T4) |
 | Pipeline validation (FAO→Reco) | 4 | DSR hors Usine |
-| Persistance & ZDL | 2 | IndexedDB + JSON collector |
-| Exécution live | 2 | Paper Binance + forward démo |
+| Persistance & ZDL | 4 | Backend TimescaleDB + bus Redis Streams (ACK/DLQ) ; reste : brancher dashboard |
+| Exécution live | 3 | Paper Binance + pont MT5 (EA pull/ACK) prêt, à déployer VPS |
 | Données institutionnelles | 1 | Pas Databento/L2 options |
-| Gouvernance (RBAC, audit) | 0 | |
+| Gouvernance (RBAC, audit) | 3 | RBAC rôles + audit append-only (hash) ; reste UI/SSO |
 | Test automation | 4 | CI pas encore poussée GitHub |
 | **Total approximatif** | **18/35** | Cible 28+ pour « desk institutionnel soft » |
 

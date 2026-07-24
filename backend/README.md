@@ -58,6 +58,10 @@ uvicorn app.main:app --reload
 | POST | `/v1/orderbook` | ingestion idempotente d'instantanés L2 |
 | WS   | `/stream/bars/{timeframe}?api_key=` | flux temps réel des bar-close (bus ZDL) |
 | POST | `/v1/strategy/from-prompt` | prompt langage naturel → stratégie JSON (LLM local) |
+| POST | `/v1/mt5/signals` | soumettre un signal (rôle PM/Risque) |
+| GET  | `/v1/mt5/signals/pending` | signaux à exécuter — pull par l'EA (rôle EA) |
+| POST | `/v1/mt5/executions` | ACK d'exécution renvoyé par l'EA (rôle EA) |
+| GET  | `/v1/audit` | journal d'audit append-only (rôle PM/Risque) |
 
 Auth : header `X-API-Key` (clés dans `QX_API_KEYS`, CSV). En production, aucune clé
 configurée ⇒ API verrouillée (503).
@@ -119,3 +123,13 @@ curl -X POST localhost:8000/v1/strategy/from-prompt -H 'X-API-Key: <clé>' \
 
 Alternatives d'inférence : **llama.cpp** (`llama-server`), **vLLM**, **LM Studio** — tout
 endpoint exposant `/v1/chat/completions` (variable `QX_LLM_BASE_URL`).
+
+## Gouvernance & pont MT5 (P0-E)
+
+- **RBAC** : chaque clé d'API porte un rôle (`pm` | `analyst` | `risk` | `ea`), configuré
+  via `QX_API_KEY_ROLES="cléPM:pm,cléEA:ea"`. Les clés de `QX_API_KEYS` sans rôle explicite
+  reçoivent `analyst` (lecture). En dev sans clés, accès complet local.
+- **Audit immuable** : chaque action sensible est journalisée (`audit_events`, append-only
+  via trigger SQL) avec hash SHA-256 du payload. Lecture : `GET /v1/audit` (PM/Risque).
+- **Pont MT5** : voir `mt5/README.md` (EA `QuantEXProBridge.mq5`). Flux pull+ACK, modes
+  `paper` → `demo` → `live`. L'EA utilise une clé de rôle `ea`.

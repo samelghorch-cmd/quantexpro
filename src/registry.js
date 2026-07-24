@@ -5,6 +5,7 @@ export const SECTIONS = [
     id: "strategy", label: "Strategy Engine", icon: "◆",
     modules: [
       { id: "coreMode", label: "Core Mode Developer" },
+      { id: "promptMode", label: "Prompt Mode (LLM local)" },
       { id: "strategyImporter", label: "Strategy Importer" },
     ],
   },
