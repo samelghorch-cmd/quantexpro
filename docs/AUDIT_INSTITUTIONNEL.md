@@ -198,7 +198,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
 | P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
 | P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` 4 états · pages HMM / Regime Clock / Toolbox |
-| P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.js` · Statistical Edge multi-courbes + CSV |
+| P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.ts` · Statistical Edge multi-courbes + CSV |
 | P4-CORE | Core Mode KAMA / LinReg / Ichimoku | ✅ | `IND.kama/linreg` · RULE_SOURCES · overlays Core Mode |
 | P4-PAT | Patterns TF M1–MN | ✅ | `patternsLibrary.js` · filtres famille + UI Core Mode |
 | P4-RESEARCH | RSS recherche légaux | ✅ | arXiv q-fin · NBER · BIS · allowlist proxy |
