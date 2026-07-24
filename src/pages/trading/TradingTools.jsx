@@ -6,11 +6,31 @@ import { volumeProfile, generateOrderBook } from "../../engine/microstructure.js
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { CATS } from "../../engine/strategyLibrary.js";
 import { findSymbol } from "../../engine/marketData.js";
+import { eventsToCsv, filterEvents } from "../../engine/signalConsole.js";
+import { useSignalConsole } from "../../hooks/useSignalConsole.js";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.jsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, Field, NumberInput, Select, Button, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
+
+function downloadText(text, filename) {
+  const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function wsStatusColor(st) {
+  if (st === "live") return T.green;
+  if (st === "connecting") return T.yellow;
+  if (st === "error") return T.red;
+  return T.textDim;
+}
+
 
 export function PerformancePage() {
   const { pipeline, journal } = usePipeline();
@@ -187,35 +207,161 @@ export function SignauxPage() {
 }
 
 export function SignalEnginePage() {
-  const { bars, ctx, library } = usePipeline();
-  const slots = [1, 3, 4, 21, 31, 55];
-  const i = bars.length - 1;
-  const signals = slots.map((id) => { const s = library.find((x) => x.id === id); const sig = i >= 1 ? s.eval(ctx, i) : { long: false, short: false }; return { id, name: s.name, cat: s.cat, ...sig }; });
-  const nLong = signals.filter((s) => s.long).length, nShort = signals.filter((s) => s.short).length;
-  const consensus = nLong > nShort ? "LONG" : nShort > nLong ? "SHORT" : "NEUTRE";
+  const { bars, ctx, library, symbol, tf, navigate } = usePipeline();
+  const console_ = useSignalConsole({ library, ctx, bars, symbol, tfFactor: tf });
+  const [kindFilter, setKindFilter] = useState("");
+  const [q, setQ] = useState("");
+
+  const filtered = useMemo(
+    () => filterEvents(console_.events, { kind: kindFilter, q }),
+    [console_.events, kindFilter, q],
+  );
+  const { consensus, nLong, nShort, nSlots } = console_.consensus;
+
+  const eventCols = [
+    {
+      key: "ts",
+      label: "Heure",
+      render: (r) => new Date(r.ts).toLocaleTimeString("fr-FR"),
+    },
+    {
+      key: "kind",
+      label: "Type",
+      render: (r) => (
+        <Badge color={r.kind === "bar_closed" ? T.blue : T.orange}>{r.kind}</Badge>
+      ),
+    },
+    {
+      key: "src",
+      label: "Source",
+      render: (r) => r.source || "—",
+    },
+    {
+      key: "detail",
+      label: "Détail",
+      render: (r) => {
+        if (r.kind === "bar_closed") {
+          return (
+            <span style={{ fontFamily: T.mono, fontSize: 11 }}>
+              {r.symbol || "—"} {r.timeframe || ""} · c={r.close != null ? fmt(r.close) : "—"}
+            </span>
+          );
+        }
+        return (
+          <span>
+            <Badge color={r.consensus === "LONG" ? T.green : r.consensus === "SHORT" ? T.red : T.textDim}>
+              {r.consensus}
+            </Badge>{" "}
+            <span style={{ fontSize: 11, color: T.textDim }}>
+              {r.nLong}L / {r.nShort}S
+              {r.signals?.length ? ` · ${r.signals.map((s) => `#${s.id}`).join(",")}` : ""}
+            </span>
+          </span>
+        );
+      },
+    },
+  ];
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <Panel title="Signal Engine — consensus" right={<SimBadge />}>
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <div style={{ fontSize: 30, fontWeight: 800, color: consensus === "LONG" ? T.green : consensus === "SHORT" ? T.red : T.textDim, padding: "6px 24px", border: `2px solid ${consensus === "LONG" ? T.green : consensus === "SHORT" ? T.red : T.border}`, borderRadius: 10 }}>{consensus}</div>
+      <Panel>
+        <div style={{ fontSize: 16, fontWeight: 800 }}>Signal Engine — console unifiée</div>
+        <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.55, maxWidth: 760 }}>
+          Consensus multi-stratégies + journal. Mode <b>local</b> : réévalue sur le pipeline.
+          Mode <b>WS</b> : tail <code style={{ color: T.orange }}>/stream/bars/{console_.streamTf}</code>{" "}
+          (bus Redis ZDL) — journal bar-close + snapshot slots.
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12, alignItems: "center" }}>
+          <Button primary={console_.mode === "local"} onClick={() => console_.setMode("local")}>Local</Button>
+          <Button primary={console_.mode === "ws"} onClick={() => console_.setMode("ws")}>WebSocket</Button>
+          {console_.mode === "ws" && (
+            <>
+              <Badge color={wsStatusColor(console_.wsStatus)}>{console_.wsStatus}</Badge>
+              <Button onClick={console_.reconnect}>Reconnect</Button>
+              <Button onClick={() => navigate("dataManager")}>API config</Button>
+            </>
+          )}
+          {console_.mode === "local" && <SimBadge />}
+        </div>
+        {console_.wsError && (
+          <div style={{ marginTop: 8, fontSize: 12, color: T.red }}>{console_.wsError}</div>
+        )}
+      </Panel>
+
+      <Panel title="Consensus" right={console_.mode === "ws" ? <Badge color={wsStatusColor(console_.wsStatus)}>WS {console_.wsStatus}</Badge> : <SimBadge />}>
+        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{
+            fontSize: 30, fontWeight: 800, borderRadius: 10, padding: "6px 24px",
+            color: consensus === "LONG" ? T.green : consensus === "SHORT" ? T.red : T.textDim,
+            border: `2px solid ${consensus === "LONG" ? T.green : consensus === "SHORT" ? T.red : T.border}`,
+          }}>
+            {consensus}
+          </div>
           <MetricGrid min={100}>
             <MetricCard label="Signaux LONG" value={nLong} color={T.green} />
             <MetricCard label="Signaux SHORT" value={nShort} color={T.red} />
-            <MetricCard label="Total slots" value={slots.length} />
+            <MetricCard label="Slots" value={nSlots} />
+            <MetricCard label="Events" value={console_.events.length} color={T.orange} />
           </MetricGrid>
         </div>
       </Panel>
+
       <Panel title="Détail par stratégie">
-        {signals.map((s) => (
+        {console_.signals.map((s) => (
           <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${T.borderSoft}` }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: CATS[s.cat].color }} />#{s.id} {s.name}</span>
-            <span>{s.long ? <Badge color={T.green}>LONG</Badge> : s.short ? <Badge color={T.red}>SHORT</Badge> : <span style={{ color: T.textFaint }}>FLAT</span>}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: (CATS[s.cat] && CATS[s.cat].color) || T.textFaint }} />
+              #{s.id} {s.name}
+              {s.missing && <Badge color={T.yellow}>missing</Badge>}
+            </span>
+            <span>
+              {s.long ? <Badge color={T.green}>LONG</Badge> : s.short ? <Badge color={T.red}>SHORT</Badge> : <span style={{ color: T.textFaint }}>FLAT</span>}
+            </span>
           </div>
         ))}
+      </Panel>
+
+      <Panel
+        title={`Journal (${filtered.length})`}
+        right={
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <Select
+              value={kindFilter}
+              onChange={setKindFilter}
+              options={[
+                { value: "", label: "Tous types" },
+                { value: "signal_snapshot", label: "Snapshots" },
+                { value: "bar_closed", label: "Bar close" },
+              ]}
+            />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filtrer…"
+              style={{
+                width: 120, background: T.bg0, border: `1px solid ${T.border}`,
+                color: T.text, borderRadius: 6, padding: "6px 8px", fontSize: 12,
+              }}
+            />
+            <Button onClick={() => downloadText(eventsToCsv(filtered), `signal-console-${Date.now()}.csv`)} disabled={!filtered.length}>
+              CSV
+            </Button>
+            <Button onClick={console_.clearEvents}>Clear</Button>
+          </div>
+        }
+      >
+        {filtered.length === 0 ? (
+          <div style={{ padding: 16, textAlign: "center", color: T.textDim, fontSize: 12 }}>
+            Aucun événement. Charge des barres (mode local) ou connecte le WS avec bus Redis activé.
+          </div>
+        ) : (
+          <DataTable columns={eventCols} rows={filtered} maxHeight={320} />
+        )}
       </Panel>
     </div>
   );
 }
+
 
 export function ExecQualityPage() {
   const { bars, symbol, CONTRACTS, assetKey, navigate } = usePipeline();

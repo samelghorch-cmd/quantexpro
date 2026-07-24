@@ -96,7 +96,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
 | Equity / PnL flotte multi-actifs | ✅ `portfolioDesk.js` + Trading → Desk PM | Capital / budget risque / sleeves Alpha Forge + démo + collector |
-| Signal Engine WS localhost:5050 | 🟡 `Signal Engine`, collector `:8787` HTTP | WS streaming + console unifiée 🔴 |
+| Signal Engine WS localhost:5050 | ✅ `signalConsole.js` + hook · Trading → Signal Engine | Local pipeline + WS `/stream/bars/{tf}` (bus ZDL) · journal unifié |
 | Stratégies nommées (ORB, Order Block, …) | Librairie ICT/SMC partielle dans 700 strats | Mapping marketing ↔ ids à documenter |
 
 **Modules proches :** `trading/*`, `collector/index.js`, `export/dossiers`.
@@ -189,6 +189,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-AF | Alpha Forge Validated Edges | ✅ | `validatedEdges.js` · page Optimisation · promote Dossiers |
 | P4-AUDIT-UI | UI journal audit serveur | ✅ | `auditLog.js` · Risque → Audit · hash SHA-256 · CSV |
 | P4-DESK | Desk PM flotte / réserve risque | ✅ | `portfolioDesk.js` · Trading → Desk PM |
+| P4-SIGNAL-WS | Console Signal Engine + WS bars | ✅ | `signalConsole.js` · `/stream/bars` · journal local/WS |
 
 ---
 
