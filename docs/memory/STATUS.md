@@ -11,10 +11,12 @@
 |-------|--------|
 | Branche git | `main` (+ locale `claude/hopeful-swartz-913305`) |
 | Tests | **132 passed** (109 + 23 dossiers) |
-| Commit HEAD | `b4f9a28` P0-A: custom strategies + test engine + VPIN causal + dossiers ZDL |
-| WIP non commité | Non — lot P0-A committé |
-| Bloqueur | **Push GitHub** : pas d'identifiant dans l'env agent (gh/token/ssh absents) → création dépôt + `git push` côté user (steps dans `docs/DEPLOIEMENT.md`) |
+| Commit HEAD | `7a41ea7` CI: aligner npm sur v11 (fix lockfile esbuild) |
+| Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` (origin, URL propre sans token) |
+| CI GitHub | ✅ **VERTE** (jobs : moteur/npm + backend ruff/mypy/pytest) |
+| WIP non commité | Non — tout poussé |
 | Déploiement | Alternative gratuite documentée : **Render (API) + Neon (Postgres)** ; backend rendu portable (hypertables optionnelles). `render.yaml` fourni. |
+| ⚠️ Sécurité | Révoquer les 2 tokens GitHub partagés en chat (github.com/settings/tokens) — le push utilise désormais le keychain. |
 | Prochaine action | Chantier 3 : **Bus ZDL Redis Streams (P0-C)** dans `backend/app/bus/` (publish bar-close, consumer ACK, retry backoff) |
 
 ---
@@ -53,6 +55,7 @@
 | 2026-07-24 | **Chantier 2 — Backend P0-B livré** : `backend/` FastAPI async + SQLAlchemy 2.0 + Pydantic v2 + Alembic hypertables ; ingest idempotent + lecture keyset ; 13 tests backend verts |
 | 2026-07-24 | **Déploiement gratuit** : migration rendue portable (hypertables optionnelles), `render.yaml` + `docs/DEPLOIEMENT.md` (Render+Neon / Fly.io), job CI backend Python ajouté |
 | 2026-07-24 | **Vérif zéro-erreur P0-A/P0-B** : JS 132 tests + couverture seuils + build OK ; backend ruff ✅ + mypy strict 0 ✅ + pytest 13 ✅ + import app ✅. CI backend durcie (ruff+mypy). |
+| 2026-07-24 | **Dépôt GitHub créé + push** (`samelghorch-cmd/quantexpro`). CI d'abord rouge (npm ci lockfile esbuild 0.21 vs 0.28) → fix : CI alignée sur npm 11 → **CI verte** (`7a41ea7`). |
 
 ---
 
