@@ -12,11 +12,11 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **146** · backend **51** |
-| Commit HEAD | (P1-ANT en cours) |
-| CI GitHub | push précédent P1-DSR |
+| Commit HEAD | `8ad371e` — P1-ANT Anti-Library |
+| CI GitHub | push `8ad371e` — à confirmer Actions |
 | P0 | ✅ A–E clôturés |
 | P1 | 🔄 **P1-DSR** + **P1-ANT** · reste stress, TCA, tearsheet, Statistical Edge |
-| Prochaine action | **Stress scenarios portefeuille** (après commit P1-ANT) |
+| Prochaine action | **Stress scenarios portefeuille** (dire « go ») |
 
 ---
 
