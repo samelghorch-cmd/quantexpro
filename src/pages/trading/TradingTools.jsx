@@ -13,7 +13,7 @@ import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../en
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { CATS } from "../../engine/strategyLibrary.js";
 import { findSymbol } from "../../engine/marketData.js";
-import { eventsToCsv, filterEvents } from "../../engine/signalConsole.js";
+import { eventsToCsv, filterEvents } from "../../engine/signalConsole.ts";
 import { useSignalConsole } from "../../hooks/useSignalConsole.js";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";

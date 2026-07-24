@@ -11,7 +11,7 @@ import {
   pushRing,
   makeSignalSnapshotEvent,
   makeBarClosedEvent,
-} from "../engine/signalConsole.js";
+} from "../engine/signalConsole.ts";
 
 /**
  * @param {{

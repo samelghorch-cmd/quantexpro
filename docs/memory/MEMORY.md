@@ -63,6 +63,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 7. **P6** — ✅ THEME · TS-MORE · HMM-BW  
 8. **P7** — ✅ TS-PAT · TS-GEX · TS-MORE  
 9. **P8** — ✅ TS-MICRO · TS-REV · TS-DESK  
+10. **P9** — 🔄 TS-SIGNAL ✅  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 

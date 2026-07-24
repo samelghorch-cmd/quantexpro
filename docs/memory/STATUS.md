@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P8-TS-DESK)
+> Dernière maj : **2026-07-24** (P9-TS-SIGNAL)
 
 ---
 
@@ -12,21 +12,21 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **343** · backend **78** |
-| Commit HEAD | P8-TS-DESK |
-| P0–P7 | ✅ clôturés |
-| P8 | **TS-MICRO** ✅ · **TS-REV** ✅ · **TS-DESK** ✅ |
+| Commit HEAD | P9-TS-SIGNAL |
+| P0–P8 | ✅ clôturés |
+| P9 | **TS-SIGNAL** ✅ |
 | Prochaine action | Dire « go » |
 
 ---
 
-## P8-TS-DESK — livré
+## P9-TS-SIGNAL — livré
 
-- `portfolioDesk.ts` — DeskConfig · DeskSleeve · equity / réserve risque  
-- Trading → Desk PM + tests unitaires mis à jour
+- `signalConsole.ts` — slots · consensus · ring · WS `/stream/bars`  
+- Hook + Trading Tools + tests mis à jour
 
 ---
 
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh`.  
-- Dire **« go »** pour la suite TS (ex. `signalConsole`).
+- Dire **« go »** pour la suite TS (ex. `tca` / `ruleBuilder`).

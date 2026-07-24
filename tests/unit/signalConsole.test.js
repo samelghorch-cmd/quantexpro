@@ -12,7 +12,7 @@ import {
   filterEvents,
   eventsToCsv,
   DEFAULT_SIGNAL_SLOTS,
-} from "../../src/engine/signalConsole.js";
+} from "../../src/engine/signalConsole.ts";
 
 describe("barsWebSocketUrl", () => {
   it("passe http→ws et https→wss", () => {
