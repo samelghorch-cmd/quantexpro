@@ -6,6 +6,7 @@ import { ALL_MODULES, MODULE_ALIASES } from "../registry.js";
 import { CoreModeDeveloperPage } from "./strategyEngine/CoreModeDeveloper.jsx";
 import { PromptModePage } from "./strategyEngine/PromptMode.jsx";
 import { StrategyImporterPage } from "./strategyEngine/StrategyImporter.jsx";
+import { SignalReversePage } from "./strategyEngine/SignalReverse.jsx";
 // ANALYSE
 import { BacktestPage } from "./analyse/Backtest.jsx";
 import { OptimizerPage } from "./analyse/Optimizer.jsx";
@@ -56,6 +57,7 @@ const REAL = {
   coreMode: CoreModeDeveloperPage,
   promptMode: PromptModePage,
   strategyImporter: StrategyImporterPage,
+  signalReverse: SignalReversePage,
   // Analyse
   backtest: BacktestPage,
   optimizer: OptimizerPage,

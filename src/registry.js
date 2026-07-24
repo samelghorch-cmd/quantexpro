@@ -7,6 +7,7 @@ export const SECTIONS = [
       { id: "coreMode", label: "Core Mode Developer" },
       { id: "promptMode", label: "Prompt Mode (LLM local)" },
       { id: "strategyImporter", label: "Strategy Importer" },
+      { id: "signalReverse", label: "Signal Reverse" },
     ],
   },
   {

@@ -119,6 +119,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-FEEDS** Statut multi-feeds TickerBar (`feedStatus.js` · probes réels · Databento/CBOE `scoped_out`) ✅
 - [x] **P4-VP** pPOC / pVAL + confluence OI (`microstructure.js` · VP Footprint · Deribit) ✅
 - [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · Risque → Audit) ✅
+- [x] **P4-REV** Reverse engineering signaux historiques (`signalReverse.js` · Signal Reverse) ✅
 
 ---
 

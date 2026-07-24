@@ -81,7 +81,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (AST, pas d’eval) | Renforcer catalogue indicateurs spec (KAMA, LinReg, Ichimoku drag-drop) |
 | Patterns Library 616 | ✅ `patternsLibrary.js` | Filtres TF M1–MN à aligner UI |
 | Prompt Mode Qwen local | 🔴 | P0 backend LLM |
-| Reverse Engineering signaux | 🟡 Strategy Importer JSON | Mode « historique signaux externes » 🔴 |
+| Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
 | Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
 | Scraper Reddit/X/QC/SSRN | 🔴 | P2 — avec garde-fous légaux + rate limit |
