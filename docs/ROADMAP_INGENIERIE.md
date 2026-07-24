@@ -180,6 +180,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
   - Collector + test parité causality
   - Garde-fous : typecheck + **347** tests
   - Suivi : retirer `@ts-nocheck` progressivement sur ~40 fichiers bulk
+- [x] **AUDIT-2026-07-25** Audit institutionnel régénéré · scorecard **28/35** ✅
 
 ---
 

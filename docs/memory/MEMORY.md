@@ -65,6 +65,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 9. **P8** — ✅ TS-MICRO · TS-REV · TS-DESK  
 10. **P9** — ✅ TS-SIGNAL · TS-TCA · TS-RULE · TS-COST · TS-DSR · TS-API  
 11. **P10** — ✅ TS-ENGINE (bulk `src/engine` → `.ts`, worker exclus)  
+12. **Audit 2026-07-25** — ✅ scorecard **28/35** · P0–P10 clos · dette `@ts-nocheck` documentée  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 
