@@ -259,16 +259,30 @@ export function HMMRegimePage() {
   const returns = useMemo(() => { const r = []; for (let i = 1; i < bars.length; i++) r.push(Math.log(bars[i].c / bars[i - 1].c)); return r; }, [bars]);
   const h = useMemo(() => hmmRegimes(returns), [returns]);
   if (!h) return <Panel><div style={{ padding: 20, color: T.textDim }}>Pas assez de données.</div></Panel>;
-  const total = h.counts.reduce((a, b) => a + b, 0);
-  const colors = [T.green, T.yellow, T.red];
+  const total = h.counts.reduce((a, b) => a + b, 0) || 1;
+  const colors = [T.green, T.blue, T.red, T.yellow];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <Panel title="HMM Regime (marché synthétique)" right={<div style={{ display: "flex", gap: 8 }}><Badge color={T.yellow}>Approximation JS</Badge><SimBadge /></div>}>
-        <MetricGrid min={150}>
-          {h.labels.map((lab, i) => <MetricCard key={lab} label={lab} value={fmtPct((h.counts[i] / total) * 100)} sub={`σ≈${fmt(h.sigma[i], 5)}`} color={colors[i]} />)}
+      <Panel title="HMM Regime — Trend / Range / Vol / Choppy" right={<div style={{ display: "flex", gap: 8 }}><Badge color={T.yellow}>Approximation JS</Badge></div>}>
+        <div style={{ fontSize: 12, color: T.textDim, marginBottom: 10 }}>
+          Clustering causal (vol × efficacité directionnelle). Régime courant :{" "}
+          <b style={{ color: colors[h.current] }}>{h.currentLabel}</b>
+        </div>
+        <MetricGrid min={140}>
+          {h.labels.map((lab, i) => (
+            <MetricCard
+              key={lab}
+              label={lab}
+              value={fmtPct((h.counts[i] / total) * 100)}
+              sub={`vol≈${fmt(h.sigma[i], 5)} · eff≈${fmt(h.mu[i], 2)}`}
+              color={colors[i]}
+            />
+          ))}
         </MetricGrid>
       </Panel>
-      <Panel title="Régime détecté dans le temps"><LineChart series={[{ data: h.states, color: T.orange, width: 1 }]} height={140} /></Panel>
+      <Panel title="Séquence de régimes (0=Trend … 3=Choppy)">
+        <LineChart series={[{ data: h.states, color: T.orange, width: 1 }]} height={140} />
+      </Panel>
     </div>
   );
 }

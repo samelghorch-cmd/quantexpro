@@ -80,7 +80,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 |------|-------------------------|-----|
 | Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (AST, pas d’eval) | Renforcer catalogue indicateurs spec (KAMA, LinReg, Ichimoku drag-drop) |
 | Patterns Library 616 | ✅ `patternsLibrary.js` | Filtres TF M1–MN à aligner UI |
-| Prompt Mode Qwen local | 🔴 | P0 backend LLM |
+| Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
 | Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
 | Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
@@ -139,7 +139,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| HMM régimes (Trend/Range/Vol/Choppy) | 🟡 `quantToolbox/hmm`, pages régime | États spec à aligner ; Python HMM cible |
+| HMM régimes (Trend/Range/Vol/Choppy) | ✅ `hmmRegimes` 4 états · HMM Regime / Regime Clock / Quant Toolbox | 🟢 heuristique JS (badge) ; Python HMM cible P5 |
 | USD Liquidity, Yield, Inflation | ✅ FRED proxy `macroData.js` | ✅ (gratuit) |
 | COT | ✅ `cotData.js` | ✅ |
 | Crypto Whales, Ship Tracker | Empty state externe | Connecteurs P2 |
@@ -197,6 +197,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
 | P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
+| P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` 4 états · pages HMM / Regime Clock / Toolbox |
 
 ---
 

@@ -85,43 +85,180 @@ export function garchVol(returns) {
   return { vol, omega, alpha, beta, uncondVol: Math.sqrt(varUnc), persistence: alpha + beta };
 }
 
-// ---------- HMM 3 états (Baum-Welch réduit sur la volatilité) ----------
-export function hmmRegimes(returns, nStates = 3, iters = 12) {
-  if (returns.length < 30) return null;
-  // Initialisation par quantiles de |return|
-  const absr = returns.map(Math.abs);
-  const sorted = [...absr].sort((a, b) => a - b);
-  const means = [sorted[Math.floor(sorted.length * 0.2)], sorted[Math.floor(sorted.length * 0.5)], sorted[Math.floor(sorted.length * 0.85)]];
-  let mu = means.slice(0, nStates);
-  let sigma = mu.map((m) => (m || 0.001) * 0.5 + 1e-4);
-  const N = returns.length;
-  let gamma = Array.from({ length: N }, () => Array(nStates).fill(1 / nStates));
-  const gauss = (x, m, s) => Math.exp(-((x - m) ** 2) / (2 * s * s)) / (Math.sqrt(2 * Math.PI) * s);
-  for (let it = 0; it < iters; it++) {
-    // E-step (approx : responsabilité locale, sans transition complète)
-    for (let i = 0; i < N; i++) {
-      const x = absr[i];
-      let sum = 0;
-      for (let k = 0; k < nStates; k++) { gamma[i][k] = gauss(x, mu[k], sigma[k]) + 1e-12; sum += gamma[i][k]; }
-      for (let k = 0; k < nStates; k++) gamma[i][k] /= sum;
+// ---------- HMM 4 régimes institutionnels (Trend / Range / Vol / Choppy) ----------
+// Heuristique JS : soft-clustering EM sur features causales (vol roulante + efficacité
+// directionnelle). Badge « Approximation JS » obligatoire côté UI — pas un HMM Python.
+export const HMM_REGIME_LABELS = ["Trend", "Range", "Vol", "Choppy"];
+export const HMM_REGIME_IDS = ["trend", "range", "vol", "choppy"];
+
+/**
+ * Features causales par barre (fenêtre ``win`` close).
+ * @returns {{ vol: number, efficiency: number }[]}
+ */
+export function hmmFeatures(returns, win = 20) {
+  const out = [];
+  for (let i = 0; i < returns.length; i++) {
+    if (i + 1 < win) {
+      out.push({ vol: NaN, efficiency: NaN });
+      continue;
     }
-    // M-step
-    for (let k = 0; k < nStates; k++) {
-      let wsum = 0, msum = 0;
-      for (let i = 0; i < N; i++) { wsum += gamma[i][k]; msum += gamma[i][k] * absr[i]; }
-      mu[k] = wsum ? msum / wsum : mu[k];
-      let vsum = 0;
-      for (let i = 0; i < N; i++) vsum += gamma[i][k] * (absr[i] - mu[k]) ** 2;
-      sigma[k] = wsum ? Math.sqrt(vsum / wsum) + 1e-5 : sigma[k];
+    let sum = 0;
+    let sumSq = 0;
+    let sumAbs = 0;
+    for (let j = i - win + 1; j <= i; j++) {
+      const r = returns[j];
+      sum += r;
+      sumSq += r * r;
+      sumAbs += Math.abs(r);
+    }
+    const mean = sum / win;
+    const vol = Math.sqrt(Math.max(0, sumSq / win - mean * mean)) + 1e-12;
+    const efficiency = Math.abs(mean) / (sumAbs / win + 1e-12);
+    out.push({ vol, efficiency });
+  }
+  return out;
+}
+
+/** Assigne les ids de clusters → Trend/Range/Vol/Choppy selon centroïdes. */
+export function mapClustersToRegimes(centroids) {
+  // centroids[k] = { vol, efficiency }
+  const idx = centroids.map((_, i) => i);
+  const byVol = [...idx].sort((a, b) => centroids[a].vol - centroids[b].vol);
+  const byEff = [...idx].sort((a, b) => centroids[b].efficiency - centroids[a].efficiency);
+  const used = new Set();
+  const remap = {}; // cluster → regime index 0..3
+
+  const take = (list, regimeIdx) => {
+    for (const c of list) {
+      if (!used.has(c)) {
+        used.add(c);
+        remap[c] = regimeIdx;
+        return;
+      }
+    }
+  };
+  take(byEff, 0); // Trend = meilleure efficacité
+  take(byVol, 1); // Range = plus basse vol restante
+  take([...byVol].reverse(), 2); // Vol = plus haute vol restante
+  take(idx, 3); // Choppy = reste
+  return remap;
+}
+
+/**
+ * @param {number[]} returns
+ * @param {number} [nStates=4]
+ * @param {number} [iters=15]
+ */
+export function hmmRegimes(returns, nStates = 4, iters = 15) {
+  if (!returns || returns.length < 40) return null;
+  const nK = Math.min(Math.max(nStates, 2), 4);
+  const win = 20;
+  const feats = hmmFeatures(returns, win);
+  const validIdx = [];
+  for (let i = 0; i < feats.length; i++) {
+    if (Number.isFinite(feats[i].vol) && Number.isFinite(feats[i].efficiency)) validIdx.push(i);
+  }
+  if (validIdx.length < 20) return null;
+
+  const vols = validIdx.map((i) => feats[i].vol);
+  const effs = validIdx.map((i) => feats[i].efficiency);
+  const volSorted = [...vols].sort((a, b) => a - b);
+  const effSorted = [...effs].sort((a, b) => a - b);
+  const q = (arr, p) => arr[Math.min(arr.length - 1, Math.floor(arr.length * p))];
+
+  // Init centroïdes sur grille vol × efficacité
+  let centroids = [];
+  if (nK === 4) {
+    centroids = [
+      { vol: q(volSorted, 0.4), efficiency: q(effSorted, 0.8) }, // trend-ish
+      { vol: q(volSorted, 0.2), efficiency: q(effSorted, 0.3) }, // range-ish
+      { vol: q(volSorted, 0.85), efficiency: q(effSorted, 0.45) }, // vol-ish
+      { vol: q(volSorted, 0.55), efficiency: q(effSorted, 0.2) }, // choppy-ish
+    ];
+  } else {
+    for (let k = 0; k < nK; k++) {
+      const p = (k + 0.5) / nK;
+      centroids.push({ vol: q(volSorted, p), efficiency: q(effSorted, 1 - p) });
     }
   }
-  const states = gamma.map((g) => g.indexOf(Math.max(...g)));
-  // ordonne : 0=calme, 2=stress
-  const order = mu.map((m, i) => [m, i]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
-  const remap = {}; order.forEach((old, idx) => (remap[old] = idx));
-  const labeled = states.map((s) => remap[s]);
-  const counts = Array(nStates).fill(0); labeled.forEach((s) => counts[s]++);
-  return { states: labeled, mu: order.map((i) => mu[i]), sigma: order.map((i) => sigma[i]), counts, labels: ["Calme", "Normal", "Stress"] };
+
+  const dist2 = (a, b) => {
+    const dv = (a.vol - b.vol) / (q(volSorted, 0.9) + 1e-12);
+    const de = a.efficiency - b.efficiency;
+    return dv * dv + de * de;
+  };
+
+  let assign = Array(validIdx.length).fill(0);
+  for (let it = 0; it < iters; it++) {
+    // E : nearest centroid
+    for (let j = 0; j < validIdx.length; j++) {
+      const f = feats[validIdx[j]];
+      let best = 0;
+      let bestD = Infinity;
+      for (let k = 0; k < nK; k++) {
+        const d = dist2(f, centroids[k]);
+        if (d < bestD) {
+          bestD = d;
+          best = k;
+        }
+      }
+      assign[j] = best;
+    }
+    // M : moyenner
+    const next = Array.from({ length: nK }, () => ({ vol: 0, efficiency: 0, n: 0 }));
+    for (let j = 0; j < validIdx.length; j++) {
+      const f = feats[validIdx[j]];
+      const k = assign[j];
+      next[k].vol += f.vol;
+      next[k].efficiency += f.efficiency;
+      next[k].n++;
+    }
+    for (let k = 0; k < nK; k++) {
+      if (next[k].n > 0) {
+        centroids[k] = {
+          vol: next[k].vol / next[k].n,
+          efficiency: next[k].efficiency / next[k].n,
+        };
+      }
+    }
+  }
+
+  const remap = nK === 4 ? mapClustersToRegimes(centroids) : Object.fromEntries([...Array(nK).keys()].map((k) => [k, k]));
+  const states = Array(returns.length).fill(nK === 4 ? 1 : 0); // défaut Range / 0
+  const counts = Array(nK === 4 ? 4 : nK).fill(0);
+  for (let j = 0; j < validIdx.length; j++) {
+    const regime = remap[assign[j]] ?? assign[j];
+    states[validIdx[j]] = regime;
+    counts[regime]++;
+  }
+  // Remplir le warmup avec le premier état valide
+  const firstValid = validIdx[0];
+  for (let i = 0; i < firstValid; i++) states[i] = states[firstValid];
+
+  const labels =
+    nK === 4
+      ? HMM_REGIME_LABELS.slice()
+      : Array.from({ length: nK }, (_, i) => `S${i}`);
+  const orderedCentroids = labels.map((_, regimeIdx) => {
+    const cluster = Object.keys(remap).find((c) => remap[c] === regimeIdx);
+    return cluster != null ? centroids[Number(cluster)] : { vol: 0, efficiency: 0 };
+  });
+
+  const current = states[states.length - 1];
+  return {
+    states,
+    counts,
+    labels,
+    ids: nK === 4 ? HMM_REGIME_IDS.slice() : labels.map((l) => l.toLowerCase()),
+    centroids: orderedCentroids,
+    // Compat UI historique (σ ≈ vol du centroïde)
+    mu: orderedCentroids.map((c) => c.efficiency),
+    sigma: orderedCentroids.map((c) => c.vol),
+    current,
+    currentLabel: labels[current],
+    heuristic: true,
+    nStates: nK === 4 ? 4 : nK,
+  };
 }
 
 // ---------- "XGBoost" heuristique : ensemble de stumps boostés (badge heuristique JS) ----------

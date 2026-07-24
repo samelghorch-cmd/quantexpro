@@ -61,18 +61,21 @@ function HmmTab() {
   const returns = useReturns();
   const h = useMemo(() => hmmRegimes(returns), [returns]);
   if (!h) return <Panel><div style={{ padding: 20, color: T.textDim }}>Pas assez de données.</div></Panel>;
-  const total = h.counts.reduce((a, b) => a + b, 0);
-  const colors = [T.green, T.yellow, T.red];
+  const total = h.counts.reduce((a, b) => a + b, 0) || 1;
+  const colors = [T.green, T.blue, T.red, T.yellow];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <Panel title="HMM 3 états (Baum-Welch réduit)" right={<Badge color={T.yellow}>Approximation JS</Badge>}>
-        <MetricGrid min={150}>
+      <Panel title="HMM 4 régimes (Trend / Range / Vol / Choppy)" right={<Badge color={T.yellow}>Approximation JS</Badge>}>
+        <MetricGrid min={140}>
           {h.labels.map((lab, i) => (
-            <MetricCard key={lab} label={lab} value={fmtPct((h.counts[i] / total) * 100)} sub={`σ≈${fmt(h.sigma[i], 5)}`} color={colors[i]} />
+            <MetricCard key={lab} label={lab} value={fmtPct((h.counts[i] / total) * 100)} sub={`vol≈${fmt(h.sigma[i], 5)}`} color={colors[i]} />
           ))}
         </MetricGrid>
+        <div style={{ marginTop: 8, fontSize: 12, color: T.textDim }}>
+          Courant : <b style={{ color: colors[h.current] }}>{h.currentLabel}</b>
+        </div>
       </Panel>
-      <Panel title="Séquence de régimes détectés (0=calme, 2=stress)"><LineChart series={[{ data: h.states, color: T.orange, width: 1 }]} height={140} /></Panel>
+      <Panel title="Séquence (0=Trend … 3=Choppy)"><LineChart series={[{ data: h.states, color: T.orange, width: 1 }]} height={140} /></Panel>
     </div>
   );
 }

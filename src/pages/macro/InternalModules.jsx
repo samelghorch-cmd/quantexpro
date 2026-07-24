@@ -173,22 +173,24 @@ export function RegimeClockPage() {
   const returns = useMemo(() => { const r = []; for (let i = 1; i < bars.length; i++) r.push(Math.log(bars[i].c / bars[i - 1].c)); return r; }, [bars]);
   const h = useMemo(() => hmmRegimes(returns), [returns]);
   if (!h) return <Panel><div style={{ padding: 20, color: T.textDim }}>Pas assez de données.</div></Panel>;
-  const cur = h.states[h.states.length - 1];
-  const total = h.counts.reduce((a, b) => a + b, 0);
-  const colors = [T.green, T.yellow, T.red];
+  const cur = h.current;
+  const total = h.counts.reduce((a, b) => a + b, 0) || 1;
+  const colors = [T.green, T.blue, T.red, T.yellow];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 14, alignItems: "start" }}>
-      <Panel title="Régime actuel" right={<SimBadge />}>
+      <Panel title="Régime actuel" right={<Badge color={T.yellow}>Approx. JS</Badge>}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: 16 }}>
           <div style={{ width: 130, height: 130, borderRadius: "50%", border: `8px solid ${colors[cur]}`, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
             <span style={{ fontSize: 22, fontWeight: 800, color: colors[cur] }}>{h.labels[cur]}</span>
-            <span style={{ fontSize: 10, color: T.textDim }}>régime détecté</span>
+            <span style={{ fontSize: 10, color: T.textDim }}>Trend·Range·Vol·Choppy</span>
           </div>
         </div>
       </Panel>
       <Panel title="Distribution des régimes">
-        <MetricGrid min={150}>
-          {h.labels.map((lab, i) => <MetricCard key={lab} label={lab} value={fmtPct((h.counts[i] / total) * 100)} sub={`vol σ≈${fmt(h.sigma[i], 5)}`} color={colors[i]} />)}
+        <MetricGrid min={140}>
+          {h.labels.map((lab, i) => (
+            <MetricCard key={lab} label={lab} value={fmtPct((h.counts[i] / total) * 100)} sub={`vol≈${fmt(h.sigma[i], 5)}`} color={colors[i]} />
+          ))}
         </MetricGrid>
         <div style={{ marginTop: 14 }}><LineChart series={[{ data: h.states, color: T.orange, width: 1 }]} height={140} /></div>
       </Panel>

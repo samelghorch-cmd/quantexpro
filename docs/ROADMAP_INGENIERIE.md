@@ -120,6 +120,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-VP** pPOC / pVAL + confluence OI (`microstructure.js` · VP Footprint · Deribit) ✅
 - [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · Risque → Audit) ✅
 - [x] **P4-REV** Reverse engineering signaux historiques (`signalReverse.js` · Signal Reverse) ✅
+- [x] **P4-HMM** Régimes Trend/Range/Vol/Choppy (`hmmRegimes` · HMM Regime / Regime Clock) ✅
 
 ---
 

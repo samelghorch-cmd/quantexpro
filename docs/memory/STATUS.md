@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P4-REV)
+> Dernière maj : **2026-07-24** (P4-HMM)
 
 ---
 
@@ -11,19 +11,19 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **321** · backend **68** |
-| Commit HEAD | P4-REV |
+| Tests | JS **326** · backend **68** |
+| Commit HEAD | P4-HMM |
 | P0–P3 | ✅ clôturés |
-| P4 | … · SSO · **REV** ✅ |
+| P4 | … · REV · **HMM** ✅ |
 | Prochaine action | Dire « go » (suite / ops) |
 
 ---
 
-## P4-REV — livré
+## P4-HMM — livré
 
-- `signalReverse.js` — parse CSV/JSON, alignement causal, replay, lift → règles  
-- Page Strategy Engine → **Signal Reverse**  
-- Sauvegarde custom #9001+ vers le pipeline
+- `hmmRegimes` → 4 états **Trend / Range / Vol / Choppy** (features causales vol × efficacité)  
+- UI : HMM Regime, Regime Clock, Quant Toolbox  
+- Badge Approximation JS conservé
 
 ---
 
