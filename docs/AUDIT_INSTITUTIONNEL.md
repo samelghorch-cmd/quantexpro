@@ -66,7 +66,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| Bandeau feeds Databento/LSE/LMAX/CME | `TickerBar.jsx` — actifs Yahoo/Binance, pas de statut multi-feed institutionnel | 🔴 feeds + statuts |
+| Bandeau feeds Databento/LSE/LMAX/CME | ✅ `feedStatus.js` + chips TickerBar (probes Binance/YF/TS/Collector/Deribit · Databento/CBOE `scoped_out`) | 🟢 statut ; 🟡 Databento L2 payant hors scope |
 | Grille 10 métriques (Noise, Persist., IC, Hit, Edge Net, Lag, …) | ✅ `statisticalEdge.js` + page Outils | CSV métriques/séries ✅ |
 | Oscillateurs multi-courbes Z-Score / Hurst / régimes | LineChart + ctx ; HMM dans Quant Toolbox / pages trading | 🟡 |
 
