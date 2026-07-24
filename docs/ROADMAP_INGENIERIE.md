@@ -82,7 +82,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P1-ANT** Anti-Library store + filtre Usine/FAO (`antiLibrary.js` + UI) ✅
 - [x] **P1-PORT** Stress scenarios portefeuille (`portfolioStress.js` — 2008/2010/2020) ✅
 - [x] **P1-TCA** TCA module (slippage observé vs `costModel.js`) ✅
-- [ ] PDF tearsheet par dossier
+- [x] **P1-PDF** Tearsheet PDF par dossier (`tearsheet.js` + `pdfLite.js`) ✅
 - [ ] **Statistical Edge Module 1** (grille 10 métriques + CSV)
 
 ---

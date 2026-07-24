@@ -11,12 +11,12 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **168** · backend **51** |
-| Commit HEAD | `59b63ff` — P1-TCA |
-| CI GitHub | push `59b63ff` — à confirmer Actions |
+| Tests | JS **175** · backend **51** |
+| Commit HEAD | P1-PDF tearsheet (en cours) |
+| CI GitHub | après push |
 | P0 | ✅ A–E clôturés |
-| P1 | 🔄 DSR+ANT+PORT+**TCA** · reste tearsheet, Statistical Edge |
-| Prochaine action | **PDF tearsheet** par dossier — dire « go » |
+| P1 | 🔄 DSR+ANT+PORT+TCA+**PDF** · reste Statistical Edge |
+| Prochaine action | **Statistical Edge Module 1** — dire « go » |
 
 ---
 
@@ -55,6 +55,7 @@
 | 2026-07-24 | **P1-ANT** : Anti-Library (`antiLibrary.js`) — seeds involutifs, filtre Usine + blocage FAO, UI Optimisation, 8 tests → JS **146** |
 | 2026-07-24 | **P1-PORT** : stress 2008/2010/2020 sur équité Usine (`portfolioStress.js` + panneau), 9 tests → JS **155** |
 | 2026-07-24 | **P1-TCA** : TCA observé vs costModel (`tca.js` + page Trading), 13 tests → JS **168** |
+| 2026-07-24 | **P1-PDF** : Investor Tearsheet PDF par dossier (`tearsheet.js` + `pdfLite.js`), 7 tests → JS **175** |
 
 ---
 

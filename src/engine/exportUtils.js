@@ -20,3 +20,12 @@ export function downloadJSON(obj, filename) {
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
+
+/** Télécharge un PDF (Uint8Array / ArrayBuffer / Blob). */
+export function downloadPDF(data, filename) {
+  const blob = data instanceof Blob ? data : new Blob([data], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename || "report.pdf"; a.click();
+  URL.revokeObjectURL(url);
+}

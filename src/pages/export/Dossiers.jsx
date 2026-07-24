@@ -6,7 +6,8 @@ import { useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, updateDossier, upsertDemoSession } from "../../engine/dossierStore.js";
 import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.js";
-import { downloadJSON } from "../../engine/exportUtils.js";
+import { downloadJSON, downloadPDF } from "../../engine/exportUtils.js";
+import { generateTearsheetPdf } from "../../engine/tearsheet.js";
 import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 
@@ -202,6 +203,15 @@ export function DossiersPage() {
                   </div>
                 ) : <Badge color={T.textFaint}>non noté — lance la Reco Finale</Badge>}
                 {d.id !== activeDossierId && <Button primary onClick={() => setActiveDossier(d.id)}>Définir comme actif</Button>}
+                <Button
+                  primary
+                  onClick={() => {
+                    const { bytes, filename } = generateTearsheetPdf(d);
+                    downloadPDF(bytes, filename);
+                  }}
+                >
+                  📄 Tearsheet PDF
+                </Button>
                 <Button onClick={() => downloadJSON(d, `dossier_${d.name.replace(/\W+/g, "_")}.json`)}>⬇ Export complet</Button>
                 <span onClick={() => remove(d.id)} title="Supprimer" style={{ cursor: "pointer", color: T.red, fontSize: 16 }}>✕</span>
               </div>

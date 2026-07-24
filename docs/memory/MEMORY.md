@@ -55,7 +55,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 ## 5. Priorités actuelles (ordre strict)
 
 1. **Sprint 0 / P0** — ✅ A–E clôturés  
-2. **P1** — ✅ DSR · ✅ Anti-Library · ✅ Stress · ✅ TCA · reste : Statistical Edge · tearsheet  
+2. **P1** — ✅ DSR · ✅ Anti-Library · ✅ Stress · ✅ TCA · ✅ Tearsheet · reste : **Statistical Edge**  
 3. **P2** — L2 Binance · Dukascopy · export MQL5 · Labs UI  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
