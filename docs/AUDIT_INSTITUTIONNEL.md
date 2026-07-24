@@ -196,6 +196,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.js` · probes · Databento/CBOE scoped_out |
 | P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
+| P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
 
 ---
 
