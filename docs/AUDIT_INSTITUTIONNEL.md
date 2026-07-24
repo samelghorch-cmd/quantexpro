@@ -211,6 +211,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P6-TS-MORE | antiLibrary + sync → TS | ✅ | `AntiEntry` · API payload · merge remote |
 | P6-HMM-BW | Baum-Welch Gaussian 1D | ✅ | `hmm_bw.py` · `engine=baum_welch` · heuristic=false |
 | P7-TS-PAT | patternsLibrary → TypeScript | ✅ | `Pattern` · TF M1–MN · filtres |
+| P7-TS-GEX | gex → TypeScript | ✅ | `OptionRow` · GEX / Max Pain / PCR |
 
 ---
 
@@ -218,14 +219,14 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 > Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P6 clôturés** · P7 en cours.
 
-**Prochaine action recommandée :** P7-TS-GEX ou suite TS.
+**Prochaine action recommandée :** P7-TS-MORE (auditLog, ssoAuth).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5/P6 + **P7-TS-PAT** livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5/P6 + **P7-TS-PAT** · **P7-TS-GEX** livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
