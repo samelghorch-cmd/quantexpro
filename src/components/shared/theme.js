@@ -1,4 +1,5 @@
 // Charte visuelle QuantEXPro — dark premium, accent orange.
+// P6-THEME : tokens sémantiques long/short (audit hedge-fund) — non-breaking.
 export const T = {
   orange: "#FF6B00",
   orangeSoft: "#FF6B0022",
@@ -6,16 +7,24 @@ export const T = {
   bg0: "#0a0c10",
   bg1: "#0d0f12",
   panel: "#111419",
+  /** Cartes desk (spec audit `#161920`). */
+  card: "#161920",
   panelAlt: "#0d1117",
   border: "#22282f",
   borderSoft: "#1c2128",
   text: "#F0F2F5",
   textDim: "#8a929c",
   textFaint: "#5c646e",
+  // Statut / PnL (hérités)
   green: "#00E5A0",
   greenSoft: "#00E5A020",
   red: "#FF4D6A",
   redSoft: "#FF4D6A20",
+  // Direction marché — sémantique institutionnelle (audit)
+  long: "#00e676",
+  longSoft: "#00e67620",
+  short: "#ff1744",
+  shortSoft: "#ff174420",
   blue: "#4DA6FF",
   purple: "#9B6BFF",
   yellow: "#F4B942",
@@ -32,10 +41,31 @@ export const verdictColor = (v) => {
   return T.textDim;
 };
 
+/**
+ * Couleur sémantique LONG / SHORT (pas PnL).
+ * Accepte : 1 / -1, "buy"/"sell", "long"/"short", true/false.
+ */
+export function sideColor(side) {
+  if (side === 1 || side === true) return T.long;
+  if (side === -1 || side === false) return T.short;
+  const u = String(side || "").toUpperCase();
+  if (u === "LONG" || u === "BUY" || u === "L") return T.long;
+  if (u === "SHORT" || u === "SELL" || u === "S") return T.short;
+  return T.textDim;
+}
+
+/** Couleur PnL / edge numérique (conserve green/red statut). */
+export function pnlColor(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return T.textDim;
+  return n >= 0 ? T.green : T.red;
+}
+
 // Styles réutilisables
 export const S = {
   bg: { background: T.bg0, color: T.text, fontFamily: T.sans, minHeight: "100vh" },
   panel: { background: T.panel, border: `1px solid ${T.border}`, borderRadius: 10 },
+  card: { background: T.card, border: `1px solid ${T.border}`, borderRadius: 10 },
   panelPad: { padding: 14 },
   h: { margin: 0, fontSize: 13, fontWeight: 600, color: T.text, textTransform: "uppercase", letterSpacing: 0.6 },
   h2: { margin: 0, fontSize: 18, fontWeight: 700, color: T.text },

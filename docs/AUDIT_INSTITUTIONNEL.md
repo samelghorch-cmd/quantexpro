@@ -207,14 +207,15 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P5-TS-EDGES | validatedEdges + edgesSync → TS | ✅ | `ValidatedEdge` · API payload · merge remote |
 | P5-HMM-PY | HMM Python paritaire | ✅ | `app/quant/hmm.py` · `/v1/quant/hmm` · golden seed9 |
 | P5-OPS | Go-live alembic + MT5 | ✅ | `OPS_GO_LIVE.md` · `ops_migrate.sh` · `ops_preflight.mjs` |
+| P6-THEME | Tokens long/short UI | ✅ | `T.long`/`T.short` · `sideColor` · Trades/Live/Sentiment |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5 clôturé** au 2026-07-24.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5 clôturé** · P6 en cours.
 
-**Prochaine action recommandée :** ports TS restants / Baum-Welch réel / Databento (payant hors scope).
+**Prochaine action recommandée :** P6-TS-MORE ou P6-HMM-BW.
 
 ---
 
@@ -222,11 +223,10 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
 2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés). **P5-TS-FEEDS** · **P5-TS-MORE** · **P5-TS-EDGES** livrés.
-3. **Charte couleurs :** conserver orange TradoBot en **accent marque** ; ajouter tokens `#00e676` / `#ff1744` pour sémantique long/short dans `theme.js` (non-breaking).
+3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge. **HMM :** port Python livré (même algo soft-clustering — pas Baum-Welch).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
-6. **Ops :** migrations head **0005** + preflight documentés (`docs/OPS_GO_LIVE.md`) — exécution prod = action ops humaine.
----
+6. **Ops :** migrations head **0005** + preflight documentés (`docs/OPS_GO_LIVE.md`) — exécution prod = action ops humaine.---
 
 ## 7. Checklist « Hedge-Fund Readiness » (scorecard)
 

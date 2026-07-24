@@ -4,7 +4,7 @@ import { analyzeTrades } from "../../engine/analytics.js";
 import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { Panel, MetricCard, MetricGrid, fmt, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T, sideColor } from "../../components/shared/theme.js";
 
 function NoBacktest() {
   return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest (onglet Backtest) — ce module analyse ses trades.</div></Panel>;
@@ -27,7 +27,7 @@ export function TradesPage() {
                 <td style={{ padding: "3px 10px", color: T.textFaint }}>{i + 1}</td>
                 <td style={{ padding: "3px 10px" }}>{new Date(t.entryTime).toISOString().slice(5, 16).replace("T", " ")}</td>
                 <td style={{ padding: "3px 10px" }}>{new Date(t.exitTime).toISOString().slice(5, 16).replace("T", " ")}</td>
-                <td style={{ padding: "3px 10px", color: t.side === 1 ? T.green : T.red }}>{t.side === 1 ? "LONG" : "SHORT"}</td>
+                <td style={{ padding: "3px 10px", color: sideColor(t.side) }}>{t.side === 1 ? "LONG" : "SHORT"}</td>
                 <td style={{ padding: "3px 10px", color: T.textDim }}>{t.bars}</td>
                 <td style={{ padding: "3px 10px", color: T.textDim }}>{t.reason}</td>
                 <td style={{ padding: "3px 10px", color: t.pnl >= 0 ? T.green : T.red }}>{fmtUsd(t.pnl)}</td>

@@ -138,6 +138,14 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ---
 
+## P6 — Polish produit (post-P5)
+
+- [x] **P6-THEME** Tokens long/short `#00e676` / `#ff1744` + `T.card` (`theme.js`) ✅
+- [ ] **P6-TS-MORE** Suite incremental `src/engine` (gex, antiLibrary, …)
+- [ ] **P6-HMM-BW** Baum-Welch réel (optionnel · badge JS conservé)
+
+---
+
 ## Mapping spec → pages actuelles (référence rapide)
 
 | Module spec | Entrées sidebar actuelles |

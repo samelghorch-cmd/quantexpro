@@ -6,7 +6,7 @@ import { buildContext } from "../../engine/context.js";
 import { runFAO } from "../../engine/fao.js";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Button, Badge, SimBadge, MetricCard, MetricGrid, DataTable, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T, sideColor } from "../../components/shared/theme.js";
 
 function LiveControls({ feed }) {
   return (
@@ -79,7 +79,7 @@ function CockpitBase({ title, master }) {
           {signals.map((s) => (
             <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.borderSoft}`, fontSize: 11.5 }}>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 150 }}>#{s.id} {s.name}</span>
-              <span>{s.long ? <Badge color={T.green}>LONG</Badge> : s.short ? <Badge color={T.red}>SHORT</Badge> : <span style={{ color: T.textFaint }}>—</span>}</span>
+              <span>{s.long ? <Badge color={T.long}>LONG</Badge> : s.short ? <Badge color={T.short}>SHORT</Badge> : <span style={{ color: T.textFaint }}>—</span>}</span>
             </div>
           ))}
         </Panel>
@@ -109,7 +109,7 @@ export function OrchestrateurPage() {
   const columns = [
     { key: "id", label: "#", render: (r) => r.id },
     { key: "name", label: "Stratégie", render: (r) => r.name },
-    { key: "state", label: "État live", render: (r) => <Badge color={r.state === "LONG" ? T.green : r.state === "SHORT" ? T.red : T.textFaint}>{r.state}</Badge> },
+    { key: "state", label: "État live", render: (r) => <Badge color={r.state === "LONG" || r.state === "SHORT" ? sideColor(r.state) : T.textFaint}>{r.state}</Badge> },
     { key: "longCount", label: "Signaux L (200b)", align: "right", render: (r) => r.longCount, color: () => T.green },
     { key: "shortCount", label: "Signaux S (200b)", align: "right", render: (r) => r.shortCount, color: () => T.red },
   ];

@@ -10,11 +10,10 @@ import {
   sentimentRateLimiter,
 } from "../../engine/sentimentFeed.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T, sideColor } from "../../components/shared/theme.js";
 
 function labelColor(label) {
-  if (label === "LONG") return T.green;
-  if (label === "SHORT") return T.red;
+  if (label === "LONG" || label === "SHORT") return sideColor(label);
   return T.textDim;
 }
 
