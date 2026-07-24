@@ -99,6 +99,12 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ---
 
+## P3 — ZDL wire-up (post-P2)
+
+- [x] **P3-ZDL-SYNC** Dashboard ↔ TimescaleDB (`barsSync.ts` · TF 15m/1h/4h/1d · Data Manager Push/Pull) ✅
+
+---
+
 ## Mapping spec → pages actuelles (référence rapide)
 
 | Module spec | Entrées sidebar actuelles |

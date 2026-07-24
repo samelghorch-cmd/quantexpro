@@ -1,12 +1,14 @@
 // Data Manager — pré-télécharge un univers d'actifs dans IndexedDB (gros stockage, hors-ligne),
 // affiche la santé des données en cache, et permet de rafraîchir / supprimer.
 // Une fois l'univers téléchargé, l'Usine à Stratégies tourne instantanément dessus.
-import { useState, useEffect, useCallback } from "react";
-import { usePersistentState } from "../../state/PipelineContext.jsx";
-import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate } from "../../engine/marketData.js";
+import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate, loadCachedBars } from "../../engine/marketData.js";
 import { parseImportPayload } from "../../engine/dukascopyImport.js";
+import { pushBarsToApi, pullBarsFromApi, pingApi, isApiConfigured, TF_TO_API } from "../../engine/barsSync.ts";
+import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
+import { useState, useEffect, useCallback } from "react";
+import { usePersistentState } from "../../state/PipelineContext.jsx";
 
 const TF_OPTS = [{ v: 3, l: "15m" }, { v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }];
 const fmtBytes = (b) => b > 1e6 ? `${(b / 1e6).toFixed(1)} Mo` : b > 1e3 ? `${(b / 1e3).toFixed(0)} Ko` : `${b} o`;
@@ -56,8 +58,74 @@ export function DataManagerPage() {
   const removeOne = async (id) => { await deleteCachedSeries(id); await refresh(); };
   const clearAll = async () => { await clearMarketCache(); await refresh(); };
 
-  // Import de séries profondes Dukascopy (JSON produit par tools/dukascopy) — 15-20 ans d'historique.
   const [importMsg, setImportMsg] = useState(null);
+  const [apiBase, setApiBase] = useState(() => getApiBaseUrl());
+  const [apiKey, setApiKeyState] = useState(() => getApiKey());
+  const [syncMsg, setSyncMsg] = useState(null);
+  const [syncBusy, setSyncBusy] = useState(false);
+
+  const saveApi = () => {
+    setApiBaseUrl(apiBase);
+    setApiKey(apiKey);
+    setSyncMsg({ label: "Config API enregistrée (localStorage)" });
+    setTimeout(() => setSyncMsg(null), 2500);
+  };
+
+  const onPing = async () => {
+    setSyncBusy(true);
+    const r = await pingApi();
+    setSyncMsg({ done: true, label: r.ok ? `API OK — ${r.detail.slice(0, 80)}` : `API KO — ${r.detail}` });
+    setSyncBusy(false);
+    setTimeout(() => setSyncMsg(null), 5000);
+  };
+
+  const pushUniverse = useCallback(async () => {
+    if (!isApiConfigured()) {
+      setSyncMsg({ done: true, label: "Configure URL + clé API puis « Enregistrer »" });
+      return;
+    }
+    setSyncBusy(true);
+    let ok = 0, fail = 0, written = 0;
+    for (const a of assets) {
+      for (const tf of tfs) {
+        if (!TF_TO_API[tf]) { fail++; continue; }
+        setSyncMsg({ label: `Push ${a} ${TF_MAP[tf]?.label}…` });
+        try {
+          const bars = await loadCachedBars(a, tf);
+          if (!bars?.length) { fail++; continue; }
+          const res = await pushBarsToApi(a, tf, bars);
+          written += res.written; ok++;
+        } catch { fail++; }
+      }
+    }
+    setSyncMsg({ done: true, label: `Push : ${ok} séries OK (${written} barres), ${fail} échecs` });
+    setSyncBusy(false);
+    setTimeout(() => setSyncMsg(null), 6000);
+  }, [assets, tfs]);
+
+  const pullUniverse = useCallback(async () => {
+    if (!isApiConfigured()) {
+      setSyncMsg({ done: true, label: "Configure URL + clé API puis « Enregistrer »" });
+      return;
+    }
+    setSyncBusy(true);
+    let ok = 0, fail = 0, count = 0;
+    for (const a of assets) {
+      for (const tf of tfs) {
+        if (!TF_TO_API[tf]) { fail++; continue; }
+        setSyncMsg({ label: `Pull ${a} ${TF_MAP[tf]?.label}…` });
+        try {
+          const res = await pullBarsFromApi(a, tf);
+          count += res.count; ok++;
+        } catch { fail++; }
+      }
+    }
+    await refresh();
+    setSyncMsg({ done: true, label: `Pull : ${ok} séries OK (${count} barres), ${fail} échecs` });
+    setSyncBusy(false);
+    setTimeout(() => setSyncMsg(null), 6000);
+  }, [assets, tfs, refresh]);
+
   const onImportFile = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -149,6 +217,34 @@ export function DataManagerPage() {
             {!progress.done && <ProgressBar pct={progress.pct} />}
           </div>
         )}
+      </Panel>
+
+      <Panel title="ZDL — TimescaleDB (API)" right={
+        <Badge color={isApiConfigured() ? T.green : T.yellow}>{isApiConfigured() ? "clé OK" : "non configuré"}</Badge>
+      }>
+        <div style={{ fontSize: 12, color: T.textDim, marginBottom: 10, lineHeight: 1.5 }}>
+          Synchronise l'univers sélectionné avec le backend (<code>/v1/bars</code>). IndexedDB reste le cache local ;
+          TimescaleDB devient la source de vérité dès que tu pousses / tires.
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 10, color: T.textFaint, marginBottom: 4 }}>API base URL</div>
+            <input value={apiBase} onChange={(e) => setApiBase(e.target.value)}
+              style={{ width: "100%", background: T.bg0, border: `1px solid ${T.border}`, color: T.text, borderRadius: 6, padding: "6px 8px", fontSize: 12 }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: T.textFaint, marginBottom: 4 }}>X-API-Key</div>
+            <input type="password" value={apiKey} onChange={(e) => setApiKeyState(e.target.value)}
+              style={{ width: "100%", background: T.bg0, border: `1px solid ${T.border}`, color: T.text, borderRadius: 6, padding: "6px 8px", fontSize: 12 }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <Button onClick={saveApi}>💾 Enregistrer</Button>
+          <Button onClick={onPing} disabled={syncBusy}>Ping /health</Button>
+          <Button primary onClick={pushUniverse} disabled={syncBusy || running}>⬆ Push IndexedDB → API</Button>
+          <Button onClick={pullUniverse} disabled={syncBusy || running}>⬇ Pull API → IndexedDB</Button>
+        </div>
+        {syncMsg && <div style={{ marginTop: 8, fontSize: 11, color: syncMsg.done ? T.green : T.textDim }}>{syncMsg.label}</div>}
       </Panel>
 
       <Panel title={`Données en cache (${cached.length} séries)`} right={cached.length > 0 && <Button onClick={clearAll}>🗑 Vider tout</Button>}>

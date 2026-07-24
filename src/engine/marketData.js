@@ -154,6 +154,14 @@ export async function fetchCandles(symbolKey, tf, { force = false } = {}) {
   return { bars, symbol: sym, cached: false, report };
 }
 
+/** Lit les barres IndexedDB sans réseau (null si absent). */
+export async function loadCachedBars(symbolKey, tf) {
+  const sym = findSymbol(symbolKey);
+  if (!sym) return null;
+  const cached = await readCache(sym.provider, sym.ticker, tf);
+  return cached?.bars?.length ? cached.bars : null;
+}
+
 // ---- Import de séries externes profondes (Dukascopy 15-20 ans, cf. tools/dukascopy) ----
 // Écrit des barres OHLCV sous le cacheId canonique du symbole → l'app (backtests, Usine, Data
 // Manager) les utilise exactement comme une série chargée. Format attendu : bars = [{t,o,h,l,c,v}].

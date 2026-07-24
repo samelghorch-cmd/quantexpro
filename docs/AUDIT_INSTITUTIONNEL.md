@@ -157,7 +157,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P0-T | Golden tests, look-ahead, CI | ✅ 109 tests, Husky, workflow CI | Committer lot tests + custom strategies |
 | P0-T4 | VPIN causal | ✅ | Fait : `bucketVolume` calibré sur fenêtre d'amorce fixe (`calibBars`) ; invariance troncature vérifiée ; aucune régénération de golden requise |
 | P0-T5 | Cycle vie dossiers IndexedDB | ✅ | Fait : `tests/unit/dossierStore.test.js` (23 tests) — fake-indexeddb, writeChain, gradeLetter, cycle 6 étapes |
-| P0-ZDL | Bus ZDL + TimescaleDB | 🟡 | **P0a ✅** schéma TS + API ingest/lecture (`backend/`) ; **P0c bus ✅** Redis Streams (publish bar-close, ACK, retry backoff, DLQ, reclaim, WS `/stream/bars`) — 19 tests backend ; **reste :** sync dashboard↔API + retirer IndexedDB comme source primaire |
+| P0-ZDL | Bus ZDL + TimescaleDB | ✅ | **P0a/c ✅** + **P3-ZDL-SYNC ✅** (`barsSync` Push/Pull Data Manager · TF étendus) ; reste : collector 24/7 → API auto |
 | P0-LLM | Qwen2.5-Coder-7B local | ✅ | Backend `POST /v1/strategy/from-prompt` + UI Prompt Mode (`PromptMode.jsx`) ; schéma miroir `validateRules` |
 | P0-MT5 | Pont VPS MT5 | 🟡 | **Backend ✅** endpoints signals/pending/executions (pull+ACK, idempotent, modes paper→demo→live) + EA `mt5/QuantEXProBridge.mq5`. **Reste :** déploiement VPS + tests live démo |
 | P0-RBAC | Rôles + audit log | ✅ | `require_role` (pm/analyst/risk/ea), `audit_events` append-only (trigger + hash SHA-256), `GET /v1/audit` |
@@ -183,6 +183,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P2-UI | Labs (Ship Tracker, Live TV), fusion doublons Quant Toolbox / Performance | ✅ | section `labs` + aliases `performanceTool`/`quantToolboxTool` |
 | P2-TS | TS incremental engine (pas Next.js) | ✅ | `annualize.ts` · `contracts.ts` · `binanceOrderBook.ts` · `npm run typecheck` |
 | P2-SCRAPE | Sentiment Module 6 légal | ✅ | `sentimentFeed.ts` · RSS Fed/SEC/IMF · rate limit · Labs · **pas** X/StockTwits |
+| P3-ZDL-SYNC | Dashboard ↔ API bars | ✅ | `barsSync.ts` · migration `0003` TF 15m/1h/4h/1d · Data Manager Push/Pull |
 
 ---
 

@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P2-SCRAPE)
+> Dernière maj : **2026-07-24** (P3-ZDL-SYNC)
 
 ---
 
@@ -11,35 +11,24 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **227** · backend **51** · `typecheck` OK |
-| Commit HEAD | P2-SCRAPE |
-| P0 | ✅ clôturé |
-| P1 | ✅ clôturé + re-vérifié |
-| P2 | ✅ **clôturé** (L2 · DUKA · MQL5 · UI · TS · Sentiment) |
-| Prochaine action | Pause / priorité libre (hors backlog P2) |
+| Tests | JS **232** · backend **53** · `typecheck` OK |
+| Commit HEAD | P3-ZDL-SYNC |
+| P0–P2 | ✅ clôturés |
+| P3 | 🔄 **ZDL-SYNC** ✅ · suite possible : collector→API |
+| Prochaine action | Dire « go » (collector ingest auto / MT5 VPS / autre) |
 
 ---
 
-## P2 — clôturé
+## P3-ZDL-SYNC — livré
 
-1. ~~Binance L2 WS~~ ✅  
-2. ~~Dukascopy batch historique~~ ✅  
-3. ~~Export MQL5 EA~~ ✅  
-4. ~~UI Labs + fusion nav~~ ✅  
-5. ~~TS incremental~~ ✅ (Next.js reporté)  
-6. ~~Sentiment RSS légal~~ ✅  
-
-### P2-SCRAPE — livré
-
-- `sentimentFeed.ts` — parse RSS/Atom, lexique LONG/SHORT/NEUTRAL, Jaccard, RateLimiter  
-- Proxy allowlisté : `functions/api/rss.js` + middleware Vite `/api/rss?src=`  
-- Feeds : Fed · SEC · IMF — **pas** de scraping X/StockTwits/Telegram/TV (ToS)  
-- UI Labs → Sentiment + « ↗ Alpha Forge » (`pipeline.sentimentHint`)  
-- Tests : `sentimentFeed.test.js`
+- Backend : Timeframe `15m/1h/4h/1d` + tables + Alembic `0003`
+- `barsSync.ts` : Push/Pull paginé, mapping TF, chunks 5k
+- Data Manager : panneau API + Ping + Push IndexedDB→API + Pull API→IndexedDB
+- IndexedDB reste cache local ; Timescale = source de vérité quand syncée
 
 ---
 
 ## Notes session
 
-- Dire **« go »** pour une nouvelle priorité hors P2.  
-- Après `src/engine/*` → `npm test` + `npm run typecheck`.
+- Après `src/engine/*` → `npm test` + `npm run typecheck`.  
+- Backend : `cd backend && pytest`.

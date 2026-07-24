@@ -23,6 +23,10 @@ NonNegFloat = Annotated[float, Field(ge=0)]
 class Timeframe(StrEnum):
     m1 = "1m"
     m5 = "5m"
+    m15 = "15m"
+    h1 = "1h"
+    h4 = "4h"
+    d1 = "1d"
 
 
 class Side(StrEnum):

@@ -71,6 +71,21 @@ async def test_upsert_orderbook_conflict() -> None:
 
 
 @pytest.mark.asyncio
+async def test_upsert_bars_1h_table() -> None:
+    session = _CapturingSession()
+    bar = BarIn(symbol="ETH", ts=TS, open=1, high=2, low=1, close=1.5, volume=10)
+    written = await upsert_bars(session, Timeframe.h1, [bar])  # type: ignore[arg-type]
+    assert written == 1
+    sql = _compiled(session.last_stmt).lower()
+    assert "insert into bars_1h" in sql
+    assert "on conflict" in sql
+
+
+def test_timeframe_covers_dashboard_tfs() -> None:
+    assert {t.value for t in Timeframe} >= {"1m", "5m", "15m", "1h", "4h", "1d"}
+
+
+@pytest.mark.asyncio
 async def test_empty_batches_are_noops() -> None:
     session = _CapturingSession()
     assert await upsert_bars(session, Timeframe.m5, []) == 0  # type: ignore[arg-type]

@@ -18,16 +18,31 @@ from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import AuditEvent, Bar1m, Bar5m, MT5Order, OrderbookL2Snapshot, Tick
+from .models import (
+    AuditEvent,
+    Bar1d,
+    Bar1h,
+    Bar1m,
+    Bar4h,
+    Bar5m,
+    Bar15m,
+    MT5Order,
+    OrderbookL2Snapshot,
+    Tick,
+)
 from .schemas import BarIn, ExecutionIn, OrderbookL2In, SignalIn, TickIn, Timeframe
 
-_BAR_MODEL: dict[Timeframe, type[Bar1m] | type[Bar5m]] = {
+_BAR_MODEL: dict[Timeframe, type] = {
     Timeframe.m1: Bar1m,
     Timeframe.m5: Bar5m,
+    Timeframe.m15: Bar15m,
+    Timeframe.h1: Bar1h,
+    Timeframe.h4: Bar4h,
+    Timeframe.d1: Bar1d,
 }
 
 
-def bar_model(timeframe: Timeframe) -> type[Bar1m] | type[Bar5m]:
+def bar_model(timeframe: Timeframe) -> type:
     return _BAR_MODEL[timeframe]
 
 

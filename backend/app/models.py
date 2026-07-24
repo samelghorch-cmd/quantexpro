@@ -1,8 +1,8 @@
 """Modèles ORM SQLAlchemy 2.0 (typés) — miroir des hypertables TimescaleDB.
 
-Tables (partitionnées par temps en hypertables, cf. migration Alembic 0001) :
+Tables (partitionnées par temps en hypertables, cf. migration Alembic 0001+) :
   • ticks                     : flux tick-by-tick (idempotence par trade_id)
-  • bars_1m / bars_5m         : barres OHLCV agrégées
+  • bars_1m / bars_5m / bars_15m / bars_1h / bars_4h / bars_1d : OHLCV
   • orderbook_l2_snapshots    : instantanés du carnet L2 (bids/asks en JSONB)
 
 Contrainte TimescaleDB : toute clé primaire / unique DOIT inclure la colonne de temps
@@ -53,6 +53,38 @@ class Bar5m(_OHLCVMixin, Base):
     __table_args__ = (
         PrimaryKeyConstraint("symbol", "ts", name="pk_bars_5m"),
         Index("ix_bars_5m_symbol_ts", "symbol", "ts"),
+    )
+
+
+class Bar15m(_OHLCVMixin, Base):
+    __tablename__ = "bars_15m"
+    __table_args__ = (
+        PrimaryKeyConstraint("symbol", "ts", name="pk_bars_15m"),
+        Index("ix_bars_15m_symbol_ts", "symbol", "ts"),
+    )
+
+
+class Bar1h(_OHLCVMixin, Base):
+    __tablename__ = "bars_1h"
+    __table_args__ = (
+        PrimaryKeyConstraint("symbol", "ts", name="pk_bars_1h"),
+        Index("ix_bars_1h_symbol_ts", "symbol", "ts"),
+    )
+
+
+class Bar4h(_OHLCVMixin, Base):
+    __tablename__ = "bars_4h"
+    __table_args__ = (
+        PrimaryKeyConstraint("symbol", "ts", name="pk_bars_4h"),
+        Index("ix_bars_4h_symbol_ts", "symbol", "ts"),
+    )
+
+
+class Bar1d(_OHLCVMixin, Base):
+    __tablename__ = "bars_1d"
+    __table_args__ = (
+        PrimaryKeyConstraint("symbol", "ts", name="pk_bars_1d"),
+        Index("ix_bars_1d_symbol_ts", "symbol", "ts"),
     )
 
 
