@@ -10,6 +10,7 @@ import { generateOrderBook } from "../../engine/microstructure.js";
 import { computeVPIN } from "../../engine/vpin.js";
 import { findSymbol } from "../../engine/marketData.js";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
+import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.jsx";
 import { CorrelationMatrix } from "../../components/charts/CorrelationMatrix.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
@@ -199,45 +200,42 @@ export function MicrostructureLivePage() {
   const { bars, symbol, CONTRACTS, assetKey } = usePipeline();
   const liveSym = findSymbol(assetKey);
   const liveTicker = liveSym?.provider === "binance" ? liveSym.ticker : null;
-  const [tick, setTick] = useState(0);
-  const ob = useMemo(() => bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol].tick, 12, bars.length + tick) : null, [bars, symbol, CONTRACTS, tick]);
+  const mockOb = useMemo(
+    () => (bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol]?.tick || 0.01, 12, bars.length) : null),
+    [bars, symbol, CONTRACTS],
+  );
   const vp = useMemo(() => computeVPIN(bars, { buckets: 200, window: 50, method: "auto", cdfWindow: 250 }), [bars]);
-  if (!ob) return null;
-  const totalBid = ob.bids.reduce((s, b) => s + b.size, 0), totalAsk = ob.asks.reduce((s, a) => s + a.size, 0);
-  const imbalance = ((totalBid - totalAsk) / (totalBid + totalAsk)) * 100;
+  if (!mockOb && !liveTicker) return null;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14, alignItems: "start" }}>
-      <Panel title="Microstructure Live (order book synthétique)" right={<div style={{ display: "flex", gap: 8 }}><SimBadge /><Button onClick={() => setTick((t) => t + 1)}>↻ Rafraîchir</Button></div>}>
-        <div style={{ fontFamily: T.mono, fontSize: 12 }}>
-          {ob.asks.slice().reverse().map((a, i) => {
-            const w = (a.size / Math.max(totalAsk, totalBid)) * 100;
-            return <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "3px 8px", position: "relative" }}><div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: `${w * 3}%`, background: `${T.red}18` }} /><span style={{ color: T.red, zIndex: 1 }}>{a.price.toFixed(2)}</span><span style={{ color: T.textDim, zIndex: 1 }}>{a.size}</span></div>;
-          })}
-          <div style={{ padding: "6px 8px", textAlign: "center", color: T.orange, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>mid {ob.mid.toFixed(2)}</div>
-          {ob.bids.map((b, i) => {
-            const w = (b.size / Math.max(totalAsk, totalBid)) * 100;
-            return <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "3px 8px", position: "relative" }}><div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: `${w * 3}%`, background: `${T.green}18` }} /><span style={{ color: T.green, zIndex: 1 }}>{b.price.toFixed(2)}</span><span style={{ color: T.textDim, zIndex: 1 }}>{b.size}</span></div>;
-          })}
+      <Panel>
+        <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Microstructure Live</div>
+        <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.45 }}>
+          Carnet L2 réel Binance (<code>@depth</code> + <code>@bookTicker</code>) sur crypto — sinon fallback simulé.
+          Spread bps et imbalance issus du top-of-book live.
         </div>
       </Panel>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <Panel title="Déséquilibre du carnet" right={<SimBadge />}>
-          <MetricGrid min={110}>
-            <MetricCard label="Bid total" value={totalBid} color={T.green} />
-            <MetricCard label="Ask total" value={totalAsk} color={T.red} />
-            <MetricCard label="Imbalance" value={fmtPct(imbalance)} color={imbalance >= 0 ? T.green : T.red} />
-          </MetricGrid>
-        </Panel>
-        <Panel title="Toxicité du flux — VPIN">
-          <MetricGrid min={110}>
-            <MetricCard label="VPIN" value={fmt(vp.lastVPIN, 3)} color={vp.lastCDF >= 0.9 ? T.red : vp.lastCDF >= 0.7 ? T.yellow : T.green} />
-            <MetricCard label="CDF" value={Number.isNaN(vp.lastCDF) ? "—" : `${(vp.lastCDF * 100).toFixed(0)}%`} color={vp.tox.color} />
-            <MetricCard label="État" value={vp.tox.label} color={vp.tox.color} />
-          </MetricGrid>
-          <div style={{ marginTop: 6, fontSize: 10, color: T.textFaint, lineHeight: 1.5 }}>Signal réel (barres du marché) : au-delà du 90ᵉ percentile, le flux est toxique — risque de retournement violent / configuration d'avant-krach.</div>
-        </Panel>
-      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14, alignItems: "start" }}>
+        <LiveOrderBookPanel
+          ticker={liveTicker}
+          label={liveSym?.label}
+          levels={20}
+          mockBook={mockOb}
+        />
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <Panel title="Toxicité du flux — VPIN (barres)">
+            <MetricGrid min={110}>
+              <MetricCard label="VPIN" value={fmt(vp.lastVPIN, 3)} color={vp.lastCDF >= 0.9 ? T.red : vp.lastCDF >= 0.7 ? T.yellow : T.green} />
+              <MetricCard label="CDF" value={Number.isNaN(vp.lastCDF) ? "—" : `${(vp.lastCDF * 100).toFixed(0)}%`} color={vp.tox.color} />
+              <MetricCard label="État" value={vp.tox.label} color={vp.tox.color} />
+            </MetricGrid>
+            <div style={{ marginTop: 6, fontSize: 10, color: T.textFaint, lineHeight: 1.5 }}>
+              Signal barres : au-delà du 90ᵉ percentile, flux toxique.
+            </div>
+          </Panel>
+        </div>
       </div>
 
       <LiveVpinPanel ticker={liveTicker} label={liveSym?.label} />

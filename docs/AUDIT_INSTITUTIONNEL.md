@@ -40,7 +40,7 @@ QuantEXPro est aujourd’hui une **plateforme quant monolithique navigateur** (R
 
 - **ZDL partiel :** chaîne d’écriture sérialisée sur dossiers IndexedDB ; pas de bus distribué ni replay idempotent cross-services.
 - **Single-user :** pas de rôles PM / Analyste / Risque ni audit log immuable serveur.
-- **Données tick/L2 :** VPIN crypto via klines Binance (`vBuy`) ; carnet L2 = heuristique / mock sauf évolutions P2.
+- **Données tick/L2 :** VPIN crypto via WS Binance ; carnet L2 réel `@depth`+`@bookTicker` (P2-L2) sur crypto, mock sinon.
 
 ### 2.2 TO-BE (spec utilisateur)
 
@@ -109,7 +109,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 |------|-------------------------|-----|
 | Score global 0–100 | ✅ Backtest + Reco + Validator | ✅ |
 | WR, PF, Expectancy, Max DD | ✅ `backtestMetrics.js` | ✅ |
-| Quality L2 | 🟡 heuristique exec / microstructure | L2 réel P2 |
+| Quality L2 | ✅ Binance `@depth` + `@bookTicker` (crypto) · mock hors crypto | |
 | VPIN BVC + CDF toxicité | ✅ `vpin.js`, pages VPIN + Live | **P0.4 look-ahead calibration buckets** (cf. TESTING.md) |
 
 ---
@@ -177,7 +177,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 | ID | Action |
 |----|--------|
-| P2-L2 | Binance `@depth` + `bookTicker` |
+| P2-L2 | Binance `@depth` + `bookTicker` | ✅ | `binanceOrderBook.js` + `useBinanceOrderBook` · Microstructure Live / Exec Quality |
 | P2-DUKA | `tools/dukascopy` production 15–20 ans |
 | P2-MQL5 | Export EA familles simples |
 | P2-UI | Labs (Ship Tracker, Live TV), fusion doublons Quant Toolbox / Performance |

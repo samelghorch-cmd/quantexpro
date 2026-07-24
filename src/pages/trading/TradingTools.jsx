@@ -5,8 +5,10 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { volumeProfile, generateOrderBook } from "../../engine/microstructure.js";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { CATS } from "../../engine/strategyLibrary.js";
+import { findSymbol } from "../../engine/marketData.js";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
+import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.jsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, Field, NumberInput, Select, Button, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
@@ -216,33 +218,36 @@ export function SignalEnginePage() {
 }
 
 export function ExecQualityPage() {
-  const { bars, symbol, CONTRACTS, navigate } = usePipeline();
-  const ob = useMemo(() => bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol].tick, 10, bars.length) : null, [bars, symbol, CONTRACTS]);
-  if (!ob) return null;
+  const { bars, symbol, CONTRACTS, assetKey, navigate } = usePipeline();
+  const liveSym = findSymbol(assetKey);
+  const liveTicker = liveSym?.provider === "binance" ? liveSym.ticker : null;
+  const mockOb = useMemo(
+    () => (bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol]?.tick || 0.01, 10, bars.length) : null),
+    [bars, symbol, CONTRACTS],
+  );
   const spec = CONTRACTS[symbol];
-  const slipCost = spec.slippage * spec.tick * spec.pv;
+  if (!mockOb && !liveTicker) return null;
+  const slipCost = spec ? spec.slippage * spec.tick * spec.pv : 0;
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "start" }}>
-      <Panel title="Order Book (L2 mock)" right={<SimBadge />}>
-        <div style={{ fontFamily: T.mono, fontSize: 12 }}>
-          {ob.asks.slice().reverse().map((a, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "2px 8px", background: `${T.red}0d` }}><span style={{ color: T.red }}>{a.price.toFixed(2)}</span><span style={{ color: T.textDim }}>{a.size}</span></div>
-          ))}
-          <div style={{ padding: "6px 8px", textAlign: "center", color: T.orange, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>mid {ob.mid.toFixed(2)}</div>
-          {ob.bids.map((b, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "2px 8px", background: `${T.green}0d` }}><span style={{ color: T.green }}>{b.price.toFixed(2)}</span><span style={{ color: T.textDim }}>{b.size}</span></div>
-          ))}
-        </div>
-      </Panel>
+      <LiveOrderBookPanel
+        ticker={liveTicker}
+        label={liveSym?.label || symbol}
+        levels={10}
+        mockBook={mockOb}
+      />
       <Panel title="Qualité d'exécution estimée" right={<Button onClick={() => navigate("tca")}>→ TCA observé vs modèle</Button>}>
-        <MetricGrid min={130}>
-          <MetricCard label="Spread" value={`${spec.tick} pt`} />
-          <MetricCard label="Slippage / trade" value={fmtUsd(slipCost, 2)} color={T.yellow} />
-          <MetricCard label="Commission A/R" value={fmtUsd(2 * spec.commission, 2)} />
-          <MetricCard label="Coût total A/R" value={fmtUsd(2 * (spec.commission + slipCost), 2)} color={T.orange} />
-        </MetricGrid>
+        {spec && (
+          <MetricGrid min={130}>
+            <MetricCard label="Spread contrat" value={`${spec.tick} pt`} />
+            <MetricCard label="Slippage / trade" value={fmtUsd(slipCost, 2)} color={T.yellow} />
+            <MetricCard label="Commission A/R" value={fmtUsd(2 * spec.commission, 2)} />
+            <MetricCard label="Coût total A/R" value={fmtUsd(2 * (spec.commission + slipCost), 2)} color={T.orange} />
+          </MetricGrid>
+        )}
         <div style={{ marginTop: 10, fontSize: 11, color: T.textDim, lineHeight: 1.45 }}>
-          Estimation contrat (ticks). Pour comparer au <b style={{ color: T.orange }}>slippage réel / next-open</b> → module TCA.
+          À gauche : carnet <b style={{ color: T.orange }}>Binance L2 live</b> sur crypto (sinon mock).
+          TCA compare le slippage observé au modèle théorique.
         </div>
       </Panel>
     </div>

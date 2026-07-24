@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (clôture P1 + re-vérif zéro-erreur)
+> Dernière maj : **2026-07-24** (P2-L2)
 
 ---
 
@@ -11,11 +11,22 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **187** · backend **51** · ruff ✅ · mypy ✅ · build ✅ |
-| Commit HEAD | `aba43d6` — P1 clôturé + re-vérif |
-| P0 | ✅ A–E clôturés |
-| P1 | ✅ **clôturé + re-vérifié** |
-| Prochaine action | **P2** — L2 Binance / Dukascopy / MQL5 / Labs (dire « go ») |
+| Tests | JS **195** · backend **51** |
+| Commit HEAD | P2-L2 (en cours de push) |
+| P0 | ✅ clôturé |
+| P1 | ✅ clôturé + re-vérifié |
+| P2 | 🔄 **P2-L2** · reste Dukascopy, MQL5, Labs UI, … |
+| Prochaine action | **P2-DUKA** Dukascopy batch — dire « go » |
+
+---
+
+## P2 — ordre des chantiers
+
+1. ~~Binance L2 WS~~ ✅  
+2. **Dukascopy** batch historique ← prochain  
+3. Export MQL5 EA  
+4. UI Labs + fusion nav  
+5. (optionnel) Next.js/TS · scrapers  
 
 ---
 
@@ -29,9 +40,7 @@
 | P1-TCA | `tca.js` | 13 ✅ | ✅ | Trading → TCA |
 | P1-PDF | `tearsheet.js` + `pdfLite.js` | 7 ✅ | ✅ | Dossiers → Tearsheet PDF |
 | P1-EDGE | `statisticalEdge.js` | 12 ✅ | ✅ | Outils → Statistical Edge |
-| **Totaux** | — | **55** P1 unitaires · **187** suite JS | smoke OK | build prod OK |
-
-Contrôles globaux : `npm test` 187 · `backend` pytest 51 · ruff clean · mypy 0 · `npm run build` OK.
+| **Totaux** | — | **55** P1 unitaires · suite JS | smoke OK | build prod OK |
 
 ---
 
@@ -40,21 +49,7 @@ Contrôles globaux : `npm test` 187 · `backend` pytest 51 · ruff clean · mypy
 | ID | Tâche | État |
 |----|-------|------|
 | S0.1–S0.5 | tests, commit WIP, VPIN causal, dossiers IndexedDB | ✅ |
-| P0-A | Moteur & qualité (VPIN, dossiers, CI) | ✅ |
-| P0-B | Backend TimescaleDB + API idempotente | ✅ |
-| P0-C | Bus ZDL Redis Streams + WS `/stream/bars` | ✅ |
-| P0-D | LLM local + UI Prompt Mode | ✅ |
-| P0-E | Pont MT5 (EA) + RBAC + audit append-only | ✅ |
-
----
-
-## Décisions figées (ne pas rediscuter sans raison)
-
-- Stack **actuelle** = Vite + JS jusqu’à P0 tests stables.  
-- Migration Next.js / TS = **P1+**, pas Sprint 0.  
-- Orange `#FF6B00` = marque ; verts/rouges sémantiques long/short à ajouter.  
-- Heuristiques ML (XGBoost/HMM JS) = badge « approximation », pas hedge-fund.  
-- Hébergement gratuit « pour l’instant » = Render + Neon (pas Railway).  
+| P0-A → P0-E | VPIN, backend, ZDL, LLM, MT5/RBAC | ✅ |
 
 ---
 
@@ -62,15 +57,12 @@ Contrôles globaux : `npm test` 187 · `backend` pytest 51 · ruff clean · mypy
 
 | Date | Événement |
 |------|-----------|
-| 2026-07-24 | P0-A → P0-D livrés + CI verte (voir historique git) |
-| 2026-07-24 | **P0-E** : MT5 pull/ACK + RBAC + audit immuable + EA `QuantEXProBridge.mq5` |
-| 2026-07-24 | **UI Prompt Mode** : Strategy Engine → `/v1/strategy/from-prompt` |
-| 2026-07-24 | **P0 clôturé** — re-vérification zéro-erreur (JS 132, backend 51, ruff, mypy) |
-| 2026-07-24 | **P1-DSR** → **P1-EDGE** livrés (voir commits `3b0ad7b`…`8776484`) |
-| 2026-07-24 | **P1 clôturé + re-vérif** : JS 187 · backend 51 · smoke 6/6 · build OK |
+| 2026-07-24 | **P0** + **P1** clôturés (re-vérif JS 187 / backend 51 / build) |
+| 2026-07-24 | **P2-L2** : Binance `@depth` + `@bookTicker` → Microstructure Live / Exec Quality · 8 tests → JS **195** |
 
 ---
 
 ## Notes session
 
 - 2026-07-24 : Mémoire organisée — `MEMORY.md`, `STATUS.md`, `AGENTS.md`, agents Cursor.
+- P2 = **un chantier à la fois** (comme P1).
