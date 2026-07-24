@@ -129,6 +129,10 @@ endpoint exposant `/v1/chat/completions` (variable `QX_LLM_BASE_URL`).
 - **RBAC** : chaque clé d'API porte un rôle (`pm` | `analyst` | `risk` | `ea`), configuré
   via `QX_API_KEY_ROLES="cléPM:pm,cléEA:ea"`. Les clés de `QX_API_KEYS` sans rôle explicite
   reçoivent `analyst` (lecture). En dev sans clés, accès complet local.
+- **SSO (P4)** : `POST /v1/auth/session` échange une clé valide contre un JWT Bearer
+  (`QX_SSO_SECRET`, TTL `QX_SSO_TTL_S`). OIDC optionnel : `QX_OIDC_ISSUER` +
+  `QX_OIDC_CLIENT_ID` (+ `QX_OIDC_ROLE_MAP`, `QX_OIDC_ROLE_CLAIM`) — PKCE via
+  `POST /v1/auth/oidc/exchange`. Identité : `GET /v1/auth/me`. UI : Risque → Audit.
 - **Audit immuable** : chaque action sensible est journalisée (`audit_events`, append-only
   via trigger SQL) avec hash SHA-256 du payload. Lecture : `GET /v1/audit` (PM/Risque).
 - **Pont MT5** : voir `mt5/README.md` (EA `QuantEXProBridge.mq5`). Flux pull+ACK, modes

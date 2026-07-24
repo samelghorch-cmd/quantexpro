@@ -13,6 +13,16 @@ import {
   isAuditApiConfigured,
 } from "../../engine/auditLog.js";
 import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";
+import {
+  clearSession,
+  createSessionFromApiKey,
+  fetchAuthConfig,
+  fetchAuthMe,
+  getAccessToken,
+  getAccessTokenMeta,
+  startOidcLogin,
+  ssoRedirectUri,
+} from "../../engine/ssoAuth.js";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { T } from "../../components/shared/theme.js";
@@ -165,10 +175,69 @@ export function AuditPage() {
   const [q, setQ] = useState("");
   const [actionFilter, setActionFilter] = useState("");
   const [integrity, setIntegrity] = useState({ checked: 0, ok: 0, bad: 0 });
+  const [ssoMe, setSsoMe] = useState(null);
+  const [ssoCfg, setSsoCfg] = useState(null);
+  const [ssoBusy, setSsoBusy] = useState(false);
+  const [ssoErr, setSsoErr] = useState(null);
+  const tokenMeta = getAccessTokenMeta();
 
   const saveCfg = () => {
     setApiBaseUrl(baseUrl);
     setApiKey(apiKey);
+  };
+
+  const refreshSso = useCallback(async () => {
+    setSsoErr(null);
+    try {
+      const cfg = await fetchAuthConfig();
+      setSsoCfg(cfg);
+      if (getAccessToken()) {
+        const me = await fetchAuthMe();
+        setSsoMe(me);
+      } else {
+        setSsoMe(null);
+      }
+    } catch (e) {
+      setSsoCfg(null);
+      setSsoMe(null);
+      setSsoErr(e.message || String(e));
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshSso();
+  }, [refreshSso]);
+
+  const issueSession = async () => {
+    saveCfg();
+    setSsoBusy(true);
+    setSsoErr(null);
+    try {
+      await createSessionFromApiKey();
+      await refreshSso();
+    } catch (e) {
+      setSsoErr(e.message || String(e));
+    } finally {
+      setSsoBusy(false);
+    }
+  };
+
+  const loginOidc = async () => {
+    saveCfg();
+    setSsoBusy(true);
+    setSsoErr(null);
+    try {
+      const cfg = ssoCfg || (await fetchAuthConfig());
+      await startOidcLogin(cfg, ssoRedirectUri());
+    } catch (e) {
+      setSsoErr(e.message || String(e));
+      setSsoBusy(false);
+    }
+  };
+
+  const logoutSso = () => {
+    clearSession();
+    setSsoMe(null);
   };
 
   const load = useCallback(async () => {
@@ -289,6 +358,30 @@ export function AuditPage() {
           </div>
         </div>
         {err && <div style={{ marginTop: 8, fontSize: 12, color: T.red }}>{err}</div>}
+      </Panel>
+
+      <Panel title="SSO — session Bearer (P4)" right={ssoMe ? <Badge color={T.green}>{ssoMe.role}</Badge> : null}>
+        <div style={{ fontSize: 12, color: T.textDim, marginBottom: 10, lineHeight: 1.5 }}>
+          Échange la clé API contre un JWT de session, ou connecte-toi via OIDC (PKCE) si l’API expose{" "}
+          <code>QX_OIDC_*</code>. Les appels suivants envoient <code>Authorization: Bearer</code>.
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          <Button primary disabled={ssoBusy || !apiKey} onClick={issueSession}>
+            {ssoBusy ? "…" : "Émettre session (API key)"}
+          </Button>
+          <Button disabled={ssoBusy || !ssoCfg?.oidc_enabled} onClick={loginOidc} title={!ssoCfg?.oidc_enabled ? "OIDC off" : "Login OIDC"}>
+            Login OIDC
+          </Button>
+          <Button disabled={!getAccessToken()} onClick={logoutSso}>Déconnexion SSO</Button>
+          <Button onClick={refreshSso}>↻ /me</Button>
+        </div>
+        {ssoErr && <div style={{ fontSize: 12, color: T.red, marginBottom: 8 }}>{ssoErr}</div>}
+        <MetricGrid min={120}>
+          <MetricCard label="OIDC" value={ssoCfg?.oidc_enabled ? "ON" : "off"} color={ssoCfg?.oidc_enabled ? T.green : T.textDim} />
+          <MetricCard label="Session" value={ssoMe ? ssoMe.sub || ssoMe.key_id : "—"} color={ssoMe ? T.orange : T.textDim} />
+          <MetricCard label="Méthode" value={ssoMe?.auth_method || tokenMeta?.auth_method || "—"} />
+          <MetricCard label="Rôle" value={ssoMe?.role || "—"} color={T.blue} />
+        </MetricGrid>
       </Panel>
 
       <MetricGrid min={120}>

@@ -23,6 +23,7 @@ from .logging_config import configure_logging
 from .routers import (
     anti_library,
     audit,
+    auth,
     bars,
     edges,
     health,
@@ -68,6 +69,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health.router)
+    app.include_router(auth.router)
     app.include_router(bars.router)
     app.include_router(ticks.router)
     app.include_router(orderbook.router)

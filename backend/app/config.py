@@ -56,6 +56,19 @@ class Settings(BaseSettings):
     #   QX_API_KEY_ROLES="cléPM:pm,cléRisk:risk,cléEA:ea"
     api_key_roles: dict[str, str] = Field(default_factory=dict)
 
+    # P4-SSO — session JWT (HS256) + OIDC optionnel (PKCE / id_token).
+    # sso_secret : signature des JWT de session. En production, obligatoire si SSO utilisé.
+    sso_secret: str = Field(default="")
+    sso_ttl_s: int = Field(default=28_800, ge=300, le=604_800)  # 8h défaut
+    # OIDC public client (SPA PKCE). Vide = OIDC désactivé.
+    oidc_issuer: str = Field(default="")
+    oidc_client_id: str = Field(default="")
+    oidc_client_secret: str = Field(default="")  # optionnel (confidential)
+    oidc_audience: str = Field(default="")  # défaut = client_id
+    # Mapping claim → rôle. Format : "admin:pm,risk-team:risk,*:analyst"
+    oidc_role_map: dict[str, str] = Field(default_factory=dict)
+    oidc_role_claim: str = Field(default="groups")  # ou "roles" / "email"
+
     # Pont MT5.
     mt5_default_mode: str = Field(default="paper")  # paper | demo | live
 
@@ -109,6 +122,24 @@ class Settings(BaseSettings):
             return out
         return value
 
+    @field_validator("oidc_role_map", mode="before")
+    @classmethod
+    def _parse_oidc_role_map(cls, value: object) -> object:
+        """Accepte ``admin:pm,*:analyst`` ou un dict."""
+        if value is None or value == "":
+            return {}
+        if isinstance(value, str):
+            out: dict[str, str] = {}
+            for pair in value.split(","):
+                pair = pair.strip()
+                if not pair:
+                    continue
+                key, _, role = pair.partition(":")
+                if key.strip() and role.strip():
+                    out[key.strip()] = role.strip().lower()
+            return out
+        return value
+
     @field_validator("env")
     @classmethod
     def _normalize_env(cls, value: str) -> str:
@@ -121,6 +152,19 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.env == "production"
+
+    @property
+    def oidc_enabled(self) -> bool:
+        return bool(self.oidc_issuer.strip() and self.oidc_client_id.strip())
+
+    @property
+    def sso_signing_secret(self) -> str:
+        """Secret effectif : QX_SSO_SECRET, sinon dérivé des API keys (dev only)."""
+        if self.sso_secret.strip():
+            return self.sso_secret.strip()
+        if self.api_keys:
+            return "qx-sso:" + "|".join(self.api_keys)
+        return "qx-sso-dev-insecure"
 
 
 @lru_cache(maxsize=1)

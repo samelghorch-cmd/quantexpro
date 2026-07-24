@@ -195,6 +195,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-ANT-SYNC | Anti-Library ZDL Timescale | ✅ | `anti_library` · `/v1/anti-library` · Alembic 0005 |
 | P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.js` · probes · Databento/CBOE scoped_out |
 | P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
+| P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
 
 ---
 
@@ -234,7 +235,7 @@ Interruption Claude ~2026-07-22 ; les changements locaux sont **cohérents** ave
 | Persistance & ZDL | 4 | Backend TimescaleDB + bus Redis Streams (ACK/DLQ) ; reste : brancher dashboard |
 | Exécution live | 3 | Paper Binance + pont MT5 (EA pull/ACK) prêt, à déployer VPS |
 | Données institutionnelles | 1 | Pas Databento/L2 options |
-| Gouvernance (RBAC, audit) | 4 | RBAC + audit append-only + **UI** `GET /v1/audit` ; reste SSO |
+| Gouvernance (RBAC, audit) | 5 | RBAC + audit UI + **SSO** session JWT / OIDC PKCE |
 | Test automation | 4 | CI pas encore poussée GitHub |
 | **Total approximatif** | **18/35** | Cible 28+ pour « desk institutionnel soft » |
 

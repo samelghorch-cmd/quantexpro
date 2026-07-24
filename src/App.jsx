@@ -1,4 +1,4 @@
-import { useState, Component } from "react";
+import { useState, useEffect, Component } from "react";
 import { PipelineProvider, usePipeline } from "./state/PipelineContext.jsx";
 import { Sidebar } from "./components/layout/Sidebar.jsx";
 import { TickerBar } from "./components/layout/TickerBar.jsx";
@@ -6,6 +6,7 @@ import { T } from "./components/shared/theme.js";
 import { ALL_MODULES } from "./registry.js";
 import { PAGES } from "./pages/index.jsx";
 import { GlobalControls } from "./components/layout/GlobalControls.jsx";
+import { completeOidcCallbackFromUrl } from "./engine/ssoAuth.js";
 
 // Garde-fou : isole les erreurs d'UN module pour que le reste de la plateforme ne plante jamais.
 class ModuleErrorBoundary extends Component {
@@ -38,6 +39,13 @@ function Shell() {
   const [collapsed, setCollapsed] = useState(false);
   const mod = ALL_MODULES.find((m) => m.id === activeModule);
   const Page = PAGES[activeModule];
+
+  useEffect(() => {
+    if (!window.location.search.includes("code=")) return;
+    completeOidcCallbackFromUrl().catch((e) => {
+      console.warn("[SSO] callback OIDC:", e.message || e);
+    });
+  }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: T.bg0, color: T.text, fontFamily: T.sans }}>

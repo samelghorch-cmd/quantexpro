@@ -1,8 +1,7 @@
-"""Authentification par clé d'API (header ``X-API-Key``).
+"""Authentification par clé d'API (X-API-Key) ou Bearer SSO (P4).
 
 Politique fail-safe :
-  • si des clés sont configurées → seules ces clés sont acceptées (comparaison à temps
-    constant contre les attaques par timing) ;
+  • si des clés sont configurées → seules ces clés / JWT session / OIDC sont acceptés ;
   • si AUCUNE clé n'est configurée → accès refusé en production, autorisé en development
     (confort local), avec un avertissement loggé.
 """
@@ -26,10 +25,10 @@ _API_KEY_HEADER = "X-API-Key"
 class Role(StrEnum):
     """Rôles institutionnels (gouvernance)."""
 
-    pm = "pm"          # Portfolio Manager — crée/valide les signaux
+    pm = "pm"  # Portfolio Manager — crée/valide les signaux
     analyst = "analyst"  # Analyste — recherche, lecture
-    risk = "risk"      # Risque — supervise, peut bloquer
-    ea = "ea"          # Pont MT5 (Expert Advisor) — pull/ACK exécutions
+    risk = "risk"  # Risque — supervise, peut bloquer
+    ea = "ea"  # Pont MT5 (Expert Advisor) — pull/ACK exécutions
 
 
 DEFAULT_ROLE = Role.analyst
@@ -37,10 +36,12 @@ DEFAULT_ROLE = Role.analyst
 
 @dataclass(frozen=True)
 class Principal:
-    """Identité authentifiée résolue depuis la clé d'API."""
+    """Identité authentifiée (clé d'API ou session SSO)."""
 
     key_id: str
     role: Role
+    sub: str = ""
+    auth_method: str = "api_key"
 
 
 def _resolve_role(api_key: str, settings: Settings) -> Role | None:
@@ -60,11 +61,49 @@ def _valid_key(candidate: str, allowed: tuple[str, ...]) -> bool:
     return any(hmac.compare_digest(candidate, key) for key in allowed)
 
 
+def _bearer_token(authorization: str | None) -> str | None:
+    if not authorization:
+        return None
+    parts = authorization.split(None, 1)
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    tok = parts[1].strip()
+    return tok or None
+
+
+def _principal_from_bearer(token: str, settings: Settings) -> Principal | None:
+    """Tente JWT session QuantEXPro ; None si ce n'est pas notre issuer."""
+    from .sso import decode_session_token
+
+    try:
+        claims = decode_session_token(token, settings)
+    except Exception:
+        return None
+    try:
+        role = Role(str(claims.get("role", DEFAULT_ROLE.value)))
+    except ValueError:
+        role = DEFAULT_ROLE
+    sub = str(claims.get("sub") or claims.get("email") or "sso")
+    return Principal(
+        key_id=sub[:6],
+        role=role,
+        sub=sub,
+        auth_method=str(claims.get("amr") or "sso"),
+    )
+
+
 async def require_api_key(
     x_api_key: str | None = Header(default=None, alias=_API_KEY_HEADER),
+    authorization: str | None = Header(default=None),
     settings: Settings = Depends(get_settings),
 ) -> str:
-    """Dépendance FastAPI : valide la clé et renvoie l'identité (préfixe de la clé)."""
+    """Dépendance FastAPI : valide clé ou Bearer session ; renvoie un id court."""
+    bearer = _bearer_token(authorization)
+    if bearer:
+        principal = _principal_from_bearer(bearer, settings)
+        if principal is not None:
+            return principal.key_id
+
     if not settings.api_keys:
         if settings.is_production:
             raise HTTPException(
@@ -80,22 +119,35 @@ async def require_api_key(
             detail="Clé d'API manquante ou invalide.",
             headers={"WWW-Authenticate": _API_KEY_HEADER},
         )
-    # Identité tracée = 6 premiers caractères (jamais la clé complète dans les logs).
     return x_api_key[:6]
 
 
 async def get_principal(
     x_api_key: str | None = Header(default=None, alias=_API_KEY_HEADER),
+    authorization: str | None = Header(default=None),
     settings: Settings = Depends(get_settings),
 ) -> Principal:
-    """Dépendance : authentifie et résout le rôle (RBAC)."""
+    """Dépendance : authentifie et résout le rôle (RBAC) — clé API ou Bearer SSO."""
+    bearer = _bearer_token(authorization)
+    if bearer:
+        principal = _principal_from_bearer(bearer, settings)
+        if principal is not None:
+            return principal
+        # Bearer inconnu : si clé API aussi fournie, on continue ; sinon 401
+        if not x_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Bearer token invalide ou expiré.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     if not settings.api_keys and not settings.api_key_roles:
         if settings.is_production:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Aucune clé d'API configurée — API verrouillée.",
             )
-        return Principal(key_id="dev", role=Role.pm)  # dev : accès complet local
+        return Principal(key_id="dev", role=Role.pm, sub="dev", auth_method="dev")
 
     role = _resolve_role(x_api_key or "", settings)
     if role is None:
@@ -104,7 +156,8 @@ async def get_principal(
             detail="Clé d'API manquante ou invalide.",
             headers={"WWW-Authenticate": _API_KEY_HEADER},
         )
-    return Principal(key_id=(x_api_key or "")[:6], role=role)
+    kid = (x_api_key or "")[:6]
+    return Principal(key_id=kid, role=role, sub=kid, auth_method="api_key")
 
 
 def require_role(*allowed: Role) -> Callable[[Principal], Awaitable[Principal]]:
