@@ -13,7 +13,8 @@
 | Tests | **132 passed** (109 + 23 dossiers) |
 | Commit HEAD | `b4f9a28` P0-A: custom strategies + test engine + VPIN causal + dossiers ZDL |
 | WIP non commité | Non — lot P0-A committé |
-| Bloqueur | **S0.3 push CI** : aucun remote git configuré (créer dépôt GitHub + `git remote add` côté user) |
+| Bloqueur | **Push GitHub** : pas d'identifiant dans l'env agent (gh/token/ssh absents) → création dépôt + `git push` côté user (steps dans `docs/DEPLOIEMENT.md`) |
+| Déploiement | Alternative gratuite documentée : **Render (API) + Neon (Postgres)** ; backend rendu portable (hypertables optionnelles). `render.yaml` fourni. |
 | Prochaine action | Chantier 3 : **Bus ZDL Redis Streams (P0-C)** dans `backend/app/bus/` (publish bar-close, consumer ACK, retry backoff) |
 
 ---
@@ -50,6 +51,7 @@
 | 2026-07-24 | **P0-T5 tests dossiers livrés** : `dossierStore.test.js` (fake-indexeddb, writeChain, cycle 6 étapes) → **132 tests verts** ; Chantier 1 (P0-A) terminé |
 | 2026-07-24 | **Chantier 1 committé** `b4f9a28` (lot P0-A) |
 | 2026-07-24 | **Chantier 2 — Backend P0-B livré** : `backend/` FastAPI async + SQLAlchemy 2.0 + Pydantic v2 + Alembic hypertables ; ingest idempotent + lecture keyset ; 13 tests backend verts |
+| 2026-07-24 | **Déploiement gratuit** : migration rendue portable (hypertables optionnelles), `render.yaml` + `docs/DEPLOIEMENT.md` (Render+Neon / Fly.io), job CI backend Python ajouté |
 
 ---
 

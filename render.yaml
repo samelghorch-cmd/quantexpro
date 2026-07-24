@@ -1,0 +1,31 @@
+# Blueprint Render — déploiement GRATUIT du backend QuantEXPro (alternative à Railway).
+# Render lit ce fichier à la racine du dépôt. Le service tourne sur le plan `free`
+# (se met en veille après ~15 min d'inactivité — suffisant "pour l'instant").
+#
+# La base de données n'est PAS provisionnée ici : on utilise Neon (Postgres gratuit,
+# non expirant) — voir docs/DEPLOIEMENT.md. Renseigner QX_DATABASE_URL dans le dashboard
+# Render (marqué `sync: false`).
+services:
+  - type: web
+    name: quantexpro-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: QX_ENV
+        value: production
+      # URL Neon (format: postgresql+asyncpg://USER:PASS@HOST/DB?ssl=require) — à saisir.
+      - key: QX_DATABASE_URL
+        sync: false
+      # Clé d'API générée par Render (à reporter côté dashboard/collector).
+      - key: QX_API_KEYS
+        generateValue: true
+      # Bus ZDL (chantier P0-C) — Redis optionnel pour l'instant.
+      - key: QX_REDIS_URL
+        sync: false
+      - key: QX_LOG_LEVEL
+        value: INFO
