@@ -216,7 +216,7 @@ export function SignalEnginePage() {
 }
 
 export function ExecQualityPage() {
-  const { bars, symbol, CONTRACTS } = usePipeline();
+  const { bars, symbol, CONTRACTS, navigate } = usePipeline();
   const ob = useMemo(() => bars.length ? generateOrderBook(bars[bars.length - 1].c, CONTRACTS[symbol].tick, 10, bars.length) : null, [bars, symbol, CONTRACTS]);
   if (!ob) return null;
   const spec = CONTRACTS[symbol];
@@ -234,13 +234,16 @@ export function ExecQualityPage() {
           ))}
         </div>
       </Panel>
-      <Panel title="Qualité d'exécution estimée">
+      <Panel title="Qualité d'exécution estimée" right={<Button onClick={() => navigate("tca")}>→ TCA observé vs modèle</Button>}>
         <MetricGrid min={130}>
           <MetricCard label="Spread" value={`${spec.tick} pt`} />
           <MetricCard label="Slippage / trade" value={fmtUsd(slipCost, 2)} color={T.yellow} />
           <MetricCard label="Commission A/R" value={fmtUsd(2 * spec.commission, 2)} />
           <MetricCard label="Coût total A/R" value={fmtUsd(2 * (spec.commission + slipCost), 2)} color={T.orange} />
         </MetricGrid>
+        <div style={{ marginTop: 10, fontSize: 11, color: T.textDim, lineHeight: 1.45 }}>
+          Estimation contrat (ticks). Pour comparer au <b style={{ color: T.orange }}>slippage réel / next-open</b> → module TCA.
+        </div>
       </Panel>
     </div>
   );

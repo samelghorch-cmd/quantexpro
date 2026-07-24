@@ -47,6 +47,7 @@ export const SECTIONS = [
       { id: "signaux", label: "Signaux" },
       { id: "signalEngine", label: "Signal Engine" },
       { id: "execQuality", label: "Exec Quality" },
+      { id: "tca", label: "TCA (slippage)" },
       { id: "riskCalc", label: "Risk Calc" },
       { id: "newsReact", label: "News React" },
       { id: "liveOptim", label: "Live Optim" },

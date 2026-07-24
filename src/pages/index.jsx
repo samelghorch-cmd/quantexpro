@@ -18,6 +18,7 @@ import { PropfirmConvexPage } from "./risque/PropfirmConvex.jsx";
 import { ChartLivePage, CockpitPage, MasterCockpitPage, OrchestrateurPage, NewsReactPage, LiveOptimPage } from "./trading/TradingLive.jsx";
 import { ForwardTestPage } from "./trading/ForwardTest.jsx";
 import { PerformancePage, VPFootprintPage, BehaviorTrackerPage, SpreadComparePage, HMMRegimePage, StrategiesPage, SignauxPage, SignalEnginePage, ExecQualityPage, RiskCalcPage } from "./trading/TradingTools.jsx";
+import { TcaPage } from "./trading/Tca.jsx";
 // OPTIMISATION
 import { FullAutoOptimPage } from "./optimisation/FullAutoOptim.jsx";
 import { PostFaoSynthPage } from "./optimisation/PostFaoSynth.jsx";
@@ -76,6 +77,7 @@ const REAL = {
   signaux: SignauxPage,
   signalEngine: SignalEnginePage,
   execQuality: ExecQualityPage,
+  tca: TcaPage,
   riskCalc: RiskCalcPage,
   newsReact: NewsReactPage,
   liveOptim: LiveOptimPage,
