@@ -12,8 +12,8 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **155** · backend **51** |
-| Commit HEAD | P1-PORT stress (en cours de push) |
-| CI GitHub | après push |
+| Commit HEAD | `7c6ac2f` — P1-PORT stress Usine |
+| CI GitHub | push `7c6ac2f` — à confirmer Actions |
 | P0 | ✅ A–E clôturés |
 | P1 | 🔄 DSR + ANT + **PORT** · reste TCA, tearsheet, Statistical Edge |
 | Prochaine action | **TCA** (slippage observé vs modèle) — dire « go » |
