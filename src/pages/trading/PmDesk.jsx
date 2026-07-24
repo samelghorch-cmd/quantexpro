@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { listDossiers } from "../../engine/dossierStore.js";
-import { loadValidatedEdges, listActiveEdges } from "../../engine/validatedEdges.js";
+import { loadValidatedEdges, listActiveEdges } from "../../engine/validatedEdges.ts";
 import { getCollectorUrl, listJobs } from "../../engine/collectorClient.js";
 import {
   loadDeskConfig,

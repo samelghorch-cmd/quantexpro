@@ -7,8 +7,8 @@ import {
   pushEdgesToApi,
   pullEdgesFromApi,
   isEdgesApiConfigured,
-} from "../../src/engine/edgesSync.js";
-import { clearValidatedEdges, addValidatedEdge, loadValidatedEdges } from "../../src/engine/validatedEdges.js";
+} from "../../src/engine/edgesSync.ts";
+import { clearValidatedEdges, addValidatedEdge, loadValidatedEdges } from "../../src/engine/validatedEdges.ts";
 
 beforeEach(() => {
   const store = new Map();

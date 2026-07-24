@@ -12,8 +12,8 @@ import {
   removeEdge,
   isEligibleDossier,
   edgesToCsv,
-} from "../../engine/validatedEdges.js";
-import { pushEdgesToApi, pullEdgesFromApi, isEdgesApiConfigured } from "../../engine/edgesSync.js";
+} from "../../engine/validatedEdges.ts";
+import { pushEdgesToApi, pullEdgesFromApi, isEdgesApiConfigured } from "../../engine/edgesSync.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 

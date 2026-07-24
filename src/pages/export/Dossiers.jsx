@@ -8,7 +8,7 @@ import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, 
 import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.js";
 import { downloadJSON, downloadPDF } from "../../engine/exportUtils.js";
 import { generateTearsheetPdf } from "../../engine/tearsheet.js";
-import { promoteFromDossier, isEligibleDossier } from "../../engine/validatedEdges.js";
+import { promoteFromDossier, isEligibleDossier } from "../../engine/validatedEdges.ts";
 import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 

@@ -109,7 +109,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ## P4 — Alpha Forge & desk (post-P3)
 
-- [x] **P4-AF** Registre Validated Edges (`validatedEdges.js` + page Alpha Forge + promote Dossiers) ✅
+- [x] **P4-AF** Registre Validated Edges (`validatedEdges.ts` + page Alpha Forge + promote Dossiers) ✅
 - [x] **P4-AUDIT-UI** Journal serveur `/v1/audit` dans Risque → Audit (`auditLog.js` + vérif hash) ✅
 - [x] **P4-DESK** Desk PM unifié (equity flotte + réserve risque % capital) ✅
 - [x] **P4-SIGNAL-WS** Console Signal Engine (local + WS `/stream/bars`) ✅
@@ -132,7 +132,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P5-TS-FEEDS** `feedStatus.js` → `feedStatus.ts` (types stricts + probes) ✅
 - [x] **P5-TS-MORE** `oscillators.js` → `oscillators.ts` (Z-Score / Hurst / régimes) ✅
-- [ ] **P5-TS-EDGES** Suite incremental (`edgesSync` / `validatedEdges` / …)
+- [x] **P5-TS-EDGES** `validatedEdges` + `edgesSync` → TypeScript ✅
 - [ ] **P5-HMM-PY** Port HMM Python (cible audit · badge heuristique JS conservé)
 - [ ] **P5-OPS** Go-live ops (`alembic upgrade head` 0004/0005 · MT5 paper→demo)
 

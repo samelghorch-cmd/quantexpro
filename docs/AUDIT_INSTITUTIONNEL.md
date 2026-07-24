@@ -82,7 +82,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Patterns Library 616 | ✅ `patternsLibrary.js` · TF M1–MN · familles scalp/intra/swing | 🟢 |
 | Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
 | Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
-| Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
+| Alpha Forge + Valid Edges | ✅ `validatedEdges.ts` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
 | Scraper Reddit/X/QC/SSRN | ✅ RSS research allowlisté (arXiv · NBER · BIS) · X/Reddit/QC ⛔ ToS | 🟢 légal ; SSRN via arXiv/NBER |
 | Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
@@ -186,11 +186,11 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P3-ZDL-SYNC | Dashboard ↔ API bars | ✅ | `barsSync.ts` · migration `0003` TF 15m/1h/4h/1d · Data Manager Push/Pull |
 | P3-COLLECTOR-INGEST | Collector → `/v1/bars` | ✅ | `collector/barsIngest.js` · opt-in env · delta + backfill |
 | P3-MT5-VPS | Pack go-live VPS | ✅ | `mt5/VPS_DEPLOY.md` · `smoke.mjs` · dry-run tests |
-| P4-AF | Alpha Forge Validated Edges | ✅ | `validatedEdges.js` · page Optimisation · promote Dossiers |
+| P4-AF | Alpha Forge Validated Edges | ✅ | `validatedEdges.ts` · page Optimisation · promote Dossiers |
 | P4-AUDIT-UI | UI journal audit serveur | ✅ | `auditLog.js` · Risque → Audit · hash SHA-256 · CSV |
 | P4-DESK | Desk PM flotte / réserve risque | ✅ | `portfolioDesk.js` · Trading → Desk PM |
 | P4-SIGNAL-WS | Console Signal Engine + WS bars | ✅ | `signalConsole.js` · `/stream/bars` · journal local/WS |
-| P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.js` · Alembic 0004 |
+| P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.ts` · Alembic 0004 |
 | P4-GEX | Options Gamma / GEX | ✅ | `gex.js` · Deribit proxy · Max Pain · PCR · implied move |
 | P4-ANT-SYNC | Anti-Library ZDL Timescale | ✅ | `anti_library` · `/v1/anti-library` · Alembic 0005 |
 | P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.ts` · probes · Databento/CBOE scoped_out |
@@ -204,6 +204,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-RESEARCH | RSS recherche légaux | ✅ | arXiv q-fin · NBER · BIS · allowlist proxy |
 | P5-TS-FEEDS | feedStatus → TypeScript | ✅ | `feedStatus.ts` · types FeedHealth / probes |
 | P5-TS-MORE | oscillators → TypeScript | ✅ | `oscillators.ts` · Z-Score / Hurst / régimes |
+| P5-TS-EDGES | validatedEdges + edgesSync → TS | ✅ | `ValidatedEdge` · API payload · merge remote |
 
 ---
 
@@ -211,14 +212,14 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 > Historique Sprint 0 / P0 (2026-07-22) — **commité**. Aucun WIP bloquant au 2026-07-24.
 
-**Prochaine action recommandée :** P5-TS-EDGES (`edgesSync` / `validatedEdges`) ou P5-OPS.
+**Prochaine action recommandée :** P5-HMM-PY ou P5-OPS.
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés). **P5-TS-FEEDS** + **P5-TS-MORE** livrés.
+2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés). **P5-TS-FEEDS** · **P5-TS-MORE** · **P5-TS-EDGES** livrés.
 3. **Charte couleurs :** conserver orange TradoBot en **accent marque** ; ajouter tokens `#00e676` / `#ff1744` pour sémantique long/short dans `theme.js` (non-breaking).
 4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge.
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).

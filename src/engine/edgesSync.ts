@@ -1,19 +1,59 @@
-// P4-AF-SYNC — pont Validated Edges ↔ API `/v1/edges`.
+// P4-AF-SYNC / P5-TS-EDGES — pont Validated Edges ↔ API `/v1/edges`.
 import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
 import {
   loadValidatedEdges,
   listActiveEdges,
   edgeFingerprint,
+  type ValidatedEdge,
 } from "./validatedEdges.js";
 
 const LS_KEY = "quantexpro:validatedEdges:v1";
 
-export function isEdgesApiConfigured() {
+export interface ApiEdgePayload {
+  fingerprint: string;
+  client_id: string | null;
+  name: string;
+  strategy_id: number | null;
+  symbol: string | null;
+  tf: string | null;
+  dossier_id: string | null;
+  verdict: string;
+  score: number | null;
+  letter: string;
+  status: "active" | "retired";
+  metrics: Record<string, unknown> | null;
+  params: Record<string, unknown> | null;
+  tools_applied: string[] | null;
+  notes: string | null;
+  validated_at: string | null;
+}
+
+export interface ApiEdgeRow extends Partial<ApiEdgePayload> {
+  fingerprint: string;
+  updated_at?: string | null;
+  name?: string;
+}
+
+export interface MergeResult {
+  merged: ValidatedEdge[];
+  added: number;
+  updated: number;
+}
+
+type ApiFetchFn = (path: string, opts?: RequestInit & { preferApiKey?: boolean; skipAuth?: boolean }) => Promise<unknown>;
+
+export interface SyncOpts {
+  entries?: ValidatedEdge[];
+  fetchImpl?: ApiFetchFn;
+  status?: string;
+}
+
+export function isEdgesApiConfigured(): boolean {
   return Boolean(getApiBaseUrl() && getApiKey());
 }
 
 /** Local edge → payload API. */
-export function toApiEdge(entry) {
+export function toApiEdge(entry: ValidatedEdge | null | undefined): ApiEdgePayload | null {
   if (!entry) return null;
   const fingerprint = entry.fingerprint || edgeFingerprint(entry);
   const letter = String(entry.letter || "").toUpperCase();
@@ -41,21 +81,21 @@ export function toApiEdge(entry) {
 }
 
 /** Réponse API → entrée locale. */
-export function fromApiEdge(row) {
+export function fromApiEdge(row: ApiEdgeRow | null | undefined): ValidatedEdge | null {
   if (!row || !row.fingerprint) return null;
   return {
     id: row.client_id || `ve-api-${String(row.fingerprint).slice(0, 12)}`,
-    name: row.name,
+    name: row.name || "",
     strategyId: row.strategy_id != null ? Number(row.strategy_id) : null,
-    symbol: row.symbol,
-    tf: row.tf,
-    dossierId: row.dossier_id,
-    verdict: row.verdict,
-    score: row.score,
-    letter: row.letter,
+    symbol: row.symbol ?? null,
+    tf: row.tf ?? null,
+    dossierId: row.dossier_id ?? null,
+    verdict: row.verdict ?? null,
+    score: row.score ?? null,
+    letter: row.letter ?? null,
     status: row.status === "retired" ? "retired" : "active",
-    metrics: row.metrics || {},
-    params: row.params || {},
+    metrics: (row.metrics || {}) as ValidatedEdge["metrics"],
+    params: (row.params || {}) as Record<string, unknown>,
     toolsApplied: Array.isArray(row.tools_applied) ? row.tools_applied : [],
     notes: row.notes || "",
     fingerprint: row.fingerprint,
@@ -64,7 +104,7 @@ export function fromApiEdge(row) {
   };
 }
 
-function persistAll(entries) {
+function persistAll(entries: ValidatedEdge[]): void {
   if (typeof localStorage !== "undefined") {
     localStorage.setItem(LS_KEY, JSON.stringify(entries));
   }
@@ -72,9 +112,11 @@ function persistAll(entries) {
 
 /**
  * Fusionne remote dans le store local (fingerprint gagne le plus récent updatedAt).
- * @returns {{ merged: object[], added: number, updated: number }}
  */
-export function mergeRemoteEdges(remoteRows, localEntries = null) {
+export function mergeRemoteEdges(
+  remoteRows: ApiEdgeRow[] | null | undefined,
+  localEntries: ValidatedEdge[] | null = null,
+): MergeResult {
   const local = [...(localEntries || loadValidatedEdges())];
   const byFp = new Map(local.map((e) => [e.fingerprint || edgeFingerprint(e), e]));
   let added = 0;
@@ -100,19 +142,21 @@ export function mergeRemoteEdges(remoteRows, localEntries = null) {
 }
 
 /** POST /v1/edges — push actifs locaux. */
-export async function pushEdgesToApi(opts = {}) {
+export async function pushEdgesToApi(
+  opts: SyncOpts = {},
+): Promise<{ received: number; written: number } | unknown> {
   if (!isEdgesApiConfigured()) {
     throw new Error("Configure l'URL API + clé PM/Risk (Data Manager).");
   }
   const entries = opts.entries || listActiveEdges();
-  const payload = entries.map(toApiEdge).filter(Boolean);
+  const payload = entries.map(toApiEdge).filter((x): x is ApiEdgePayload => Boolean(x));
   if (!payload.length) return { received: 0, written: 0 };
   const fetchImpl = opts.fetchImpl || apiFetch;
   return fetchImpl("/v1/edges", { method: "POST", body: JSON.stringify(payload) });
 }
 
 /** GET /v1/edges — pull + merge localStorage. */
-export async function pullEdgesFromApi(opts = {}) {
+export async function pullEdgesFromApi(opts: SyncOpts = {}): Promise<MergeResult> {
   if (!isEdgesApiConfigured()) {
     throw new Error("Configure l'URL API + clé (Data Manager).");
   }
@@ -120,11 +164,14 @@ export async function pullEdgesFromApi(opts = {}) {
   const fetchImpl = opts.fetchImpl || apiFetch;
   const rows = await fetchImpl(`/v1/edges?status=${encodeURIComponent(status)}&limit=500`);
   if (!Array.isArray(rows)) throw new Error("Réponse edges invalide");
-  return mergeRemoteEdges(rows);
+  return mergeRemoteEdges(rows as ApiEdgeRow[]);
 }
 
 /** POST /v1/edges/retire */
-export async function retireEdgeOnApi(fingerprint, opts = {}) {
+export async function retireEdgeOnApi(
+  fingerprint: string,
+  opts: SyncOpts = {},
+): Promise<unknown> {
   if (!isEdgesApiConfigured()) {
     throw new Error("Configure l'URL API + clé PM/Risk.");
   }

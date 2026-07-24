@@ -14,7 +14,7 @@ import {
   loadValidatedEdges,
   listActiveEdges,
   edgesToCsv,
-} from "../../src/engine/validatedEdges.js";
+} from "../../src/engine/validatedEdges.ts";
 
 beforeEach(() => {
   const store = new Map();
