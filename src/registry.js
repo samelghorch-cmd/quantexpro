@@ -56,6 +56,7 @@ export const SECTIONS = [
   {
     id: "optimisation", label: "Optimisation", icon: "⚙",
     modules: [
+      { id: "alphaForge", label: "✦ Alpha Forge (Validated Edges)" },
       { id: "factory", label: "⚡ Usine à Stratégies" },
       { id: "antiLibrary", label: "🚫 Anti-Library" },
       { id: "geneticOptim", label: "🧬 Optim Génétique" },

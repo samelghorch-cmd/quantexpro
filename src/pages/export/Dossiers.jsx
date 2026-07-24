@@ -8,6 +8,7 @@ import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, 
 import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.js";
 import { downloadJSON, downloadPDF } from "../../engine/exportUtils.js";
 import { generateTearsheetPdf } from "../../engine/tearsheet.js";
+import { promoteFromDossier, isEligibleDossier } from "../../engine/validatedEdges.js";
 import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 
@@ -135,9 +136,10 @@ function Cloud24Panel({ d, refresh }) {
 }
 
 export function DossiersPage() {
-  const { activeDossierId, setActiveDossier } = usePipeline();
+  const { activeDossierId, setActiveDossier, navigate } = usePipeline();
   const [rows, setRows] = useState([]);
   const [sel, setSel] = useState(null);
+  const [promoteMsg, setPromoteMsg] = useState("");
 
   const refresh = useCallback(async () => {
     const all = await listDossiers().catch(() => []);
@@ -202,6 +204,23 @@ export function DossiersPage() {
                     <div style={{ fontSize: 11 }}><Badge color={verdictColor(d.grade.verdict)}>{d.grade.verdict}</Badge><div style={{ color: T.textDim, marginTop: 3 }}>score {fmt(d.grade.score, 0)}</div></div>
                   </div>
                 ) : <Badge color={T.textFaint}>non noté — lance la Reco Finale</Badge>}
+                {isEligibleDossier(d).ok && (
+                  <Button
+                    primary
+                    onClick={() => {
+                      try {
+                        const { created, entry } = promoteFromDossier(d);
+                        setPromoteMsg(created ? `✓ Alpha Forge : ${entry.name}` : `✓ Alpha Forge mis à jour : ${entry.name}`);
+                        setTimeout(() => setPromoteMsg(""), 3500);
+                      } catch (e) {
+                        setPromoteMsg(String(e.message || e));
+                        setTimeout(() => setPromoteMsg(""), 3500);
+                      }
+                    }}
+                  >
+                    ✦ Alpha Forge
+                  </Button>
+                )}
                 {d.id !== activeDossierId && <Button primary onClick={() => setActiveDossier(d.id)}>Définir comme actif</Button>}
                 <Button
                   primary
@@ -216,6 +235,20 @@ export function DossiersPage() {
                 <span onClick={() => remove(d.id)} title="Supprimer" style={{ cursor: "pointer", color: T.red, fontSize: 16 }}>✕</span>
               </div>
             </div>
+            {promoteMsg && (
+              <div style={{ marginTop: 8, fontSize: 11, color: promoteMsg.startsWith("✓") ? T.green : T.red }}>
+                {promoteMsg}{" "}
+                {promoteMsg.startsWith("✓") && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("alphaForge")}
+                    style={{ background: "none", border: "none", color: T.orange, cursor: "pointer", padding: 0, fontSize: 11 }}
+                  >
+                    ouvrir Alpha Forge →
+                  </button>
+                )}
+              </div>
+            )}
           </Panel>
 
           <Panel title="Paramètres saisis">

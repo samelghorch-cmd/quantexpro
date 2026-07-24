@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P3-MT5-VPS)
+> Dernière maj : **2026-07-24** (P4-AF)
 
 ---
 
@@ -11,24 +11,30 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **243** · backend **53** · `typecheck` OK |
-| Commit HEAD | P3-MT5-VPS |
-| P0–P2 | ✅ clôturés |
-| P3 | ✅ ZDL-SYNC · COLLECTOR-INGEST · **MT5-VPS pack** |
-| Prochaine action | Pause / priorité libre — dire « go » |
+| Tests | JS **255** · backend **53** · `typecheck` OK |
+| Commit HEAD | P4-AF |
+| P0–P3 | ✅ clôturés |
+| P4 | 🔄 **P4-AF** Validated Edges ✅ |
+| Prochaine action | Dire « go » (suite P4 / priorité libre) |
 
 ---
 
-## P3-MT5-VPS — livré
+## P4-AF — livré
 
-- `mt5/VPS_DEPLOY.md` — checklist VPS Windows paper→demo→live  
-- `mt5/smoke.mjs` — dry-run + cycle API create→pending→ACK  
-- Tests : `mt5Smoke.test.js` (5)  
-- Go-live physique VPS/broker = action ops (hors repo)
+- `validatedEdges.js` — promote GO A–C, fingerprint dédup, retire/CSV  
+- Page **Optimisation → Alpha Forge** + liens Usine/FAO/Anti-Lib/Dossiers  
+- Bouton **✦ Alpha Forge** sur Dossiers éligibles  
+- Tests : `validatedEdges.test.js` (11) · registry nav  
+
+---
+
+## P3 — clôturé
+
+ZDL-SYNC · COLLECTOR-INGEST · MT5-VPS pack
 
 ---
 
 ## Notes session
 
-- Smoke local : `node mt5/smoke.mjs --dry-run`  
-- Après moteur → `npm test`.
+- Un chantier à la fois ; dire **« go »** pour le suivant.  
+- Après `src/engine/*` → `npm test`.

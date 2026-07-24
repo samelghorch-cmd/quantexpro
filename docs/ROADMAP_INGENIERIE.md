@@ -107,12 +107,18 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ---
 
+## P4 — Alpha Forge & desk (post-P3)
+
+- [x] **P4-AF** Registre Validated Edges (`validatedEdges.js` + page Alpha Forge + promote Dossiers) ✅
+
+---
+
 ## Mapping spec → pages actuelles (référence rapide)
 
 | Module spec | Entrées sidebar actuelles |
 |-------------|---------------------------|
 | 1 Statistical Edge | ✅ `statisticalEdge` (+ `analyseQuant`, `featureMining`) |
-| 2 Alpha Forge | `factory`, `coreMode`, `strategyImporter`, `fao`, `validator` → **à regrouper UX** |
+| 2 Alpha Forge | `alphaForge`, `factory`, `coreMode`, `strategyImporter`, `fao`, `validator` |
 | 3 Algorithmic Desk | `cockpit`, `signalEngine`, `forwardTest`, collector |
 | 4 Backtest KPIs | `backtest`, `recoFinale`, `vpin` |
 | 5 GEX | `optionsGamma`, `vpFootprint` |

@@ -82,7 +82,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Patterns Library 616 | ✅ `patternsLibrary.js` | Filtres TF M1–MN à aligner UI |
 | Prompt Mode Qwen local | 🔴 | P0 backend LLM |
 | Reverse Engineering signaux | 🟡 Strategy Importer JSON | Mode « historique signaux externes » 🔴 |
-| Alpha Forge + Valid Edges | 🟡 Usine + FAO + dossiers | Pas de registre « Validated Edges » nommé Alpha Forge |
+| Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + page Optimisation `alphaForge` | Promote GO A–C depuis dossiers ; CSV |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + UI + filtre Usine/FAO | Persist Timescale plus tard |
 | Scraper Reddit/X/QC/SSRN | 🔴 | P2 — avec garde-fous légaux + rate limit |
 | Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
@@ -186,6 +186,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P3-ZDL-SYNC | Dashboard ↔ API bars | ✅ | `barsSync.ts` · migration `0003` TF 15m/1h/4h/1d · Data Manager Push/Pull |
 | P3-COLLECTOR-INGEST | Collector → `/v1/bars` | ✅ | `collector/barsIngest.js` · opt-in env · delta + backfill |
 | P3-MT5-VPS | Pack go-live VPS | ✅ | `mt5/VPS_DEPLOY.md` · `smoke.mjs` · dry-run tests |
+| P4-AF | Alpha Forge Validated Edges | ✅ | `validatedEdges.js` · page Optimisation · promote Dossiers |
 
 ---
 

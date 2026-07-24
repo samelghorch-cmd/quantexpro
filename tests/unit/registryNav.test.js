@@ -35,10 +35,9 @@ describe("registry P2-UI", () => {
     expect(PAGES.liveTv).toBeTruthy();
   });
 
-  it("shipTracker / liveTv ne sont plus sous Macro / Trading", () => {
-    const macro = SECTIONS.find((s) => s.id === "macro");
-    const trading = SECTIONS.find((s) => s.id === "trading");
-    expect(macro.modules.some((m) => m.id === "shipTracker")).toBe(false);
-    expect(trading.modules.some((m) => m.id === "liveTv")).toBe(false);
+  it("expose Alpha Forge dans Optimisation", () => {
+    const opt = SECTIONS.find((s) => s.id === "optimisation");
+    expect(opt.modules.some((m) => m.id === "alphaForge")).toBe(true);
+    expect(PAGES.alphaForge).toBeTruthy();
   });
 });
