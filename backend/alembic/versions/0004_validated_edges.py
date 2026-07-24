@@ -44,7 +44,8 @@ def upgrade() -> None:
         "CREATE INDEX IF NOT EXISTS ix_validated_edges_status ON validated_edges (status);"
     )
     op.execute(
-        "CREATE INDEX IF NOT EXISTS ix_validated_edges_updated ON validated_edges (updated_at DESC);"
+        "CREATE INDEX IF NOT EXISTS ix_validated_edges_updated "
+        "ON validated_edges (updated_at DESC);"
     )
 
 

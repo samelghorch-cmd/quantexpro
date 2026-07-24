@@ -158,7 +158,10 @@ def map_oidc_role(claims: dict[str, Any], settings: Settings) -> Role:
 
 
 def verify_oidc_id_token(id_token: str, settings: Settings) -> dict[str, Any]:
-    """Contrôle iss / aud / exp sur id_token (payload). Signature JWKS optionnelle hors scope stdlib."""
+    """Contrôle iss / aud / exp sur id_token (payload).
+
+    Signature JWKS optionnelle hors scope stdlib.
+    """
     if not settings.oidc_enabled:
         raise ValueError("OIDC non configuré (QX_OIDC_ISSUER / QX_OIDC_CLIENT_ID)")
     claims = decode_jwt_payload(id_token)
@@ -205,4 +208,5 @@ async def exchange_oidc_code(
         res = await client.post(token_url, data=data)
         if res.status_code >= 400:
             raise ValueError(f"échange OIDC échoué ({res.status_code}): {res.text[:200]}")
-        return res.json()
+        payload: dict[str, Any] = res.json()
+        return payload

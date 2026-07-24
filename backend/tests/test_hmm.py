@@ -16,6 +16,7 @@ from app.quant.hmm import (
     hmm_regimes,
     map_clusters_to_regimes,
 )
+
 FIXTURE = Path(__file__).parent / "fixtures" / "hmm_parity_seed9.json"
 
 
