@@ -116,6 +116,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-AF-SYNC** Validated Edges → Timescale (`/v1/edges` + Push/Pull Alpha Forge) ✅
 - [x] **P4-GEX** Options Gamma réel (GEX / Max Pain / PCR · Deribit + JSON) ✅
 - [x] **P4-ANT-SYNC** Anti-Library → Timescale (`/v1/anti-library` + Push/Pull) ✅
+- [x] **P4-FEEDS** Statut multi-feeds TickerBar (`feedStatus.js` · probes réels · Databento/CBOE `scoped_out`) ✅
 
 ---
 

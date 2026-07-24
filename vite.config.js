@@ -63,6 +63,12 @@ export default defineConfig({
         rewrite: (p) => p.replace(/^\/api\/fred/, ""),
         headers: { "User-Agent": "Mozilla/5.0 (compatible; TradoBot/5.0)" },
       },
+      "/api/binance": {
+        target: "https://api.binance.com",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api\/binance/, "/api/v3"),
+        headers: { "User-Agent": "QuantEXPro/5.0 (+binance-ping)" },
+      },
       "/api/deribit": {
         target: "https://www.deribit.com",
         changeOrigin: true,
