@@ -114,6 +114,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-DESK** Desk PM unifié (equity flotte + réserve risque % capital) ✅
 - [x] **P4-SIGNAL-WS** Console Signal Engine (local + WS `/stream/bars`) ✅
 - [x] **P4-AF-SYNC** Validated Edges → Timescale (`/v1/edges` + Push/Pull Alpha Forge) ✅
+- [x] **P4-GEX** Options Gamma réel (GEX / Max Pain / PCR · Deribit + JSON) ✅
 
 ---
 
@@ -125,7 +126,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 | 2 Alpha Forge | `alphaForge`, `factory`, `coreMode`, `strategyImporter`, `fao`, `validator` |
 | 3 Algorithmic Desk | `pmDesk`, `cockpit`, `signalEngine`, `forwardTest`, collector |
 | 4 Backtest KPIs | `backtest`, `recoFinale`, `vpin` |
-| 5 GEX | `optionsGamma`, `vpFootprint` |
+| 5 GEX | ✅ `optionsGamma` — Deribit + JSON import |
 | 6 Sentiment | ✅ `sentiment` (Labs) — RSS allowlisté |
 | 7 Macro HMM | `hmmRegime`, `yieldCurve`, `usdLiquidity`, `cot`, … |
 

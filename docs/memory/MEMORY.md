@@ -14,7 +14,7 @@
 | **Stack actuelle** | React 18 + Vite · JS · moteur `src/engine/*` · collector Node Railway |
 | **Cible institutionnelle** | Next.js/TS · Python + TimescaleDB · bus ZDL · VPS MT5 · Qwen local |
 | **Dev** | `npm run dev` → http://localhost:5173 |
-| **Tests** | `npm test` → **284 verts** · backend `pytest` → **56 verts** |
+| **Tests** | `npm test` → **292 verts** · backend `pytest` → **56 verts** |
 
 ---
 
@@ -58,7 +58,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 2. **P1** — ✅ clôturé + re-vérifié (DSR · ANT · PORT · TCA · Tearsheet · Statistical Edge)  
 3. **P2** — ✅ clôturé  
 4. **P3** — ✅ ZDL-SYNC · COLLECTOR-INGEST · MT5-VPS pack  
-5. **P4** — 🔄 AF ✅ · Audit UI ✅ · Desk PM ✅ · Signal WS ✅ · AF-SYNC ✅  
+5. **P4** — 🔄 AF ✅ · Audit UI ✅ · Desk ✅ · Signal WS ✅ · AF-SYNC ✅ · GEX ✅  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 

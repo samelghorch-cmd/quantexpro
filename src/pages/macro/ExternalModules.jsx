@@ -7,7 +7,6 @@ const EXT = {
   events: { title: "Events", providers: ["Finnhub", "Benzinga"], description: "Flux d'événements de marché (earnings, splits, dividendes, annonces). Nécessite une API d'événements corporatifs." },
   cryptoWhales: { title: "Crypto Whales", providers: ["Whale Alert", "Arkham", "Nansen"], description: "Suivi des mouvements de gros portefeuilles on-chain. Nécessite une API on-chain / whale tracking." },
   shipTracker: { title: "Ship Tracker", providers: ["MarineTraffic", "Spire AIS"], description: "Labs — suivi AIS du trafic maritime pour les flux de matières premières. Nécessite un connecteur AIS (pas de données inventées)." },
-  optionsGamma: { title: "Options Gamma", providers: ["CBOE", "SqueezeMetrics", "SpotGamma"], description: "Exposition gamma des dealers (GEX) par strike. Nécessite un flux d'options flow / open interest." },
   cot: { title: "COT — Commitments of Traders", providers: ["CFTC", "Quandl/Nasdaq Data Link"], description: "Positionnement des acteurs (commercials, large specs) publié hebdomadairement par la CFTC." },
   yieldCurve: { title: "Yield Curve", providers: ["FRED", "US Treasury"], description: "Courbe des taux réels (2Y/10Y/30Y) et spreads. Nécessite les données de taux souverains." },
   usdLiquidity: { title: "USD Liquidity", providers: ["FRED (WALCL, RRP, TGA)"], description: "Liquidité nette du dollar (bilan Fed − RRP − TGA). Nécessite les séries FRED de la Réserve fédérale." },

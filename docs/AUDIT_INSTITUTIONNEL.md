@@ -118,9 +118,9 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| GEX multi-tenor 0DTE→365D | 🟡 `optionsGamma` — empty state / connecteur | 🔴 données options réelles |
+| GEX multi-tenor 0DTE→365D | ✅ `gex.js` + Macro → Options Gamma | Deribit BTC/ETH public · JSON import · CBOE payant hors scope |
 | pPOC, pVAL, confluence OI | 🟡 VP Footprint, volume profile | 🔴 |
-| PCR, Max Pain, Implied Move | 🔴 | P1–P2 |
+| PCR, Max Pain, Implied Move | ✅ PCR OI · Max Pain · implied move 1σ | Via `gex.js` |
 
 ---
 
@@ -191,6 +191,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-DESK | Desk PM flotte / réserve risque | ✅ | `portfolioDesk.js` · Trading → Desk PM |
 | P4-SIGNAL-WS | Console Signal Engine + WS bars | ✅ | `signalConsole.js` · `/stream/bars` · journal local/WS |
 | P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.js` · Alembic 0004 |
+| P4-GEX | Options Gamma / GEX | ✅ | `gex.js` · Deribit proxy · Max Pain · PCR · implied move |
 
 ---
 

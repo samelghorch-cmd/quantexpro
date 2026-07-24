@@ -37,6 +37,7 @@ import { CPCVPage, DonneesSynthPage, FeatureMiningPage, SymbolicGPPage, TailRisk
 import { makeExternalPage } from "./macro/ExternalModules.jsx";
 import { YieldCurvePage, InflationPage, UsdLiquidityPage } from "./macro/MacroFred.jsx";
 import { CotPage } from "./macro/CotPage.jsx";
+import { OptionsGammaPage } from "./macro/OptionsGamma.jsx";
 // LABS
 import { LabsHubPage } from "./labs/LabsHub.jsx";
 import { SentimentPage } from "./labs/Sentiment.jsx";
@@ -118,7 +119,7 @@ const REAL = {
   macroCalendar: makeExternalPage("macroCalendar"),
   events: makeExternalPage("events"),
   cryptoWhales: makeExternalPage("cryptoWhales"),
-  optionsGamma: makeExternalPage("optionsGamma"),
+  optionsGamma: OptionsGammaPage,
   cot: CotPage,
   yieldCurve: YieldCurvePage,
   usdLiquidity: UsdLiquidityPage,
