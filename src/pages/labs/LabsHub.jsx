@@ -8,7 +8,7 @@ const LAB_ITEMS = [
     id: "sentiment",
     title: "Sentiment (RSS)",
     blurb: "Fed · SEC · IMF — lexique LONG/SHORT + Jaccard. Pas de scraping social.",
-    providers: "RSS allowlisté · rate-limité",
+    providers: "Fed/SEC/IMF + arXiv/NBER/BIS · rate-limité",
   },
   {
     id: "shipTracker",

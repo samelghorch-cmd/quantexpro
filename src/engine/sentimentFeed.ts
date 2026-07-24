@@ -10,32 +10,61 @@ export interface FeedDef {
   /** URL absolue HTTPS — seule liste autorisée côté proxy. */
   url: string;
   provider: string;
+  /** policy = banques centrales / régulateurs · research = papers (arXiv / NBER / BIS). */
+  kind?: "policy" | "research";
 }
 
-/** Catalogue allowlist — synchroniser avec `functions/api/rss.js` + proxy Vite. */
+/** Catalogue allowlist — synchroniser avec `functions/api/rss.js` + `vite.config.js`. */
 export const SENTIMENT_FEEDS: Record<string, FeedDef> = {
   fed: {
     id: "fed",
     label: "Federal Reserve — Press",
     url: "https://www.federalreserve.gov/feeds/press_all.xml",
     provider: "federalreserve.gov",
+    kind: "policy",
   },
   sec: {
     id: "sec",
     label: "SEC — Press Releases",
     url: "https://www.sec.gov/news/pressreleases.rss",
     provider: "sec.gov",
+    kind: "policy",
   },
   imf: {
     id: "imf",
     label: "IMF — News",
     url: "https://www.imf.org/en/News/RSS?language=eng",
     provider: "imf.org",
+    kind: "policy",
+  },
+  // P4-RESEARCH — papers légaux (pas de scrape X/Reddit/QC ToS)
+  arxiv_qfin: {
+    id: "arxiv_qfin",
+    label: "arXiv — Quantitative Finance",
+    url: "https://rss.arxiv.org/rss/q-fin",
+    provider: "arxiv.org",
+    kind: "research",
+  },
+  nber: {
+    id: "nber",
+    label: "NBER — New Working Papers",
+    url: "https://www.nber.org/rss/new.xml",
+    provider: "nber.org",
+    kind: "research",
+  },
+  bis: {
+    id: "bis",
+    label: "BIS — Press Releases",
+    url: "https://www.bis.org/doclist/rss/press_releases.rss",
+    provider: "bis.org",
+    kind: "research",
   },
 };
 
-export function listSentimentFeeds(): FeedDef[] {
-  return Object.values(SENTIMENT_FEEDS);
+export function listSentimentFeeds(kind?: "policy" | "research"): FeedDef[] {
+  const all = Object.values(SENTIMENT_FEEDS);
+  if (!kind) return all;
+  return all.filter((f) => (f.kind || "policy") === kind);
 }
 
 export function resolveFeed(id: string): FeedDef | null {

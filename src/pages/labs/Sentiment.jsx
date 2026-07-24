@@ -87,7 +87,8 @@ export function SentimentPage() {
       <Panel>
         <div style={{ fontSize: 15, fontWeight: 800, color: T.text }}>Sentiment — flux RSS légaux</div>
         <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.55, maxWidth: 720 }}>
-          Module 6 : headlines institutionnelles (Fed · SEC · IMF) via proxy allowlisté + lexique LONG/SHORT/NEUTRAL
+          Module 6 : headlines institutionnelles (Fed · SEC · IMF) + recherche (arXiv q-fin · NBER · BIS)
+          via proxy allowlisté + lexique LONG/SHORT/NEUTRAL. X / Reddit / QC scrapers = hors scope ToS.
           + Jaccard co-thématique. <b style={{ color: T.orange }}>Pas de scraping</b> X / StockTwits / Telegram /
           TradingView (ToS). Rate limit client : 5 s min · 30 req/h.
         </div>
@@ -104,7 +105,7 @@ export function SentimentPage() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
           {feeds.map((f) => (
             <Button key={f.id} primary={feedId === f.id} onClick={() => setFeedId(f.id)}>
-              {f.label}
+              {f.kind === "research" ? "📄 " : ""}{f.label}
             </Button>
           ))}
         </div>

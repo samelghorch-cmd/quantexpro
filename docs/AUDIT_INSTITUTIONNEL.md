@@ -84,7 +84,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
 | Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
-| Scraper Reddit/X/QC/SSRN | 🔴 | P2 — avec garde-fous légaux + rate limit |
+| Scraper Reddit/X/QC/SSRN | ✅ RSS research allowlisté (arXiv · NBER · BIS) · X/Reddit/QC ⛔ ToS | 🟢 légal ; SSRN via arXiv/NBER |
 | Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
 
 **Travaux en cours (non commités) :** `customStrategies.js` — fusion règles custom (#9001+) dans toute la librairie ; validation stricte Importer/Core Mode ; fix collision id stratégie 117 (VPIN vs EMA).
@@ -201,6 +201,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.js` · Statistical Edge multi-courbes + CSV |
 | P4-CORE | Core Mode KAMA / LinReg / Ichimoku | ✅ | `IND.kama/linreg` · RULE_SOURCES · overlays Core Mode |
 | P4-PAT | Patterns TF M1–MN | ✅ | `patternsLibrary.js` · filtres famille + UI Core Mode |
+| P4-RESEARCH | RSS recherche légaux | ✅ | arXiv q-fin · NBER · BIS · allowlist proxy |
 
 ---
 

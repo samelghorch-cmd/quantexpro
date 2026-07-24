@@ -5,6 +5,10 @@ const FEEDS = {
   fed: "https://www.federalreserve.gov/feeds/press_all.xml",
   sec: "https://www.sec.gov/news/pressreleases.rss",
   imf: "https://www.imf.org/en/News/RSS?language=eng",
+  // P4-RESEARCH — sync src/engine/sentimentFeed.ts + vite.config.js
+  arxiv_qfin: "https://rss.arxiv.org/rss/q-fin",
+  nber: "https://www.nber.org/rss/new.xml",
+  bis: "https://www.bis.org/doclist/rss/press_releases.rss",
 };
 
 export async function onRequest(context) {

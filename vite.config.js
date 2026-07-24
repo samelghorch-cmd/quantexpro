@@ -6,6 +6,10 @@ const RSS_FEEDS = {
   fed: "https://www.federalreserve.gov/feeds/press_all.xml",
   sec: "https://www.sec.gov/news/pressreleases.rss",
   imf: "https://www.imf.org/en/News/RSS?language=eng",
+  // P4-RESEARCH — sync sentimentFeed.ts + functions/api/rss.js
+  arxiv_qfin: "https://rss.arxiv.org/rss/q-fin",
+  nber: "https://www.nber.org/rss/new.xml",
+  bis: "https://www.bis.org/doclist/rss/press_releases.rss",
 };
 
 function rssDevProxy() {

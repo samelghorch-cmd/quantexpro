@@ -71,9 +71,12 @@ describe("aggregate + enrich", () => {
 });
 
 describe("allowlist + rate limit", () => {
-  it("catalogue fed/sec/imf", () => {
-    expect(listSentimentFeeds().map((f) => f.id).sort()).toEqual(["fed", "imf", "sec"]);
+  it("catalogue policy + research", () => {
+    const ids = listSentimentFeeds().map((f) => f.id).sort();
+    expect(ids).toEqual(["arxiv_qfin", "bis", "fed", "imf", "nber", "sec"]);
     expect(SENTIMENT_FEEDS.fed.url).toMatch(/^https:/);
+    expect(listSentimentFeeds("research").every((f) => f.kind === "research")).toBe(true);
+    expect(listSentimentFeeds("research").map((f) => f.id).sort()).toEqual(["arxiv_qfin", "bis", "nber"]);
   });
 
   it("RateLimiter bloque sous minInterval", () => {

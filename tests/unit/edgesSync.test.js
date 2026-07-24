@@ -77,7 +77,7 @@ describe("mergeRemoteEdges", () => {
         tf: "1h",
         score: 88,
         validated_at: "2026-07-24T00:00:00Z",
-        updated_at: "2026-07-24T12:00:00Z",
+        updated_at: "2099-01-01T12:00:00Z",
       },
       {
         fingerprint: "new::fp",
@@ -86,7 +86,7 @@ describe("mergeRemoteEdges", () => {
         verdict: "GO",
         status: "active",
         validated_at: "2026-07-24T00:00:00Z",
-        updated_at: "2026-07-24T12:00:00Z",
+        updated_at: "2099-01-01T12:00:00Z",
       },
     ];
     const { merged, added, updated } = mergeRemoteEdges(remote);
