@@ -14,7 +14,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any
 
-from sqlalchemy import BigInteger, Float, Index, Integer, PrimaryKeyConstraint, String
+from sqlalchemy import BigInteger, Boolean, Float, Index, Integer, PrimaryKeyConstraint, String
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -207,3 +207,26 @@ class ValidatedEdge(Base):
         Index("ix_validated_edges_status", "status"),
         Index("ix_validated_edges_updated", "updated_at"),
     )
+
+
+class AntiLibraryEntry(Base):
+    """Anti-Library — concepts involutifs (ZDL serveur, clé = concept_id)."""
+
+    __tablename__ = "anti_library"
+
+    concept_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    client_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    label: Mapped[str] = mapped_column(String(256), nullable=False)
+    reason: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    name_pattern: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    strategy_ids: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
+    seeded: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+    updated_at: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+
+    __table_args__ = (Index("ix_anti_library_active", "active"),)

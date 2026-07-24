@@ -1,5 +1,4 @@
-// Anti-Library — registre des concepts involutifs (P1-ANT).
-// Empêche Usine / FAO de re-tester des familles qui échouent systématiquement.
+// Anti-Library — registre des concepts involutifs (P1-ANT + P4-ANT-SYNC).
 import { useState, useCallback, useMemo } from "react";
 import {
   ensureSeeded,
@@ -9,19 +8,60 @@ import {
   SEED_CONCEPTS,
   blockedStrategyIds,
 } from "../../engine/antiLibrary.js";
+import {
+  pushAntiLibraryToApi,
+  pullAntiLibraryFromApi,
+  isAntiApiConfigured,
+} from "../../engine/antiLibrarySync.js";
 import { buildStrategyLibrary } from "../../engine/strategyLibrary.js";
+import { usePipeline } from "../../state/PipelineContext.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function AntiLibraryPage() {
+  const { navigate } = usePipeline();
   const [entries, setEntries] = useState(() => ensureSeeded());
   const [form, setForm] = useState({ conceptId: "", label: "", reason: "", namePattern: "", strategyIds: "" });
   const [error, setError] = useState(null);
+  const [msg, setMsg] = useState("");
 
   const refresh = useCallback(() => setEntries(ensureSeeded()), []);
 
   const lib = useMemo(() => buildStrategyLibrary(), []);
   const blockedIds = useMemo(() => blockedStrategyIds(lib, entries), [lib, entries]);
+
+  const flash = (text, isErr = false) => {
+    if (isErr) {
+      setError(text);
+      setMsg("");
+    } else {
+      setMsg(text);
+      setError(null);
+    }
+    setTimeout(() => {
+      setMsg("");
+      setError(null);
+    }, 3500);
+  };
+
+  const onPush = async () => {
+    try {
+      const res = await pushAntiLibraryToApi();
+      flash(`✓ Push API : ${res.written ?? 0} concept(s)`);
+    } catch (e) {
+      flash(String(e.message || e), true);
+    }
+  };
+
+  const onPull = async () => {
+    try {
+      const { added, updated } = await pullAntiLibraryFromApi();
+      refresh();
+      flash(`✓ Pull API : +${added} · ~${updated}`);
+    } catch (e) {
+      flash(String(e.message || e), true);
+    }
+  };
 
   const onAdd = () => {
     setError(null);
@@ -78,7 +118,18 @@ export function AntiLibraryPage() {
           Bloque le re-screening / re-optimisation de familles qui échouent systématiquement
           (Z-Score MR, Bollinger MR, TRIX, Lotka-Volterra, résonance stochastique…).
           Appliqué automatiquement dans l'<b style={{ color: T.orange }}>Usine</b> et le <b style={{ color: T.orange }}>FAO</b>.
+          Sync ZDL optionnelle : <code style={{ color: T.orange }}>/v1/anti-library</code>.
         </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+          <Button onClick={() => navigate("dataManager")}>API</Button>
+          <Button primary onClick={onPush} title={!isAntiApiConfigured() ? "Configure API d'abord" : ""}>
+            ↑ Push Timescale
+          </Button>
+          <Button primary onClick={onPull}>↓ Pull Timescale</Button>
+        </div>
+        {(msg || error) && (
+          <div style={{ marginTop: 8, fontSize: 12, color: error ? T.red : T.green }}>{error || msg}</div>
+        )}
       </Panel>
 
       <MetricGrid min={140}>

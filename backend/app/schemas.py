@@ -361,3 +361,44 @@ class RetireEdgeIn(BaseModel):
 
     fingerprint: str = Field(min_length=3, max_length=256)
 
+
+class AntiLibraryIn(BaseModel):
+    """Concept Anti-Library (idempotent sur concept_id)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    concept_id: str = Field(min_length=1, max_length=64)
+    client_id: str | None = Field(default=None, max_length=64)
+    label: str = Field(min_length=1, max_length=256)
+    reason: str | None = Field(default=None, max_length=512)
+    name_pattern: str | None = Field(default=None, max_length=256)
+    strategy_ids: list[int] | None = None
+    seeded: bool = False
+    active: bool = True
+
+
+class AntiLibraryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    concept_id: str
+    client_id: str | None = None
+    label: str
+    reason: str | None = None
+    name_pattern: str | None = None
+    strategy_ids: list[Any] | None = None
+    seeded: bool
+    active: bool
+    created_at: dt.datetime
+    updated_at: dt.datetime
+
+
+class AntiLibraryUpsertResult(BaseModel):
+    received: int
+    written: int
+
+
+class DeactivateAntiIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    concept_id: str = Field(min_length=1, max_length=64)
+

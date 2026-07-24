@@ -115,6 +115,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-SIGNAL-WS** Console Signal Engine (local + WS `/stream/bars`) ✅
 - [x] **P4-AF-SYNC** Validated Edges → Timescale (`/v1/edges` + Push/Pull Alpha Forge) ✅
 - [x] **P4-GEX** Options Gamma réel (GEX / Max Pain / PCR · Deribit + JSON) ✅
+- [x] **P4-ANT-SYNC** Anti-Library → Timescale (`/v1/anti-library` + Push/Pull) ✅
 
 ---
 

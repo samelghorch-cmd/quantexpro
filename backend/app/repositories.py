@@ -19,6 +19,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import (
+    AntiLibraryEntry,
     AuditEvent,
     Bar1d,
     Bar1h,
@@ -31,7 +32,16 @@ from .models import (
     Tick,
     ValidatedEdge,
 )
-from .schemas import BarIn, ExecutionIn, OrderbookL2In, SignalIn, TickIn, Timeframe, ValidatedEdgeIn
+from .schemas import (
+    AntiLibraryIn,
+    BarIn,
+    ExecutionIn,
+    OrderbookL2In,
+    SignalIn,
+    TickIn,
+    Timeframe,
+    ValidatedEdgeIn,
+)
 
 _BAR_MODEL: dict[Timeframe, type] = {
     Timeframe.m1: Bar1m,
@@ -304,6 +314,66 @@ async def retire_validated_edge(session: AsyncSession, fingerprint: str) -> bool
         .where(ValidatedEdge.fingerprint == fingerprint)
         .where(ValidatedEdge.status == "active")
         .values(status="retired", updated_at=dt.datetime.now(dt.UTC))
+    )
+    result = await session.execute(stmt)
+    return bool((getattr(result, "rowcount", 0) or 0) > 0)
+
+
+async def upsert_anti_library(
+    session: AsyncSession, entries: Sequence[AntiLibraryIn]
+) -> int:
+    if not entries:
+        return 0
+    now = dt.datetime.now(dt.UTC)
+    rows = [
+        {
+            "concept_id": e.concept_id,
+            "client_id": e.client_id,
+            "label": e.label,
+            "reason": e.reason,
+            "name_pattern": e.name_pattern,
+            "strategy_ids": e.strategy_ids,
+            "seeded": e.seeded,
+            "active": e.active,
+            "updated_at": now,
+        }
+        for e in entries
+    ]
+    stmt = pg_insert(AntiLibraryEntry).values(rows)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[AntiLibraryEntry.concept_id],
+        set_={
+            "client_id": stmt.excluded.client_id,
+            "label": stmt.excluded.label,
+            "reason": stmt.excluded.reason,
+            "name_pattern": stmt.excluded.name_pattern,
+            "strategy_ids": stmt.excluded.strategy_ids,
+            "seeded": stmt.excluded.seeded,
+            "active": stmt.excluded.active,
+            "updated_at": now,
+        },
+    )
+    await session.execute(stmt)
+    return len(rows)
+
+
+async def list_anti_library(
+    session: AsyncSession, *, active_only: bool = True, limit: int = 500
+) -> list[AntiLibraryEntry]:
+    query = select(AntiLibraryEntry)
+    if active_only:
+        query = query.where(AntiLibraryEntry.active.is_(True))
+    query = query.order_by(AntiLibraryEntry.updated_at.desc()).limit(limit)
+    result = await session.execute(query)
+    return list(result.scalars().all())
+
+
+async def deactivate_anti_entry(session: AsyncSession, concept_id: str) -> bool:
+    stmt = (
+        update(AntiLibraryEntry)
+        .where(AntiLibraryEntry.concept_id == concept_id)
+        .where(AntiLibraryEntry.active.is_(True))
+        .values(active=False, updated_at=dt.datetime.now(dt.UTC))
     )
     result = await session.execute(stmt)
     return bool((getattr(result, "rowcount", 0) or 0) > 0)
