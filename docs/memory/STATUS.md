@@ -11,7 +11,7 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **341** · backend **68** |
+| Tests | JS **337** · backend **68** |
 | Commit HEAD | P4-RESEARCH |
 | P0–P3 | ✅ clôturés |
 | P4 | … · PAT · **RESEARCH** ✅ |
