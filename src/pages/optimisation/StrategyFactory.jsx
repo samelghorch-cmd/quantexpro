@@ -9,6 +9,7 @@ import { downloadJSON } from "../../engine/exportUtils.js";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, ScoreGauge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
+import { STRESS_MAX_DD_LIMIT } from "../../engine/portfolioStress.js";
 
 const TF_OPTS = [{ v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }, { v: 3, l: "15m" }];
 
@@ -23,6 +24,7 @@ export function StrategyFactoryPage() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState(null);
+  const [stressIdx, setStressIdx] = useState(0);
 
   const space = useMemo(() => coveredSpace(assets.length, tfs.length), [assets, tfs]);
   const toggleAsset = (k) => setAssets((a) => a.includes(k) ? a.filter((x) => x !== k) : [...a, k]);
@@ -30,7 +32,7 @@ export function StrategyFactoryPage() {
 
   const launch = useCallback(async () => {
     if (assets.length === 0 || tfs.length === 0) return;
-    setRunning(true); setError(null); setResult(null); setSelectedIdx(0);
+    setRunning(true); setError(null); setResult(null); setSelectedIdx(0); setStressIdx(0);
     setProgress({ phase: "fetch", label: "Démarrage…", pct: 0 });
     log("Usine", `Lancement : ${assets.length} actifs × ${tfs.length} TF × 700 stratégies`);
     try {
@@ -201,6 +203,67 @@ export function StrategyFactoryPage() {
                 </Panel>
               </div>
             </div>
+          )}
+
+          {result.stress && (
+            <Panel
+              title="Stress-test historique (2008 / 2010 / 2020)"
+              right={
+                <Badge color={result.stress.allPass ? T.green : T.red}>
+                  {result.stress.allPass ? "PASS" : "FAIL"} · limite DD {fmtPct(STRESS_MAX_DD_LIMIT * 100)}
+                </Badge>
+              }
+            >
+              <div style={{ fontSize: 11, color: T.textDim, marginBottom: 12, lineHeight: 1.5 }}>
+                Overlay des chocs marché stylisés (SPX) sur l'équité du portefeuille. Pendant la crise,
+                la décorrélation s'effondre (<b style={{ color: T.orange }}>corrSpike</b>) — le panier suit le facteur marché.
+              </div>
+              <MetricGrid min={140}>
+                <MetricCard label="MaxDD base" value={fmtPct(result.stress.baseMaxDD * 100)} color={T.red} />
+                <MetricCard
+                  label="Pire scénario"
+                  value={result.stress.worst.label}
+                  sub={`DD ${fmtPct(result.stress.worst.maxDD * 100)}`}
+                  color={result.stress.worst.pass ? T.yellow : T.red}
+                />
+                <MetricCard
+                  label="Δ DD vs base"
+                  value={fmtPct(result.stress.worst.ddDelta * 100)}
+                  color={T.red}
+                  hint="hausse du drawdown sous stress"
+                />
+                <MetricCard
+                  label="Scénarios PASS"
+                  value={`${result.stress.results.filter((r) => r.pass).length}/${result.stress.results.length}`}
+                  color={result.stress.allPass ? T.green : T.yellow}
+                />
+              </MetricGrid>
+              <div style={{ marginTop: 12 }}>
+                <DataTable
+                  columns={[
+                    { key: "year", label: "Année", render: (r) => r.year },
+                    { key: "label", label: "Scénario", render: (r) => r.label },
+                    { key: "maxDD", label: "MaxDD stress", align: "right", render: (r) => fmtPct(r.maxDD * 100), color: (r) => r.pass ? T.yellow : T.red },
+                    { key: "ddDelta", label: "Δ DD", align: "right", render: (r) => fmtPct(r.ddDelta * 100), color: () => T.red },
+                    { key: "corr", label: "corrSpike", align: "right", render: (r) => fmt(r.corrSpike, 2) },
+                    { key: "pass", label: "Verdict", render: (r) => <Badge color={r.pass ? T.green : T.red}>{r.pass ? "PASS" : "FAIL"}</Badge> },
+                  ]}
+                  rows={result.stress.results}
+                  maxHeight={220}
+                  selectedIdx={stressIdx}
+                  onRowClick={(_, i) => setStressIdx(i)}
+                />
+              </div>
+              {result.stress.results[stressIdx] && result.portfolio && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ fontSize: 11, color: T.textDim, marginBottom: 6 }}>
+                    Équité sous stress — {result.stress.results[stressIdx].label}
+                    <span style={{ color: T.textFaint }}> · {result.stress.results[stressIdx].description}</span>
+                  </div>
+                  <EquityChart data={result.stress.results[stressIdx].curve} initial={result.portfolio.curve[0]} />
+                </div>
+              )}
+            </Panel>
           )}
 
           <Panel title="Meilleure stratégie par actif">

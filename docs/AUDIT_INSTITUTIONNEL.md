@@ -168,7 +168,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | ID | Action |
 |----|--------|
 | P1-DSR | DSR dans boucle **Usine à Stratégies** | ✅ | `factoryDsr.js` + worker : nTrials, filtre DSR &lt; 50 %, colonne UI ; 6 tests |
-| P1-PORT | Stress 2008 / 2010 / 2020 sur équité portefeuille Usine |
+| P1-PORT | Stress 2008 / 2010 / 2020 sur équité portefeuille Usine | ✅ | `portfolioStress.js` + panneau Usine ; limite DD 40 % |
 | P1-TCA | Slippage réel vs `costModel.js` |
 | P1-PDF | Tearsheet PDF par dossier |
 | P1-ANT | Anti-Library localStorage + filtre Usine/FAO + UI ✅ (TS plus tard) |

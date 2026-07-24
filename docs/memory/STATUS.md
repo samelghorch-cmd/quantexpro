@@ -11,12 +11,12 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **146** · backend **51** |
-| Commit HEAD | `8ad371e` — P1-ANT Anti-Library |
-| CI GitHub | push `8ad371e` — à confirmer Actions |
+| Tests | JS **155** · backend **51** |
+| Commit HEAD | P1-PORT stress (en cours de push) |
+| CI GitHub | après push |
 | P0 | ✅ A–E clôturés |
-| P1 | 🔄 **P1-DSR** + **P1-ANT** · reste stress, TCA, tearsheet, Statistical Edge |
-| Prochaine action | **Stress scenarios portefeuille** (dire « go ») |
+| P1 | 🔄 DSR + ANT + **PORT** · reste TCA, tearsheet, Statistical Edge |
+| Prochaine action | **TCA** (slippage observé vs modèle) — dire « go » |
 
 ---
 
@@ -53,6 +53,7 @@
 | 2026-07-24 | **P0 clôturé** — re-vérification zéro-erreur (JS 132, backend 51, ruff, mypy) |
 | 2026-07-24 | **P1-DSR** : DSR + nTrials dans Usine (filtre &lt;50 % avant leaderboard, colonne UI, 6 tests) → JS **138** |
 | 2026-07-24 | **P1-ANT** : Anti-Library (`antiLibrary.js`) — seeds involutifs, filtre Usine + blocage FAO, UI Optimisation, 8 tests → JS **146** |
+| 2026-07-24 | **P1-PORT** : stress 2008/2010/2020 sur équité Usine (`portfolioStress.js` + panneau), 9 tests → JS **155** |
 
 ---
 

@@ -80,7 +80,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P1-DSR** DSR + nTrials dans **Usine** (`factoryDsr.js` + `factory.worker.js` + UI) ✅
 - [x] **P1-ANT** Anti-Library store + filtre Usine/FAO (`antiLibrary.js` + UI) ✅
-- [ ] Stress scenarios portefeuille
+- [x] **P1-PORT** Stress scenarios portefeuille (`portfolioStress.js` — 2008/2010/2020) ✅
 - [ ] TCA module (slippage observé vs modèle)
 - [ ] PDF tearsheet par dossier
 - [ ] **Statistical Edge Module 1** (grille 10 métriques + CSV)

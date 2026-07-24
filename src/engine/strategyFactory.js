@@ -5,6 +5,7 @@ import { fetchCandles, findSymbol } from "./marketData.js";
 import { TF_MAP } from "./marketData.js";
 import { buildStrategyLibrary } from "./strategyLibrary.js";
 import { blockedStrategyIds, ensureSeeded } from "./antiLibrary.js";
+import { stressPortfolio } from "./portfolioStress.js";
 
 // Espace de recherche par défaut (respecte « tous les actifs connectés » avec un actif fort par classe).
 export const FACTORY_DEFAULT_ASSETS = ["BTC", "SPX", "NDX", "EURUSD", "GOLD", "WTI"];
@@ -174,12 +175,13 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
   for (const v of allRefined) { if (!bestByAsset[v.asset] || v.score > bestByAsset[v.asset].score) bestByAsset[v.asset] = v; }
 
   const portfolio = buildPortfolio(allRefined, { maxN: 8, maxCorr: 0.5 });
+  const stress = portfolio ? stressPortfolio(portfolio) : null;
   const space = coveredSpace(assets.length, tfs.length);
 
   return {
     leaderboard: allRefined.slice(0, 60),
     bestByAsset: Object.values(bestByAsset).sort((a, b) => b.score - a.score),
-    portfolio, perPair,
+    portfolio, stress, perPair,
     stats: {
       nVariants: allRefined.length, nPairs: pairs.length, nWorkers,
       covered: space.total,
@@ -189,6 +191,8 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
       antiBlocked: blockedIds.length,
       // nTrials typique par paire (screening + grille) — celui utilisé pour déflater le Sharpe.
       nTrialsPerPair: allRefined[0]?.nTrials ?? (700 + 54),
+      stressAllPass: stress ? stress.allPass : null,
+      stressWorstDd: stress ? stress.worst.maxDD : null,
     },
   };
 }
