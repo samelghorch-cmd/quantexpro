@@ -1,11 +1,11 @@
-// P1 — filtre DSR Usine (factoryDsr.js)
+// P1 — filtre DSR Usine (factoryDsr.ts)
 import { describe, it, expect } from "vitest";
 import {
   FACTORY_DSR_MIN,
   trialsForFactoryPair,
   evaluateFactoryDsr,
   passesFactoryDsr,
-} from "../../src/engine/factoryDsr.js";
+} from "../../src/engine/factoryDsr.ts";
 
 describe("trialsForFactoryPair", () => {
   it("additionne screening + grille, min 1", () => {

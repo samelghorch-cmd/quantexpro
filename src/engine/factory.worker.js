@@ -4,7 +4,7 @@
 import { buildStrategyLibrary } from "./strategyLibrary.js";
 import { buildContext } from "./context.js";
 import { runFactoryBacktest, factoryScore, pickMetrics, COST_MODELS } from "./costModel.ts";
-import { evaluateFactoryDsr, passesFactoryDsr, trialsForFactoryPair } from "./factoryDsr.js";
+import { evaluateFactoryDsr, passesFactoryDsr, trialsForFactoryPair } from "./factoryDsr.ts";
 
 const LIB = buildStrategyLibrary();
 

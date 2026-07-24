@@ -78,7 +78,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ## P1 — Risque institutionnel
 
-- [x] **P1-DSR** DSR + nTrials dans **Usine** (`factoryDsr.js` + `factory.worker.js` + UI) ✅
+- [x] **P1-DSR** DSR + nTrials dans **Usine** (`factoryDsr.ts` + `factory.worker.js` + UI) ✅
 - [x] **P1-ANT** Anti-Library store + filtre Usine/FAO (`antiLibrary.js` + UI) ✅
 - [x] **P1-PORT** Stress scenarios portefeuille (`portfolioStress.js` — 2008/2010/2020) ✅
 - [x] **P1-TCA** TCA module (slippage observé vs `costModel.ts`) ✅
@@ -168,6 +168,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P9-TS-TCA** `tca.js` → `tca.ts` (slippage observé vs costModel) ✅
 - [x] **P9-TS-RULE** `ruleBuilder.js` → `ruleBuilder.ts` (+ collector strip-types) ✅
 - [x] **P9-TS-COST** `costModel.js` → `costModel.ts` (classes · factory backtest) ✅
+- [x] **P9-TS-DSR** `factoryDsr.js` → `factoryDsr.ts` (filtre DSR Usine) ✅
 
 ---
 
