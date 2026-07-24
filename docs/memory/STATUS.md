@@ -12,8 +12,8 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **168** · backend **51** |
-| Commit HEAD | P1-TCA (en cours de push) |
-| CI GitHub | après push |
+| Commit HEAD | `59b63ff` — P1-TCA |
+| CI GitHub | push `59b63ff` — à confirmer Actions |
 | P0 | ✅ A–E clôturés |
 | P1 | 🔄 DSR+ANT+PORT+**TCA** · reste tearsheet, Statistical Edge |
 | Prochaine action | **PDF tearsheet** par dossier — dire « go » |
