@@ -25,6 +25,12 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # Le package-lock.json est généré par npm 11 (poste dev). On aligne la CI sur le
+      # même major pour que `npm ci` (résolution stricte) accepte le lockfile — sinon
+      # npm 10 (défaut de Node 22) recalcule un arbre différent (esbuild 0.28 vs 0.21).
+      - name: Aligner npm sur la version du lockfile
+        run: npm install -g npm@11
+
       - name: Install (repro stricte)
         run: npm ci --ignore-scripts
 
