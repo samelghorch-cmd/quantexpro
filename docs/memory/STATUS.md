@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P7-TS-MORE)
+> Dernière maj : **2026-07-24** (P8-TS-MICRO)
 
 ---
 
@@ -12,22 +12,21 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **343** · backend **78** |
-| Commit HEAD | P7-TS-MORE |
-| P0–P6 | ✅ clôturés |
-| P7 | TS-PAT ✅ · TS-GEX ✅ · **TS-MORE** ✅ |
+| Commit HEAD | P8-TS-MICRO |
+| P0–P7 | ✅ clôturés |
+| P8 | **TS-MICRO** ✅ |
 | Prochaine action | Dire « go » |
 
 ---
 
-## P7-TS-MORE — livré
+## P8-TS-MICRO — livré
 
-- `auditLog.ts` — `AuditEvent` / hash SHA-256 / CSV  
-- `ssoAuth.ts` — JWT session + OIDC PKCE typés  
-- Risque → Audit · App OIDC callback mis à jour
+- `microstructure.ts` — VP / pPOC / pVAL / confluence OI · order book mock  
+- Trading Tools · Internal Modules · tests mis à jour
 
 ---
 
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh`.  
-- Dire **« go »** pour la suite.
+- Dire **« go »** pour la suite (ex. `signalReverse.ts`).

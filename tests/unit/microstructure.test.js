@@ -7,7 +7,7 @@ import {
   vpLevelsFromSession,
   oiLevelsFromGex,
   findConfluence,
-} from "../../src/engine/microstructure.js";
+} from "../../src/engine/microstructure.ts";
 import { makeBars, DAY_MS, HOUR_MS, T0 } from "../helpers/fixtures.js";
 
 describe("volumeProfile", () => {

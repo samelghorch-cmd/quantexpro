@@ -1,13 +1,77 @@
 // Volume profile (POC/VAH/VAL) + pPOC/pVAL session précédente + confluence OI/GEX.
-// Order book mock L2 conservé pour outils démo.
+// P4-VP / P8-TS-MICRO — Order book mock L2 conservé pour outils démo.
 import { seededRandom } from "./random.js";
 
-/**
- * Volume profile classique sur une fenêtre de barres.
- * @param {Array<{h:number,l:number,v?:number}>} bars
- * @param {number} [nBins=40]
- */
-export function volumeProfile(bars, nBins = 40) {
+export interface VpBar {
+  t?: number;
+  h: number;
+  l: number;
+  v?: number;
+}
+
+export interface VolumeProfileResult {
+  bins: number[];
+  lo: number;
+  hi: number;
+  step: number;
+  poc: number | null;
+  vah: number | null;
+  val: number | null;
+  totalV: number;
+}
+
+export interface SessionGroup {
+  key: string;
+  bars: VpBar[];
+}
+
+export interface SessionVolumeProfile {
+  developing: VolumeProfileResult;
+  previous: VolumeProfileResult | null;
+  pPoc: number | null;
+  pVah: number | null;
+  pVal: number | null;
+  sessionCount: number;
+  currentKey: string | null;
+  previousKey: string | null;
+}
+
+export interface PriceLevel {
+  label: string;
+  price: number;
+}
+
+/** Sous-ensemble de computeGexProfile utilisé pour les niveaux OI. */
+export interface GexProfileLike {
+  zeroGamma?: number | null;
+  callWall?: number | null;
+  putWall?: number | null;
+  profile?: Array<{ strike: number; callOi?: number; putOi?: number }>;
+}
+
+export interface ConfluenceHit {
+  vpLabel: string;
+  oiLabel: string;
+  vpPrice: number;
+  oiPrice: number;
+  mid: number;
+  distPct: number;
+}
+
+export interface BookLevel {
+  price: number;
+  size: number;
+}
+
+export interface OrderBook {
+  bids: BookLevel[];
+  asks: BookLevel[];
+  spread: number;
+  mid: number;
+}
+
+/** Volume profile classique sur une fenêtre de barres. */
+export function volumeProfile(bars: VpBar[] | null | undefined, nBins = 40): VolumeProfileResult {
   const list = Array.isArray(bars) ? bars : [];
   if (!list.length || !(nBins > 0)) {
     return { bins: [], lo: 0, hi: 0, step: 0, poc: null, vah: null, val: null, totalV: 0 };
@@ -20,10 +84,19 @@ export function volumeProfile(bars, nBins = 40) {
   }
   if (!(hi > lo)) {
     const mid = Number.isFinite(hi) ? hi : 0;
-    return { bins: Array(nBins).fill(0), lo: mid, hi: mid, step: 0, poc: mid, vah: mid, val: mid, totalV: 0 };
+    return {
+      bins: Array(nBins).fill(0),
+      lo: mid,
+      hi: mid,
+      step: 0,
+      poc: mid,
+      vah: mid,
+      val: mid,
+      totalV: 0,
+    };
   }
   const step = (hi - lo) / nBins;
-  const bins = Array(nBins).fill(0);
+  const bins = Array(nBins).fill(0) as number[];
   for (const b of list) {
     const mid = (b.h + b.l) / 2;
     const idx = Math.min(nBins - 1, Math.max(0, Math.floor((mid - lo) / step)));
@@ -32,7 +105,6 @@ export function volumeProfile(bars, nBins = 40) {
   const totalV = bins.reduce((a, b) => a + b, 0);
   const pocIdx = bins.indexOf(Math.max(...bins));
   const poc = lo + step * (pocIdx + 0.5);
-  // Value Area = 70% du volume autour du POC
   let vaVol = bins[pocIdx];
   let lo_i = pocIdx;
   let hi_i = pocIdx;
@@ -60,7 +132,7 @@ export function volumeProfile(bars, nBins = 40) {
 }
 
 /** Clé session UTC (jour calendaire). */
-export function utcDayKey(tMs) {
+export function utcDayKey(tMs: number | string | null | undefined): string | null {
   const d = new Date(Number(tMs));
   if (Number.isNaN(d.getTime())) return null;
   const m = d.getUTCMonth() + 1;
@@ -68,31 +140,28 @@ export function utcDayKey(tMs) {
   return `${d.getUTCFullYear()}-${m < 10 ? `0${m}` : m}-${day < 10 ? `0${day}` : day}`;
 }
 
-/**
- * Groupe les barres par session UTC day (ordre chronologique des clés).
- * @returns {{ key: string, bars: object[] }[]}
- */
-export function groupBarsBySession(bars) {
-  const map = new Map();
+/** Groupe les barres par session UTC day (ordre chronologique des clés). */
+export function groupBarsBySession(bars: VpBar[] | null | undefined): SessionGroup[] {
+  const map = new Map<string, VpBar[]>();
   for (const b of bars || []) {
     if (b?.t == null) continue;
     const key = utcDayKey(b.t);
     if (!key) continue;
     if (!map.has(key)) map.set(key, []);
-    map.get(key).push(b);
+    map.get(key)!.push(b);
   }
   return [...map.entries()].map(([key, sessionBars]) => ({ key, bars: sessionBars }));
 }
 
 /**
  * VP session courante (developing) + pPOC / pVAH / pVAL de la session précédente.
- * @param {Array<{t:number,h:number,l:number,v?:number}>} bars
- * @param {number} [nBins=40]
  */
-export function volumeProfileSessions(bars, nBins = 40) {
+export function volumeProfileSessions(
+  bars: VpBar[] | null | undefined,
+  nBins = 40,
+): SessionVolumeProfile {
   const sessions = groupBarsBySession(bars);
   if (!sessions.length) {
-    // Pas de timestamps → VP global, pas de previous
     const developing = volumeProfile(bars, nBins);
     return {
       developing,
@@ -106,11 +175,11 @@ export function volumeProfileSessions(bars, nBins = 40) {
     };
   }
   const developing = volumeProfile(sessions[sessions.length - 1].bars, nBins);
-  let previous = null;
-  let pPoc = null;
-  let pVah = null;
-  let pVal = null;
-  let previousKey = null;
+  let previous: VolumeProfileResult | null = null;
+  let pPoc: number | null = null;
+  let pVah: number | null = null;
+  let pVal: number | null = null;
+  let previousKey: string | null = null;
   if (sessions.length >= 2) {
     previous = volumeProfile(sessions[sessions.length - 2].bars, nBins);
     pPoc = previous.poc;
@@ -131,8 +200,8 @@ export function volumeProfileSessions(bars, nBins = 40) {
 }
 
 /** Niveaux VP + previous pour confluence. */
-export function vpLevelsFromSession(sess) {
-  const levels = [];
+export function vpLevelsFromSession(sess: SessionVolumeProfile | null | undefined): PriceLevel[] {
+  const levels: PriceLevel[] = [];
   if (!sess) return levels;
   const d = sess.developing;
   if (d?.poc != null) levels.push({ label: "POC", price: d.poc });
@@ -144,20 +213,19 @@ export function vpLevelsFromSession(sess) {
   return levels;
 }
 
-/**
- * Niveaux OI / GEX (zero-gamma, walls, max pain, high OI).
- * @param {object|null} profile — sortie computeGexProfile
- * @param {{ strike: number }|null} maxPain
- */
-export function oiLevelsFromGex(profile, maxPain = null) {
-  const levels = [];
+/** Niveaux OI / GEX (zero-gamma, walls, max pain, high OI). */
+export function oiLevelsFromGex(
+  profile: GexProfileLike | null | undefined,
+  maxPain: { strike: number } | null = null,
+): PriceLevel[] {
+  const levels: PriceLevel[] = [];
   if (!profile) return levels;
   if (profile.zeroGamma != null) levels.push({ label: "Zeroγ", price: profile.zeroGamma });
   if (profile.callWall != null) levels.push({ label: "CallWall", price: profile.callWall });
   if (profile.putWall != null) levels.push({ label: "PutWall", price: profile.putWall });
   if (maxPain?.strike != null) levels.push({ label: "MaxPain", price: maxPain.strike });
   if (profile.profile?.length) {
-    let best = null;
+    let best: { strike: number } | null = null;
     let bestOi = 0;
     for (const p of profile.profile) {
       const oi = (p.callOi || 0) + (p.putOi || 0);
@@ -171,14 +239,13 @@ export function oiLevelsFromGex(profile, maxPain = null) {
   return levels;
 }
 
-/**
- * Confluence VP ↔ OI/GEX dans une tolérance relative (%).
- * @param {{ label: string, price: number }[]} vpLevels
- * @param {{ label: string, price: number }[]} oiLevels
- * @param {number} [tolPct=0.35]
- */
-export function findConfluence(vpLevels, oiLevels, tolPct = 0.35) {
-  const hits = [];
+/** Confluence VP ↔ OI/GEX dans une tolérance relative (%). */
+export function findConfluence(
+  vpLevels: PriceLevel[] | null | undefined,
+  oiLevels: PriceLevel[] | null | undefined,
+  tolPct = 0.35,
+): ConfluenceHit[] {
+  const hits: ConfluenceHit[] = [];
   for (const vp of vpLevels || []) {
     if (!(vp.price > 0)) continue;
     for (const oi of oiLevels || []) {
@@ -200,10 +267,15 @@ export function findConfluence(vpLevels, oiLevels, tolPct = 0.35) {
   return hits;
 }
 
-export function generateOrderBook(mid, tick, depth = 10, seed = 1) {
-  const rnd = seededRandom(seed);
-  const bids = [];
-  const asks = [];
+export function generateOrderBook(
+  mid: number,
+  tick: number,
+  depth = 10,
+  seed = 1,
+): OrderBook {
+  const rnd = seededRandom(seed) as () => number;
+  const bids: BookLevel[] = [];
+  const asks: BookLevel[] = [];
   for (let i = 1; i <= depth; i++) {
     bids.push({ price: mid - tick * i, size: Math.floor(50 + rnd() * 500) });
     asks.push({ price: mid + tick * i, size: Math.floor(50 + rnd() * 500) });

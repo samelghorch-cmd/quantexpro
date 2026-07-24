@@ -119,7 +119,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
 | GEX multi-tenor 0DTE→365D | ✅ `gex.ts` + Macro → Options Gamma | Deribit BTC/ETH public · JSON import · CBOE payant hors scope |
-| pPOC, pVAL, confluence OI | ✅ `volumeProfileSessions` + `findConfluence` · VP Footprint + Deribit | 🟢 |
+| pPOC, pVAL, confluence OI | ✅ `volumeProfileSessions` + `findConfluence` · `microstructure.ts` · VP Footprint + Deribit | 🟢 |
 | PCR, Max Pain, Implied Move | ✅ PCR OI · Max Pain · implied move 1σ | Via `gex.js` |
 
 ---

@@ -8,7 +8,7 @@ import {
   oiLevelsFromGex,
   findConfluence,
   generateOrderBook,
-} from "../../engine/microstructure.js";
+} from "../../engine/microstructure.ts";
 import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../engine/gex.ts";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { CATS } from "../../engine/strategyLibrary.js";

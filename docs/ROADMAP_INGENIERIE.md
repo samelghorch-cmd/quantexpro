@@ -117,7 +117,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-GEX** Options Gamma réel (GEX / Max Pain / PCR · Deribit + JSON) (`gex.ts`) ✅
 - [x] **P4-ANT-SYNC** Anti-Library → Timescale (`/v1/anti-library` + Push/Pull) ✅
 - [x] **P4-FEEDS** Statut multi-feeds TickerBar (`feedStatus.ts` · probes réels · Databento/CBOE `scoped_out`) ✅
-- [x] **P4-VP** pPOC / pVAL + confluence OI (`microstructure.js` · VP Footprint · Deribit) ✅
+- [x] **P4-VP** pPOC / pVAL + confluence OI (`microstructure.ts` · VP Footprint · Deribit) ✅
 - [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · `ssoAuth.ts`) ✅
 - [x] **P4-REV** Reverse engineering signaux historiques (`signalReverse.js` · Signal Reverse) ✅
 - [x] **P4-HMM** Régimes Trend/Range/Vol/Choppy (`hmmRegimes` · HMM Regime / Regime Clock) ✅
@@ -151,6 +151,14 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P7-TS-PAT** `patternsLibrary.js` → `patternsLibrary.ts` ✅
 - [x] **P7-TS-GEX** `gex.js` → `gex.ts` ✅
 - [x] **P7-TS-MORE** `auditLog.ts` + `ssoAuth.ts` ✅
+
+---
+
+## P8 — Suite TS (post-P7)
+
+- [x] **P8-TS-MICRO** `microstructure.js` → `microstructure.ts` (VP / pPOC / confluence) ✅
+- [ ] **P8-TS-REV** `signalReverse.js` → TypeScript
+- [ ] **P8-TS-DESK** `portfolioDesk.js` → TypeScript
 
 ---
 

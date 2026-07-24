@@ -6,7 +6,7 @@ import { dataSynthPreview } from "../../engine/dataSynth.js";
 import { varCvar } from "../../engine/quantToolbox/index.js";
 import { generateBasket, basketCorrelation } from "../../engine/multiAssetSynthetic.js";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
-import { generateOrderBook } from "../../engine/microstructure.js";
+import { generateOrderBook } from "../../engine/microstructure.ts";
 import { computeVPIN } from "../../engine/vpin.js";
 import { findSymbol } from "../../engine/marketData.js";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
