@@ -94,7 +94,8 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P2-MQL5** Export EA familles simples (maCross, rsiRev, macd, donchian, bbBounce) ✅
 - [x] **P2-UI** Labs + fusion nav (Ship Tracker, Live TV · Toolbox/Performance) ✅
 - [x] **P2-TS** TypeScript incremental (`annualize` · `contracts` · `binanceOrderBook` + `tsc`) ✅ — **Next.js reporté** (Vite OK, audit §6)
-- [ ] Scrapers sentiment (Module 6) — légal + rate limits
+- [x] **P2-SCRAPE** Sentiment RSS légal (Fed/SEC/IMF · rate limit · Jaccard) ✅ — **pas** de scraping social ToS
+- [ ] Migration Next.js (reporté)
 
 ---
 
@@ -107,7 +108,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 | 3 Algorithmic Desk | `cockpit`, `signalEngine`, `forwardTest`, collector |
 | 4 Backtest KPIs | `backtest`, `recoFinale`, `vpin` |
 | 5 GEX | `optionsGamma`, `vpFootprint` |
-| 6 Sentiment | *(à créer section ou Macro)* |
+| 6 Sentiment | ✅ `sentiment` (Labs) — RSS allowlisté |
 | 7 Macro HMM | `hmmRegime`, `yieldCurve`, `usdLiquidity`, `cot`, … |
 
 ---

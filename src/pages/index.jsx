@@ -37,6 +37,7 @@ import { YieldCurvePage, InflationPage, UsdLiquidityPage } from "./macro/MacroFr
 import { CotPage } from "./macro/CotPage.jsx";
 // LABS
 import { LabsHubPage } from "./labs/LabsHub.jsx";
+import { SentimentPage } from "./labs/Sentiment.jsx";
 // OUTILS
 import { VPINPage, AnalyseQuantPage, LogsPage } from "./outils/Outils.jsx";
 import { StatisticalEdgePage } from "./outils/StatisticalEdge.jsx";
@@ -122,6 +123,7 @@ const REAL = {
   surpriseIndex: makeExternalPage("surpriseIndex"),
   // Labs
   labsHub: LabsHubPage,
+  sentiment: SentimentPage,
   shipTracker: makeExternalPage("shipTracker"),
   liveTv: makeExternalPage("liveTv"),
   // Outils

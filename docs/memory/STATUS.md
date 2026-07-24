@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P2-TS)
+> Dernière maj : **2026-07-24** (P2-SCRAPE)
 
 ---
 
@@ -11,34 +11,35 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **218** · backend **51** · `typecheck` OK |
-| Commit HEAD | P2-TS |
+| Tests | JS **227** · backend **51** · `typecheck` OK |
+| Commit HEAD | P2-SCRAPE |
 | P0 | ✅ clôturé |
 | P1 | ✅ clôturé + re-vérifié |
-| P2 | ✅ L2 · DUKA · MQL5 · UI · **TS incremental** |
-| Prochaine action | Optionnel : scrapers sentiment — ou pause |
+| P2 | ✅ **clôturé** (L2 · DUKA · MQL5 · UI · TS · Sentiment) |
+| Prochaine action | Pause / priorité libre (hors backlog P2) |
 
 ---
 
-## P2 — ordre des chantiers
+## P2 — clôturé
 
 1. ~~Binance L2 WS~~ ✅  
 2. ~~Dukascopy batch historique~~ ✅  
 3. ~~Export MQL5 EA~~ ✅  
 4. ~~UI Labs + fusion nav~~ ✅  
-5. ~~TS incremental~~ ✅ (Next.js **reporté** — Vite + API Python suffisent)  
-6. (optionnel) Scrapers sentiment Module 6  
+5. ~~TS incremental~~ ✅ (Next.js reporté)  
+6. ~~Sentiment RSS légal~~ ✅  
 
-### P2-TS — livré
+### P2-SCRAPE — livré
 
-- `typescript` + `tsconfig.json` (strict) · `npm run typecheck` · CI step
-- Migrés : `annualize.ts` · `contracts.ts` · `binanceOrderBook.ts`
-- `dukascopyImport.js` reste JS (CLI Node `tools/dukascopy` sans loader TS)
-- Imports consommateurs → `.ts` (Vite/worker)
+- `sentimentFeed.ts` — parse RSS/Atom, lexique LONG/SHORT/NEUTRAL, Jaccard, RateLimiter  
+- Proxy allowlisté : `functions/api/rss.js` + middleware Vite `/api/rss?src=`  
+- Feeds : Fed · SEC · IMF — **pas** de scraping X/StockTwits/Telegram/TV (ToS)  
+- UI Labs → Sentiment + « ↗ Alpha Forge » (`pipeline.sentimentHint`)  
+- Tests : `sentimentFeed.test.js`
 
 ---
 
 ## Notes session
 
-- Un chantier à la fois ; dire **« go »** pour scrapers (ou autre).  
+- Dire **« go »** pour une nouvelle priorité hors P2.  
 - Après `src/engine/*` → `npm test` + `npm run typecheck`.

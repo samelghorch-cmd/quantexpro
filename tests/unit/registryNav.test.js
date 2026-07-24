@@ -8,7 +8,7 @@ describe("registry P2-UI", () => {
     const labs = SECTIONS.find((s) => s.id === "labs");
     expect(labs).toBeTruthy();
     const ids = labs.modules.map((m) => m.id);
-    expect(ids).toEqual(["labsHub", "shipTracker", "liveTv"]);
+    expect(ids).toEqual(["labsHub", "sentiment", "shipTracker", "liveTv"]);
   });
 
   it("retire les doublons Quant Toolbox / Performance de la sidebar", () => {

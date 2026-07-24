@@ -128,10 +128,10 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| Scraper X / StockTwits / Telegram / TV Ideas | 🔴 | Module absent |
-| NLP LONG/SHORT/NEUTRAL | 🔴 | |
-| Jaccard co-mouvement | 🔴 | |
-| « Envoyer vers Alpha Forge » | 🔴 | |
+| Scraper X / StockTwits / Telegram / TV Ideas | ⛔ hors scope ToS | RSS institutionnels allowlistés à la place |
+| NLP LONG/SHORT/NEUTRAL | ✅ lexique `sentimentFeed.ts` | Pas de LLM — proxy lexical |
+| Jaccard co-mouvement | ✅ `meanPairwiseJaccard` | |
+| « Envoyer vers Alpha Forge » | ✅ hint `pipeline.sentimentHint` → Usine | |
 
 ---
 
@@ -182,7 +182,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P2-MQL5 | Export EA familles simples | ✅ | `mql5Export.js` · 5 familles · Strategy Builder / Mes Stratégies |
 | P2-UI | Labs (Ship Tracker, Live TV), fusion doublons Quant Toolbox / Performance | ✅ | section `labs` + aliases `performanceTool`/`quantToolboxTool` |
 | P2-TS | TS incremental engine (pas Next.js) | ✅ | `annualize.ts` · `contracts.ts` · `binanceOrderBook.ts` · `npm run typecheck` |
-| P2-SCRAPE | Scrapers sentiment Module 6 | | légal + rate limits |
+| P2-SCRAPE | Sentiment Module 6 légal | ✅ | `sentimentFeed.ts` · RSS Fed/SEC/IMF · rate limit · Labs · **pas** X/StockTwits |
 
 ---
 

@@ -101,6 +101,7 @@ export const SECTIONS = [
     id: "labs", label: "Labs", icon: "◎",
     modules: [
       { id: "labsHub", label: "Labs Hub" },
+      { id: "sentiment", label: "Sentiment (RSS)" },
       { id: "shipTracker", label: "Ship Tracker" },
       { id: "liveTv", label: "Live TV" },
     ],
