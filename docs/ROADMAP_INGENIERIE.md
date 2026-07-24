@@ -142,7 +142,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P6-THEME** Tokens long/short `#00e676` / `#ff1744` + `T.card` (`theme.js`) ✅
 - [x] **P6-TS-MORE** `antiLibrary` + `antiLibrarySync` → TypeScript ✅
-- [ ] **P6-HMM-BW** Baum-Welch réel (optionnel · badge JS conservé)
+- [x] **P6-HMM-BW** Baum-Welch Gaussian 1D (`hmm_bw.py` · `engine=baum_welch`) ✅
 
 ---
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 from enum import StrEnum
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -407,13 +407,17 @@ class DeactivateAntiIn(BaseModel):
 
 
 class HmmRequest(BaseModel):
-    """Série de log-returns pour ``hmm_regimes`` (parité JS)."""
+    """Série de log-returns pour HMM (parité JS ou Baum-Welch)."""
 
     model_config = ConfigDict(extra="forbid")
 
     returns: list[float] = Field(min_length=40, max_length=50_000)
     n_states: int = Field(default=4, ge=2, le=4)
     iters: int = Field(default=15, ge=1, le=100)
+    engine: Literal["parity", "baum_welch"] = Field(
+        default="parity",
+        description="parity = soft-clustering JS · baum_welch = EM Gaussian 1D",
+    )
 
 
 class HmmCentroid(BaseModel):
