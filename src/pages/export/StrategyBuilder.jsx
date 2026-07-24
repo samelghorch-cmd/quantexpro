@@ -3,7 +3,8 @@
 // enregistrées + le journal des backtests de tous les outils.
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { downloadJSON, downloadCSV } from "../../engine/exportUtils.js";
+import { downloadJSON } from "../../engine/exportUtils.js";
+import { generateEA, downloadMq5, listSupportedFamilies, resolveFamily } from "../../engine/mql5Export.js";
 import { saveStrategy, listStrategies, deleteStrategy, listBacktests } from "../../engine/strategyStore.js";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
@@ -54,17 +55,18 @@ export function StrategyBuilderPage() {
   const onDelete = useCallback(async (id) => { await deleteStrategy(id); refresh(); }, [refresh]);
 
   const mql5 = useMemo(() => {
-    const p = bestParams || {};
-    return `// EA généré par QuantEXPro — ${strat?.name || "Strategy"}
-// Symbole : ${symbol}
-input int    MagicNumber   = 5000;
-input double SL_ATR_Mult   = ${p.slAtr ?? 2};
-input double TP_ATR_Mult   = ${p.tpAtr ?? 0};
-input double BE_ATR_Mult   = ${p.beAtr ?? 0};
-input string Direction     = "${p.direction ?? "both"}";
-// ... logique du signal à brancher depuis la stratégie #${strat?.id ?? "?"}
-// Verdict pipeline : ${pipeline.recoFinale?.verdict ?? "non calculé"}`;
-  }, [bestParams, strat, symbol, pipeline.recoFinale]);
+    if (!strat) return generateEA({ name: "Strategy", strategyId: 0 });
+    return generateEA({
+      strategyId: strat.id,
+      name: strat.name,
+      symbol,
+      params: bestParams || {},
+      tradeParams: bestParams || {},
+    });
+  }, [bestParams, strat, symbol]);
+
+  const famInfo = strat ? resolveFamily(strat.id) : null;
+  const supportedFams = listSupportedFamilies().map((f) => f.id).join(", ");
 
   const savedCols = [
     { key: "name", label: "Stratégie", render: (r) => <span>#{r.strategyId} {r.name}</span> },
@@ -118,8 +120,24 @@ input string Direction     = "${p.direction ?? "both"}";
         <Panel title="Configuration JSON" right={<Button onClick={() => downloadJSON(config, `strategy_${strat?.id || "build"}.json`)} disabled={!strat}>⬇ Export JSON</Button>}>
           <pre style={{ background: T.bg0, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, fontSize: 11.5, color: T.green, fontFamily: T.mono, overflow: "auto", maxHeight: 360, margin: 0 }}>{JSON.stringify(config, null, 2)}</pre>
         </Panel>
-        <Panel title="Stub MQL5" right={<Button onClick={() => downloadCSV(mql5, `EA_${strat?.id || "build"}.mq5`)} disabled={!strat}>⬇ Export .mq5</Button>}>
-          <pre style={{ background: T.bg0, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, fontSize: 11.5, color: T.blue, fontFamily: T.mono, overflow: "auto", maxHeight: 360, margin: 0 }}>{mql5}</pre>
+        <Panel title="Export MQL5 EA" right={
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {famInfo?.supported
+              ? <Badge color={T.green}>{famInfo.family}{famInfo.proxy ? " ≈" : ""}</Badge>
+              : strat ? <Badge color={T.yellow}>stub</Badge> : null}
+            <Button onClick={() => downloadMq5(mql5.code, mql5.filename)} disabled={!strat}>⬇ Export .mq5</Button>
+          </div>
+        }>
+          {!strat ? (
+            <div style={{ padding: 12, color: T.textDim, fontSize: 12 }}>Familles signal : {supportedFams}. Autres IDs → stub trade.</div>
+          ) : (
+            <>
+              {mql5.warnings?.length > 0 && (
+                <div style={{ fontSize: 11, color: T.yellow, marginBottom: 8 }}>{mql5.warnings.join(" · ")}</div>
+              )}
+              <pre style={{ background: T.bg0, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, fontSize: 11.5, color: T.blue, fontFamily: T.mono, overflow: "auto", maxHeight: 360, margin: 0 }}>{mql5.code}</pre>
+            </>
+          )}
         </Panel>
       </div>
 

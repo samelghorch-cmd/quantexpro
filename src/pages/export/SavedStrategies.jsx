@@ -4,20 +4,20 @@ import { useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { listStrategies, deleteStrategy, clearStrategies, logBacktest } from "../../engine/strategyStore.js";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
-import { downloadJSON, downloadCSV } from "../../engine/exportUtils.js";
+import { downloadJSON } from "../../engine/exportUtils.js";
+import { generateEA, downloadMq5 } from "../../engine/mql5Export.js";
 import { Panel, Button, Badge, DataTable, MetricCard, MetricGrid, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 
-function toMQL5(s) {
-  const p = s.params || {};
-  return `// EA généré par QuantExPro — ${s.name || "Strategy"} (stratégie #${s.strategyId ?? "?"})
-// Actif : ${s.symbol ?? "—"}  ·  sauvegardée le ${new Date(s.savedAt).toLocaleString("fr-FR")}
-input int    MagicNumber = 5000;
-input double SL_ATR_Mult = ${p.slAtr ?? 2};
-input double TP_ATR_Mult = ${p.tpAtr ?? 0};
-input double BE_ATR_Mult = ${p.beAtr ?? 0};
-input string Direction   = "${p.direction ?? "both"}";
-// ... brancher la logique du signal de la stratégie #${s.strategyId ?? "?"}`;
+function exportMq5(s) {
+  const ea = generateEA({
+    strategyId: s.strategyId,
+    name: s.name,
+    symbol: s.symbol,
+    params: s.params || {},
+    tradeParams: s.params || {},
+  });
+  downloadMq5(ea.code, ea.filename);
 }
 
 export function SavedStrategiesPage() {
@@ -59,7 +59,7 @@ export function SavedStrategiesPage() {
     { key: "act", label: "Actions", render: (r) => (
       <span style={{ display: "flex", gap: 6, whiteSpace: "nowrap" }}>
         <Button onClick={() => replay(r)} disabled={busy === r.id}>{busy === r.id ? "…" : "▶ Rejouer"}</Button>
-        <Button onClick={() => downloadCSV(toMQL5(r), `EA_${r.strategyId}_${r.symbol || "x"}.mq5`)}>⬇ MQL5</Button>
+        <Button onClick={() => exportMq5(r)}>⬇ MQL5</Button>
         <Button onClick={() => downloadJSON(r, `strategy_${r.strategyId}_${r.symbol || "x"}.json`)}>JSON</Button>
         <span onClick={() => remove(r.id)} title="Supprimer" style={{ cursor: "pointer", color: T.red, fontSize: 14, alignSelf: "center" }}>✕</span>
       </span>

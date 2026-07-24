@@ -91,7 +91,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P2-L2** Binance L2 WS (`@depth` + `@bookTicker`) ✅
 - [x] **P2-DUKA** Dukascopy batch historique (15–20 ans, validate + Data Manager) ✅
-- [ ] Export MQL5 EA templates
+- [x] **P2-MQL5** Export EA familles simples (maCross, rsiRev, macd, donchian, bbBounce) ✅
 - [ ] UI Labs + fusion navigation
 - [ ] Migration **Next.js + TS strict** (si SSR/WS justifié)
 - [ ] Scrapers sentiment (Module 6) — légal + rate limits
