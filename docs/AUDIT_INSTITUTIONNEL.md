@@ -192,7 +192,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-SIGNAL-WS | Console Signal Engine + WS bars | ✅ | `signalConsole.js` · `/stream/bars` · journal local/WS |
 | P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.ts` · Alembic 0004 |
 | P4-GEX | Options Gamma / GEX | ✅ | `gex.js` · Deribit proxy · Max Pain · PCR · implied move |
-| P4-ANT-SYNC | Anti-Library ZDL Timescale | ✅ | `anti_library` · `/v1/anti-library` · Alembic 0005 |
+| P4-ANT-SYNC | Anti-Library ZDL Timescale | ✅ | `anti_library` · `/v1/anti-library` · `antiLibrarySync.ts` · Alembic 0005 |
 | P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.ts` · probes · Databento/CBOE scoped_out |
 | P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
@@ -208,6 +208,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P5-HMM-PY | HMM Python paritaire | ✅ | `app/quant/hmm.py` · `/v1/quant/hmm` · golden seed9 |
 | P5-OPS | Go-live alembic + MT5 | ✅ | `OPS_GO_LIVE.md` · `ops_migrate.sh` · `ops_preflight.mjs` |
 | P6-THEME | Tokens long/short UI | ✅ | `T.long`/`T.short` · `sideColor` · Trades/Live/Sentiment |
+| P6-TS-MORE | antiLibrary + sync → TS | ✅ | `AntiEntry` · API payload · merge remote |
 
 ---
 
@@ -215,18 +216,20 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 > Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5 clôturé** · P6 en cours.
 
-**Prochaine action recommandée :** P6-TS-MORE ou P6-HMM-BW.
+**Prochaine action recommandée :** P6-HMM-BW ou suite TS (`gex`, `patternsLibrary`).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés). **P5-TS-FEEDS** · **P5-TS-MORE** · **P5-TS-EDGES** livrés.
+2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité. **P5** + **P6-TS-MORE** (`antiLibrary`) livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge. **HMM :** port Python livré (même algo soft-clustering — pas Baum-Welch).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
-6. **Ops :** migrations head **0005** + preflight documentés (`docs/OPS_GO_LIVE.md`) — exécution prod = action ops humaine.---
+6. **Ops :** migrations head **0005** + preflight documentés (`docs/OPS_GO_LIVE.md`) — exécution prod = action ops humaine.
+
+---
 
 ## 7. Checklist « Hedge-Fund Readiness » (scorecard)
 
