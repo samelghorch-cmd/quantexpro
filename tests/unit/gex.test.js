@@ -11,7 +11,7 @@ import {
   impliedMove,
   fromDeribitBookSummary,
   parseOptionsImport,
-} from "../../src/engine/gex.js";
+} from "../../src/engine/gex.ts";
 
 describe("bsGamma", () => {
   it("est positif ATM et 0 si T=0", () => {

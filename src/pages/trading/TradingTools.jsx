@@ -9,7 +9,7 @@ import {
   findConfluence,
   generateOrderBook,
 } from "../../engine/microstructure.js";
-import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../engine/gex.js";
+import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../engine/gex.ts";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { CATS } from "../../engine/strategyLibrary.js";
 import { findSymbol } from "../../engine/marketData.js";

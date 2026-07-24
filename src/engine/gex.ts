@@ -1,23 +1,74 @@
-// P4-GEX — Gamma Exposure / Max Pain / PCR (Module 5).
+// P4-GEX / P7-TS-GEX — Gamma Exposure / Max Pain / PCR (Module 5).
 // Chaîne d'options → profil GEX par strike. Sources : JSON import ou Deribit public.
 // Convention desk (type SpotGamma) : calls → GEX > 0, puts → GEX < 0 (dealer short puts).
 
 const SQRT_2PI = Math.sqrt(2 * Math.PI);
 
+export type OptionRight = "C" | "P";
+export type GexRegime = "LONG_GAMMA" | "SHORT_GAMMA";
+
+export interface OptionRow {
+  strike: number;
+  right: OptionRight;
+  oi: number;
+  gamma: number;
+  expiryMs: number | null;
+  iv: number | null;
+}
+
+export interface StrikeGex {
+  strike: number;
+  gex: number;
+  callOi: number;
+  putOi: number;
+  callGex: number;
+  putGex: number;
+}
+
+export interface GexProfile {
+  spot: number;
+  n: number;
+  netGex: number;
+  callGex: number;
+  putGex: number;
+  callOi: number;
+  putOi: number;
+  pcrOi: number | null;
+  zeroGamma: number | null;
+  callWall: number | null;
+  putWall: number | null;
+  profile: StrikeGex[];
+  regime: GexRegime;
+}
+
+export interface MaxPainResult {
+  strike: number;
+  pain: number;
+}
+
+export interface ImpliedMoveResult {
+  iv: number;
+  tYears: number;
+  moveAbs: number;
+  movePct: number;
+  expiryMs: number;
+}
+
+export interface DeribitInstrument {
+  strike: number;
+  right: OptionRight;
+  expiryMs: number;
+}
+
 /** Densité normale standard φ(x). */
-export function normPdf(x) {
+export function normPdf(x: number): number {
   return Math.exp(-0.5 * x * x) / SQRT_2PI;
 }
 
 /**
  * Gamma Black-Scholes (par unité de sous-jacent).
- * @param {number} S spot
- * @param {number} K strike
- * @param {number} T années jusqu'à expiry (>0)
- * @param {number} sigma IV décimale (ex. 0.55)
- * @param {number} [r=0]
  */
-export function bsGamma(S, K, T, sigma, r = 0) {
+export function bsGamma(S: number, K: number, T: number, sigma: number, r = 0): number {
   if (!(S > 0) || !(K > 0) || !(T > 0) || !(sigma > 0)) return 0;
   const sqrtT = Math.sqrt(T);
   const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * sqrtT);
@@ -25,7 +76,7 @@ export function bsGamma(S, K, T, sigma, r = 0) {
 }
 
 /** Parse instrument Deribit `BTC-26JUL24-65000-C` → { expiryMs, strike, right }. */
-export function parseDeribitInstrument(name) {
+export function parseDeribitInstrument(name: string | null | undefined): DeribitInstrument | null {
   const parts = String(name || "").split("-");
   if (parts.length < 4) return null;
   const right = parts[parts.length - 1].toUpperCase();
@@ -34,7 +85,7 @@ export function parseDeribitInstrument(name) {
   const dateStr = parts[parts.length - 3]; // 26JUL24
   const m = dateStr.match(/^(\d{1,2})([A-Z]{3})(\d{2})$/i);
   if (!m || !Number.isFinite(strike)) return null;
-  const months = {
+  const months: Record<string, number> = {
     JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
     JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
   };
@@ -43,14 +94,22 @@ export function parseDeribitInstrument(name) {
   const year = 2000 + Number(m[3]);
   const day = Number(m[1]);
   const expiryMs = Date.UTC(year, mon, day, 8, 0, 0); // ~08:00 UTC Deribit
-  return { strike, right, expiryMs };
+  return { strike, right: right as OptionRight, expiryMs };
 }
 
-/**
- * Normalise une ligne chaîne (import JSON ou Deribit).
- * @returns {{ strike: number, right: 'C'|'P', oi: number, gamma: number, expiryMs: number|null, iv: number|null } | null}
- */
-export function normalizeOptionRow(raw, spot, nowMs = Date.now()) {
+type RawOption = Record<string, unknown> & {
+  greeks?: { gamma?: number };
+  instrument_name?: string;
+  open_interest?: number;
+  mark_iv?: number;
+};
+
+/** Normalise une ligne chaîne (import JSON ou Deribit). */
+export function normalizeOptionRow(
+  raw: RawOption | null | undefined,
+  spot: number | null | undefined,
+  nowMs = Date.now(),
+): OptionRow | null {
   if (!raw || typeof raw !== "object") return null;
   let strike = Number(raw.strike ?? raw.K);
   let right = String(raw.right ?? raw.option_type ?? raw.type ?? "").toUpperCase();
@@ -60,9 +119,14 @@ export function normalizeOptionRow(raw, spot, nowMs = Date.now()) {
   let gamma = Number(raw.gamma ?? raw.greeks?.gamma);
   let iv = Number(raw.iv ?? raw.mark_iv ?? raw.markIv ?? raw.implied_volatility);
   if (iv > 3) iv = iv / 100; // 55 → 0.55
-  let expiryMs = raw.expiryMs ?? raw.expiry_ms ?? null;
-  if (raw.expiry) expiryMs = Date.parse(raw.expiry);
-  if (raw.expiration) expiryMs = Date.parse(raw.expiration);
+  let expiryMs: number | null =
+    raw.expiryMs != null
+      ? Number(raw.expiryMs)
+      : raw.expiry_ms != null
+        ? Number(raw.expiry_ms)
+        : null;
+  if (raw.expiry) expiryMs = Date.parse(String(raw.expiry));
+  if (raw.expiration) expiryMs = Date.parse(String(raw.expiration));
 
   if (raw.instrument_name) {
     const p = parseDeribitInstrument(raw.instrument_name);
@@ -84,13 +148,16 @@ export function normalizeOptionRow(raw, spot, nowMs = Date.now()) {
 
   if (!Number.isFinite(gamma) || gamma <= 0) {
     const S = Number(spot);
-    const T = expiryMs && expiryMs > nowMs ? (expiryMs - nowMs) / (365.25 * 24 * 3600 * 1000) : 0;
+    const T =
+      expiryMs && expiryMs > nowMs
+        ? (expiryMs - nowMs) / (365.25 * 24 * 3600 * 1000)
+        : 0;
     gamma = S > 0 && iv > 0 && T > 0 ? bsGamma(S, strike, T, iv) : 0;
   }
 
   return {
     strike,
-    right,
+    right: right as OptionRight,
     oi,
     gamma: Number.isFinite(gamma) ? gamma : 0,
     expiryMs: expiryMs && Number.isFinite(expiryMs) ? expiryMs : null,
@@ -102,23 +169,31 @@ export function normalizeOptionRow(raw, spot, nowMs = Date.now()) {
  * GEX unitaire (convention desk) pour 1 % de move :
  * sign(call=+1, put=-1) * oi * gamma * S² * 0.01 * multiplier
  */
-export function gexContribution(row, spot, multiplier = 1) {
+export function gexContribution(
+  row: OptionRow | null | undefined,
+  spot: number,
+  multiplier = 1,
+): number {
   const S = Number(spot);
   if (!(S > 0) || !row) return 0;
   const sign = row.right === "C" ? 1 : -1;
   return sign * row.oi * row.gamma * S * S * 0.01 * multiplier;
 }
 
-/**
- * Agrège le profil GEX.
- * @param {object[]} rows normalizeOptionRow[]
- * @param {number} spot
- * @param {{ multiplier?: number, nowMs?: number }} [opts]
- */
-export function computeGexProfile(rows, spot, opts = {}) {
+export interface GexOpts {
+  multiplier?: number;
+  nowMs?: number;
+}
+
+/** Agrège le profil GEX. */
+export function computeGexProfile(
+  rows: Array<OptionRow | null | undefined> | null | undefined,
+  spot: number,
+  opts: GexOpts = {},
+): GexProfile {
   const multiplier = opts.multiplier ?? 1;
   const S = Number(spot);
-  const byStrike = new Map();
+  const byStrike = new Map<number, StrikeGex>();
   let netGex = 0;
   let callGex = 0;
   let putGex = 0;
@@ -138,7 +213,14 @@ export function computeGexProfile(rows, spot, opts = {}) {
       putOi += r.oi;
     }
     n++;
-    const cur = byStrike.get(r.strike) || { strike: r.strike, gex: 0, callOi: 0, putOi: 0, callGex: 0, putGex: 0 };
+    const cur = byStrike.get(r.strike) || {
+      strike: r.strike,
+      gex: 0,
+      callOi: 0,
+      putOi: 0,
+      callGex: 0,
+      putGex: 0,
+    };
     cur.gex += g;
     if (r.right === "C") {
       cur.callOi += r.oi;
@@ -152,10 +234,9 @@ export function computeGexProfile(rows, spot, opts = {}) {
 
   const profile = [...byStrike.values()].sort((a, b) => a.strike - b.strike);
 
-  // Zero-gamma : croisement net cumulé le plus proche de 0 en balayant les strikes
-  let zeroGamma = null;
+  let zeroGamma: number | null = null;
   let cum = 0;
-  let best = { abs: Infinity, strike: null };
+  let best = { abs: Infinity, strike: null as number | null };
   for (const p of profile) {
     cum += p.gex;
     const abs = Math.abs(cum);
@@ -165,9 +246,8 @@ export function computeGexProfile(rows, spot, opts = {}) {
     }
   }
 
-  // Call wall / put wall = strike |GEX| max du côté call / put
-  let callWall = null;
-  let putWall = null;
+  let callWall: number | null = null;
+  let putWall: number | null = null;
   let maxCall = -Infinity;
   let maxPut = Infinity;
   for (const p of profile) {
@@ -200,11 +280,11 @@ export function computeGexProfile(rows, spot, opts = {}) {
   };
 }
 
-/**
- * Max Pain : strike qui minimise la somme des valeurs intrinsèques × OI à expiry.
- */
-export function computeMaxPain(rows) {
-  const list = (rows || []).filter((r) => r && r.oi > 0);
+/** Max Pain : strike qui minimise la somme des valeurs intrinsèques × OI à expiry. */
+export function computeMaxPain(
+  rows: Array<OptionRow | null | undefined> | null | undefined,
+): MaxPainResult | null {
+  const list = (rows || []).filter((r): r is OptionRow => Boolean(r && r.oi > 0));
   if (!list.length) return null;
   const strikes = [...new Set(list.map((r) => r.strike))].sort((a, b) => a - b);
   let bestK = strikes[0];
@@ -223,18 +303,24 @@ export function computeMaxPain(rows) {
   return { strike: bestK, pain: bestPain };
 }
 
-/** Implied move approx 1σ : spot * IV_ATM * sqrt(T) — IV_ATM = moyenne IV nearest strikes. */
-export function impliedMove(rows, spot, nowMs = Date.now()) {
+/** Implied move approx 1σ : spot * IV_ATM * sqrt(T). */
+export function impliedMove(
+  rows: Array<OptionRow | null | undefined> | null | undefined,
+  spot: number,
+  nowMs = Date.now(),
+): ImpliedMoveResult | null {
   const S = Number(spot);
   if (!(S > 0)) return null;
-  const withIv = (rows || []).filter((r) => r.iv > 0 && r.expiryMs > nowMs);
+  const withIv = (rows || []).filter(
+    (r): r is OptionRow =>
+      Boolean(r && r.iv != null && r.iv > 0 && r.expiryMs != null && r.expiryMs > nowMs),
+  );
   if (!withIv.length) return null;
-  // Nearest expiry
-  const minExp = Math.min(...withIv.map((r) => r.expiryMs));
+  const minExp = Math.min(...withIv.map((r) => r.expiryMs as number));
   const near = withIv.filter((r) => r.expiryMs === minExp);
   near.sort((a, b) => Math.abs(a.strike - S) - Math.abs(b.strike - S));
   const atm = near.slice(0, 4);
-  const iv = atm.reduce((s, r) => s + r.iv, 0) / atm.length;
+  const iv = atm.reduce((s, r) => s + (r.iv as number), 0) / atm.length;
   const T = (minExp - nowMs) / (365.25 * 24 * 3600 * 1000);
   if (!(T > 0) || !(iv > 0)) return null;
   const move = S * iv * Math.sqrt(T);
@@ -242,9 +328,12 @@ export function impliedMove(rows, spot, nowMs = Date.now()) {
 }
 
 /** Convertit payload Deribit `result[]` → rows + spot. */
-export function fromDeribitBookSummary(result, nowMs = Date.now()) {
-  const list = Array.isArray(result) ? result : [];
-  let spot = null;
+export function fromDeribitBookSummary(
+  result: unknown,
+  nowMs = Date.now(),
+): { rows: OptionRow[]; spot: number | null } {
+  const list = Array.isArray(result) ? (result as RawOption[]) : [];
+  let spot: number | null = null;
   for (const row of list) {
     if (row.underlying_price != null && Number.isFinite(Number(row.underlying_price))) {
       spot = Number(row.underlying_price);
@@ -253,25 +342,40 @@ export function fromDeribitBookSummary(result, nowMs = Date.now()) {
   }
   const rows = list
     .map((raw) => normalizeOptionRow(raw, spot, nowMs))
-    .filter(Boolean);
+    .filter((r): r is OptionRow => Boolean(r));
   return { rows, spot };
 }
 
-export function deribitSummaryUrl(currency = "BTC") {
+export function deribitSummaryUrl(currency = "BTC"): string {
   const c = String(currency || "BTC").toUpperCase();
   return `/api/deribit/public/get_book_summary_by_currency?currency=${encodeURIComponent(c)}&kind=option`;
 }
 
-/**
- * Fetch Deribit via proxy allowlisté.
- * @returns {Promise<{ rows: object[], spot: number|null, currency: string, fetchedAt: number }>}
- */
-export async function fetchDeribitOptions(currency = "BTC", opts = {}) {
+export interface FetchDeribitOpts {
+  fetchImpl?: typeof fetch;
+  nowMs?: number;
+}
+
+export interface DeribitFetchResult {
+  rows: OptionRow[];
+  spot: number | null;
+  currency: string;
+  fetchedAt: number;
+}
+
+/** Fetch Deribit via proxy allowlisté. */
+export async function fetchDeribitOptions(
+  currency = "BTC",
+  opts: FetchDeribitOpts = {},
+): Promise<DeribitFetchResult> {
   const fetchImpl = opts.fetchImpl || fetch;
   const url = deribitSummaryUrl(currency);
   const res = await fetchImpl(url, { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Deribit HTTP ${res.status}`);
-  const body = await res.json();
+  const body = (await res.json()) as {
+    error?: { message?: string };
+    result?: unknown;
+  };
   if (body.error) throw new Error(body.error.message || JSON.stringify(body.error));
   const { rows, spot } = fromDeribitBookSummary(body.result || [], opts.nowMs);
   if (!rows.length) throw new Error("Aucune option dans la réponse Deribit");
@@ -279,18 +383,24 @@ export async function fetchDeribitOptions(currency = "BTC", opts = {}) {
 }
 
 /** Parse import JSON utilisateur (array ou { options, spot }). */
-export function parseOptionsImport(payload) {
-  let data = payload;
+export function parseOptionsImport(payload: unknown): { rows: OptionRow[]; spot: number | null } {
+  let data: unknown = payload;
   if (typeof payload === "string") {
     data = JSON.parse(payload);
   }
-  let spot = null;
-  let list = [];
+  let spot: number | null = null;
+  let list: RawOption[] = [];
   if (Array.isArray(data)) {
-    list = data;
+    list = data as RawOption[];
   } else if (data && typeof data === "object") {
-    spot = data.spot != null ? Number(data.spot) : null;
-    list = data.options || data.chain || data.result || [];
+    const obj = data as Record<string, unknown>;
+    spot = obj.spot != null ? Number(obj.spot) : null;
+    const maybe =
+      (obj.options as RawOption[] | undefined) ||
+      (obj.chain as RawOption[] | undefined) ||
+      (obj.result as RawOption[] | undefined) ||
+      [];
+    list = Array.isArray(maybe) ? maybe : [];
   }
   if (!Array.isArray(list)) throw new Error("JSON options invalide");
   if (spot == null) {
@@ -305,6 +415,6 @@ export function parseOptionsImport(payload) {
       }
     }
   }
-  const rows = list.map((r) => normalizeOptionRow(r, spot)).filter(Boolean);
+  const rows = list.map((r) => normalizeOptionRow(r, spot)).filter((r): r is OptionRow => Boolean(r));
   return { rows, spot };
 }

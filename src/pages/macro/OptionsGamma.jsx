@@ -6,7 +6,7 @@ import {
   impliedMove,
   fetchDeribitOptions,
   parseOptionsImport,
-} from "../../engine/gex.js";
+} from "../../engine/gex.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 

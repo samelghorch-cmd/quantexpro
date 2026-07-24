@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P7-TS-PAT)
+> Dernière maj : **2026-07-24** (P7-TS-GEX)
 
 ---
 
@@ -12,21 +12,21 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **343** · backend **78** |
-| Commit HEAD | P7-TS-PAT |
+| Commit HEAD | P7-TS-GEX |
 | P0–P6 | ✅ clôturés |
-| P7 | **TS-PAT** ✅ |
+| P7 | TS-PAT ✅ · **TS-GEX** ✅ · TS-MORE |
 | Prochaine action | Dire « go » |
 
 ---
 
-## P7-TS-PAT — livré
+## P7-TS-GEX — livré
 
-- `patternsLibrary.ts` — types `Pattern` / TF / filtres  
-- Core Mode + tests mis à jour
+- `gex.ts` — types `OptionRow` / `GexProfile` / Max Pain / implied move  
+- Options Gamma · Trading Tools · tests mis à jour
 
 ---
 
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh`.  
-- Dire **« go »** pour la suite (ex. `gex.ts`).
+- Dire **« go »** pour P7-TS-MORE (auditLog / ssoAuth).
