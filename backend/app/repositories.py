@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import datetime as dt
 from collections.abc import Sequence
+from typing import cast
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -65,8 +66,9 @@ async def upsert_bars(session: AsyncSession, timeframe: Timeframe, bars: Sequenc
             "v_buy": stmt.excluded.v_buy,
         },
     )
-    result = await session.execute(stmt)
-    return result.rowcount if result.rowcount is not None else len(rows)
+    await session.execute(stmt)
+    # ON CONFLICT DO UPDATE affecte chaque ligne du lot → toutes sont écrites.
+    return len(rows)
 
 
 async def upsert_ticks(session: AsyncSession, ticks: Sequence[TickIn]) -> int:
@@ -92,8 +94,8 @@ async def upsert_ticks(session: AsyncSession, ticks: Sequence[TickIn]) -> int:
             "side": stmt.excluded.side,
         },
     )
-    result = await session.execute(stmt)
-    return result.rowcount if result.rowcount is not None else len(rows)
+    await session.execute(stmt)
+    return len(rows)
 
 
 async def upsert_orderbook(
@@ -110,8 +112,8 @@ async def upsert_orderbook(
         index_elements=["symbol", "ts"],
         set_={"bids": stmt.excluded.bids, "asks": stmt.excluded.asks},
     )
-    result = await session.execute(stmt)
-    return result.rowcount if result.rowcount is not None else len(rows)
+    await session.execute(stmt)
+    return len(rows)
 
 
 # ---- Lectures paginées (keyset) ---------------------------------------------------
@@ -141,4 +143,4 @@ async def read_bars(
         query = query.where(model.ts > after)
     query = query.order_by(model.ts.asc()).limit(limit)
     result = await session.execute(query)
-    return list(result.scalars().all())
+    return cast("list[Bar1m | Bar5m]", list(result.scalars().all()))

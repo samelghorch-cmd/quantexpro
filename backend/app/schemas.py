@@ -8,8 +8,8 @@ d'atteindre la base.
 from __future__ import annotations
 
 import datetime as dt
-from enum import Enum
-from typing import Annotated
+from enum import StrEnum
+from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -20,12 +20,12 @@ Price = Annotated[float, Field(gt=0)]
 NonNegFloat = Annotated[float, Field(ge=0)]
 
 
-class Timeframe(str, Enum):
+class Timeframe(StrEnum):
     m1 = "1m"
     m5 = "5m"
 
 
-class Side(str, Enum):
+class Side(StrEnum):
     buy = "buy"
     sell = "sell"
     unknown = "unknown"
@@ -35,7 +35,7 @@ def _ensure_aware(value: dt.datetime) -> dt.datetime:
     """Refuse les datetimes naïfs (source n°1 de bugs de fuseau) et normalise en UTC."""
     if value.tzinfo is None:
         raise ValueError("timestamp doit être timezone-aware (UTC recommandé)")
-    return value.astimezone(dt.timezone.utc)
+    return value.astimezone(dt.UTC)
 
 
 # ---- Barres ----------------------------------------------------------------------
@@ -56,7 +56,7 @@ class BarIn(BaseModel):
     _v_ts = field_validator("ts")(_ensure_aware)
 
     @model_validator(mode="after")
-    def _check_ohlc(self) -> "BarIn":
+    def _check_ohlc(self) -> BarIn:
         if self.high < self.low:
             raise ValueError(f"high ({self.high}) < low ({self.low})")
         if not (self.low <= self.open <= self.high):
@@ -157,6 +157,6 @@ class Page(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    items: list
+    items: list[Any]
     count: int
     next_cursor: str | None = None

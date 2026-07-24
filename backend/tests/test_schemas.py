@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from app.schemas import BarIn, OrderbookL2In, Side, TickIn
 
-UTC = dt.timezone.utc
+UTC = dt.UTC
 
 
 def _ts() -> dt.datetime:
@@ -17,7 +17,9 @@ def _ts() -> dt.datetime:
 
 
 def test_bar_valid() -> None:
-    bar = BarIn(symbol="BTCUSDT", ts=_ts(), open=100, high=110, low=95, close=105, volume=10, volume_buy=6)
+    bar = BarIn(
+        symbol="BTCUSDT", ts=_ts(), open=100, high=110, low=95, close=105, volume=10, volume_buy=6
+    )
     assert bar.symbol == "BTCUSDT"
     assert bar.ts.tzinfo is not None
 

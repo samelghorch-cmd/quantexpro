@@ -7,8 +7,8 @@ gère le cycle de vie (dispose du pool DB au shutdown) et normalise les erreurs 
 from __future__ import annotations
 
 import logging
-from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError

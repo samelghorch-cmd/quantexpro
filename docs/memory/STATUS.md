@@ -52,6 +52,7 @@
 | 2026-07-24 | **Chantier 1 committé** `b4f9a28` (lot P0-A) |
 | 2026-07-24 | **Chantier 2 — Backend P0-B livré** : `backend/` FastAPI async + SQLAlchemy 2.0 + Pydantic v2 + Alembic hypertables ; ingest idempotent + lecture keyset ; 13 tests backend verts |
 | 2026-07-24 | **Déploiement gratuit** : migration rendue portable (hypertables optionnelles), `render.yaml` + `docs/DEPLOIEMENT.md` (Render+Neon / Fly.io), job CI backend Python ajouté |
+| 2026-07-24 | **Vérif zéro-erreur P0-A/P0-B** : JS 132 tests + couverture seuils + build OK ; backend ruff ✅ + mypy strict 0 ✅ + pytest 13 ✅ + import app ✅. CI backend durcie (ruff+mypy). |
 
 ---
 

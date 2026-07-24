@@ -12,6 +12,7 @@ partitionnante (``ts``) — respecté ci-dessous.
 from __future__ import annotations
 
 import datetime as dt
+from typing import Any
 
 from sqlalchemy import Float, Index, PrimaryKeyConstraint, String
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
@@ -85,8 +86,8 @@ class OrderbookL2Snapshot(Base):
     symbol: Mapped[str] = mapped_column(String(32), nullable=False)
     ts: Mapped[dt.datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     # bids / asks : liste ordonnée de paires [price, size], stockée en JSONB.
-    bids: Mapped[list] = mapped_column(JSONB, nullable=False)
-    asks: Mapped[list] = mapped_column(JSONB, nullable=False)
+    bids: Mapped[list[Any]] = mapped_column(JSONB, nullable=False)
+    asks: Mapped[list[Any]] = mapped_column(JSONB, nullable=False)
     ingested_at: Mapped[dt.datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default="now()"
     )
