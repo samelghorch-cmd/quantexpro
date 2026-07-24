@@ -40,4 +40,10 @@ describe("registry P2-UI", () => {
     expect(opt.modules.some((m) => m.id === "alphaForge")).toBe(true);
     expect(PAGES.alphaForge).toBeTruthy();
   });
+
+  it("expose Desk PM dans Trading", () => {
+    const trading = SECTIONS.find((s) => s.id === "trading");
+    expect(trading.modules.some((m) => m.id === "pmDesk")).toBe(true);
+    expect(PAGES.pmDesk).toBeTruthy();
+  });
 });

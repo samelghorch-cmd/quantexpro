@@ -37,6 +37,7 @@ export const SECTIONS = [
       { id: "performance", label: "Performance" },
       { id: "cockpit", label: "Cockpit" },
       { id: "masterCockpit", label: "Master Cockpit" },
+      { id: "pmDesk", label: "▣ Desk PM" },
       { id: "vpFootprint", label: "VP Footprint" },
       { id: "behaviorTracker", label: "Behavior Tracker" },
       { id: "spreadCompare", label: "Spread Compare" },

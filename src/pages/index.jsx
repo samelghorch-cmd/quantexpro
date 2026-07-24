@@ -19,6 +19,7 @@ import { ChartLivePage, CockpitPage, MasterCockpitPage, OrchestrateurPage, NewsR
 import { ForwardTestPage } from "./trading/ForwardTest.jsx";
 import { PerformancePage, VPFootprintPage, BehaviorTrackerPage, SpreadComparePage, HMMRegimePage, StrategiesPage, SignauxPage, SignalEnginePage, ExecQualityPage, RiskCalcPage } from "./trading/TradingTools.jsx";
 import { TcaPage } from "./trading/Tca.jsx";
+import { PmDeskPage } from "./trading/PmDesk.jsx";
 // OPTIMISATION
 import { FullAutoOptimPage } from "./optimisation/FullAutoOptim.jsx";
 import { PostFaoSynthPage } from "./optimisation/PostFaoSynth.jsx";
@@ -72,6 +73,7 @@ const REAL = {
   performance: PerformancePage,
   cockpit: CockpitPage,
   masterCockpit: MasterCockpitPage,
+  pmDesk: PmDeskPage,
   vpFootprint: VPFootprintPage,
   behaviorTracker: BehaviorTrackerPage,
   spreadCompare: SpreadComparePage,
