@@ -116,7 +116,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-AF-SYNC** Validated Edges → Timescale (`/v1/edges` + Push/Pull Alpha Forge) ✅
 - [x] **P4-GEX** Options Gamma réel (GEX / Max Pain / PCR · Deribit + JSON) ✅
 - [x] **P4-ANT-SYNC** Anti-Library → Timescale (`/v1/anti-library` + Push/Pull) ✅
-- [x] **P4-FEEDS** Statut multi-feeds TickerBar (`feedStatus.js` · probes réels · Databento/CBOE `scoped_out`) ✅
+- [x] **P4-FEEDS** Statut multi-feeds TickerBar (`feedStatus.ts` · probes réels · Databento/CBOE `scoped_out`) ✅
 - [x] **P4-VP** pPOC / pVAL + confluence OI (`microstructure.js` · VP Footprint · Deribit) ✅
 - [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · Risque → Audit) ✅
 - [x] **P4-REV** Reverse engineering signaux historiques (`signalReverse.js` · Signal Reverse) ✅
@@ -125,6 +125,15 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-CORE** Catalogue Core Mode KAMA / LinReg / Ichimoku (`ruleBuilder` + overlays) ✅
 - [x] **P4-PAT** Patterns Library TF M1–MN + familles scalp/intra/swing ✅
 - [x] **P4-RESEARCH** RSS recherche légaux (arXiv q-fin · NBER · BIS) ✅
+
+---
+
+## P5 — Qualité & ports (post-P4)
+
+- [x] **P5-TS-FEEDS** `feedStatus.js` → `feedStatus.ts` (types stricts + probes) ✅
+- [ ] **P5-TS-MORE** Suite incremental `src/engine` (oscillators, edgesSync, …)
+- [ ] **P5-HMM-PY** Port HMM Python (cible audit · badge heuristique JS conservé)
+- [ ] **P5-OPS** Go-live ops (`alembic upgrade head` 0004/0005 · MT5 paper→demo)
 
 ---
 

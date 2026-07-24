@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { T } from "../shared/theme.js";
 import { seededRandom } from "../../engine/random.js";
-import { probeAllFeeds, feedStatusTone, summarizeFeeds } from "../../engine/feedStatus.js";
+import { probeAllFeeds, feedStatusTone, summarizeFeeds } from "../../engine/feedStatus.ts";
 
 const INSTRUMENTS = [
   { sym: "BTC", base: 62000, vol: 0.004 }, { sym: "ETH", base: 3400, vol: 0.005 },

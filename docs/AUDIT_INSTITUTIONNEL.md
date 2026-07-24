@@ -66,7 +66,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| Bandeau feeds Databento/LSE/LMAX/CME | ✅ `feedStatus.js` + chips TickerBar (probes Binance/YF/TS/Collector/Deribit · Databento/CBOE `scoped_out`) | 🟢 statut ; 🟡 Databento L2 payant hors scope |
+| Bandeau feeds Databento/LSE/LMAX/CME | ✅ `feedStatus.ts` + chips TickerBar (probes Binance/YF/TS/Collector/Deribit · Databento/CBOE `scoped_out`) | 🟢 statut ; 🟡 Databento L2 payant hors scope |
 | Grille 10 métriques (Noise, Persist., IC, Hit, Edge Net, Lag, …) | ✅ `statisticalEdge.js` + page Outils | CSV métriques/séries ✅ |
 | Oscillateurs multi-courbes Z-Score / Hurst / régimes | ✅ `oscillators.js` + panneau Statistical Edge | 🟢 |
 
@@ -202,30 +202,22 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-CORE | Core Mode KAMA / LinReg / Ichimoku | ✅ | `IND.kama/linreg` · RULE_SOURCES · overlays Core Mode |
 | P4-PAT | Patterns TF M1–MN | ✅ | `patternsLibrary.js` · filtres famille + UI Core Mode |
 | P4-RESEARCH | RSS recherche légaux | ✅ | arXiv q-fin · NBER · BIS · allowlist proxy |
+| P5-TS-FEEDS | feedStatus → TypeScript | ✅ | `feedStatus.ts` · types FeedHealth / probes |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-Interruption Claude ~2026-07-22 ; les changements locaux sont **cohérents** avec la direction Alpha Forge / robustesse :
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. Aucun WIP bloquant au 2026-07-24.
 
-| Zone | Fichiers | Intention |
-|------|----------|-----------|
-| Stratégies custom | `customStrategies.js`, `strategyLibrary.js`, Core Mode, Importer, `PipelineContext` | ZDL création → librairie #9001+, validation stricte |
-| Moteur | `backtest.js`, `backtestExtended.js`, `contracts.js` | Alignement coûts / contrats / parité collector |
-| Collector | `collector/index.js` | Support règles custom dans jobs 24/7 |
-| UI | `TickerBar`, `ui.jsx`, `Dossiers`, `Backtest` | Finitions UX |
-| Qualité | `tests/*`, `vitest.config.js`, `.github/workflows/ci.yml`, `.husky`, `docs/TESTING.md` | P0 test engine |
-| Tests actuels | `npm test` | **109 passed** |
-
-**Prochaine action recommandée :** commit unique « P0 custom strategies + test engine » puis enchaîner **P0-T4 VPIN**.
+**Prochaine action recommandée :** P5-TS-MORE (autres modules `src/engine`) ou P5-OPS.
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés).
+2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité (contrats Pydantic ↔ Zod partagés). **P5-TS-FEEDS** livré (`feedStatus.ts`).
 3. **Charte couleurs :** conserver orange TradoBot en **accent marque** ; ajouter tokens `#00e676` / `#ff1744` pour sémantique long/short dans `theme.js` (non-breaking).
 4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge.
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
@@ -237,13 +229,13 @@ Interruption Claude ~2026-07-22 ; les changements locaux sont **cohérents** ave
 | Critère | Score /5 | Note |
 |---------|----------|------|
 | Backtest causal & métriques | 5 | VPIN calibration corrigée (P0-T4) |
-| Pipeline validation (FAO→Reco) | 4 | DSR hors Usine |
-| Persistance & ZDL | 4 | Backend TimescaleDB + bus Redis Streams (ACK/DLQ) ; reste : brancher dashboard |
-| Exécution live | 3 | Paper Binance + pont MT5 (EA pull/ACK) prêt, à déployer VPS |
-| Données institutionnelles | 1 | Pas Databento/L2 options |
-| Gouvernance (RBAC, audit) | 5 | RBAC + audit UI + **SSO** session JWT / OIDC PKCE |
-| Test automation | 4 | CI pas encore poussée GitHub |
-| **Total approximatif** | **18/35** | Cible 28+ pour « desk institutionnel soft » |
+| Pipeline validation (FAO→Reco) | 4 | DSR Usine + Reco |
+| Persistance & ZDL | 4 | Timescale + Redis Streams · dashboard Push/Pull bars/edges/anti |
+| Exécution live | 3 | Paper Binance + pont MT5 (pack VPS) — go-live ops |
+| Données institutionnelles | 1 | Pas Databento/L2 options (scoped_out) |
+| Gouvernance (RBAC, audit) | 5 | RBAC + audit UI + SSO JWT / OIDC PKCE |
+| Test automation | 5 | Vitest + husky + CI GitHub (`main`) |
+| **Total approximatif** | **27/35** | Cible 28+ pour « desk institutionnel soft » |
 
 ---
 
@@ -255,4 +247,4 @@ Interruption Claude ~2026-07-22 ; les changements locaux sont **cohérents** ave
 
 ---
 
-*Dernière mise à jour : 2026-07-24 — Cursor (Composer) + spec utilisateur Terminal Quant institutionnel.*
+*Dernière mise à jour : 2026-07-24 — Cursor (P5-TS-FEEDS) + spec Terminal Quant institutionnel.*

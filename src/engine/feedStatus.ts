@@ -1,15 +1,64 @@
-// P4-FEEDS — statut multi-feeds (bandeau). Uniquement des sources réellement branchées
-// ou explicitement « hors scope ». Aucune cotation inventée présentée comme live.
+// P4-FEEDS / P5-TS — statut multi-feeds (bandeau). Uniquement des sources réellement
+// branchées ou explicitement « hors scope ». Aucune cotation inventée présentée comme live.
 import { getApiBaseUrl, getApiKey } from "./apiClient.js";
 import { getCollectorUrl } from "./collectorClient.js";
 
-/** @typedef {'ok'|'down'|'unconfigured'|'scoped_out'|'unknown'} FeedHealth */
+export type FeedHealth = "ok" | "down" | "unconfigured" | "scoped_out" | "unknown";
+export type FeedTone = "green" | "red" | "yellow" | "dim";
+export type FeedKind = "market" | "zdl" | "options" | "institutional";
+
+export interface FeedCatalogEntry {
+  id: string;
+  label: string;
+  kind: FeedKind;
+  description: string;
+  scopedOut?: boolean;
+}
+
+export interface FeedListItem {
+  id: string;
+  label: string;
+  kind: FeedKind;
+  description: string;
+  scopedOut: boolean;
+}
+
+export interface ProbeRaw {
+  ok?: boolean;
+  unconfigured?: boolean;
+  detail?: string;
+  latencyMs?: number;
+}
+
+export interface FeedStatus {
+  id: string;
+  label: string;
+  kind: string;
+  status: FeedHealth;
+  detail: string;
+  latencyMs: number | null;
+  checkedAt: number;
+}
+
+export interface FeedSummary {
+  n: number;
+  ok: number;
+  down: number;
+  unconfigured: number;
+  scoped_out: number;
+  unknown: number;
+  liveOk: number;
+  needsConfig: number;
+}
+
+type FetchLike = typeof fetch;
+type ProbeFn = (fetchImpl?: FetchLike) => Promise<ProbeRaw>;
 
 /**
  * Catalogue feeds — `probe` optionnel (async → { ok, detail?, latencyMs? }).
  * Les feeds `scoped_out` n'ont pas de probe (Databento/LSE/… hors contrat gratuit).
  */
-export const FEED_CATALOG = [
+export const FEED_CATALOG: readonly FeedCatalogEntry[] = [
   {
     id: "binance",
     label: "Binance",
@@ -56,7 +105,7 @@ export const FEED_CATALOG = [
   },
 ];
 
-export function listFeeds() {
+export function listFeeds(): FeedListItem[] {
   return FEED_CATALOG.map(({ id, label, kind, description, scopedOut }) => ({
     id,
     label,
@@ -66,11 +115,7 @@ export function listFeeds() {
   }));
 }
 
-/**
- * @param {FeedHealth} status
- * @returns {string} couleur sémantique key (green|red|yellow|dim)
- */
-export function feedStatusTone(status) {
+export function feedStatusTone(status: FeedHealth): FeedTone {
   if (status === "ok") return "green";
   if (status === "down") return "red";
   if (status === "unconfigured") return "yellow";
@@ -78,18 +123,22 @@ export function feedStatusTone(status) {
   return "dim";
 }
 
-async function timed(fn) {
+async function timed(fn: () => Promise<ProbeRaw>): Promise<ProbeRaw> {
   const t0 = Date.now();
   try {
     const r = await fn();
     return { ...r, latencyMs: Date.now() - t0 };
   } catch (e) {
-    return { ok: false, detail: e instanceof Error ? e.message : String(e), latencyMs: Date.now() - t0 };
+    return {
+      ok: false,
+      detail: e instanceof Error ? e.message : String(e),
+      latencyMs: Date.now() - t0,
+    };
   }
 }
 
 /** Probe Binance public ping (via proxy Vite/Pages — CORS). */
-export async function probeBinance(fetchImpl = fetch) {
+export async function probeBinance(fetchImpl: FetchLike = fetch): Promise<ProbeRaw> {
   return timed(async () => {
     const res = await fetchImpl("/api/binance/ping");
     if (!res.ok) return { ok: false, detail: `HTTP ${res.status}` };
@@ -98,22 +147,24 @@ export async function probeBinance(fetchImpl = fetch) {
 }
 
 /** Probe Yahoo via proxy Vite/Pages. */
-export async function probeYahoo(fetchImpl = fetch) {
+export async function probeYahoo(fetchImpl: FetchLike = fetch): Promise<ProbeRaw> {
   return timed(async () => {
     const res = await fetchImpl("/api/yf/v8/finance/chart/EURUSD=X?interval=1d&range=5d", {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) return { ok: false, detail: `HTTP ${res.status}` };
-    const body = await res.json().catch(() => null);
+    const body = (await res.json().catch(() => null)) as {
+      chart?: { result?: unknown[] };
+    } | null;
     const ok = Boolean(body?.chart?.result?.[0]);
     return { ok, detail: ok ? "chart ok" : "payload inattendu" };
   });
 }
 
 /** Probe Timescale API /health. */
-export async function probeTimescale(fetchImpl = fetch) {
-  const base = getApiBaseUrl();
-  const key = getApiKey();
+export async function probeTimescale(fetchImpl: FetchLike = fetch): Promise<ProbeRaw> {
+  const base = getApiBaseUrl() as string;
+  const key = getApiKey() as string;
   if (!base || !key) {
     return { ok: false, unconfigured: true, detail: "URL/clé absente", latencyMs: 0 };
   }
@@ -127,52 +178,53 @@ export async function probeTimescale(fetchImpl = fetch) {
 }
 
 /** Probe collector /health. */
-export async function probeCollector(fetchImpl = fetch) {
-  const base = getCollectorUrl();
+export async function probeCollector(fetchImpl: FetchLike = fetch): Promise<ProbeRaw> {
+  const base = getCollectorUrl() as string;
   if (!base) {
     return { ok: false, unconfigured: true, detail: "URL collecteur absente", latencyMs: 0 };
   }
   return timed(async () => {
     const res = await fetchImpl(`${base}/health`, { headers: { Accept: "application/json" } });
     if (!res.ok) return { ok: false, detail: `HTTP ${res.status}` };
-    const body = await res.json().catch(() => ({}));
+    const body = (await res.json().catch(() => ({}))) as { ok?: boolean; jobs?: number | string };
     return { ok: Boolean(body.ok ?? true), detail: `jobs=${body.jobs ?? "?"}` };
   });
 }
 
 /** Probe Deribit via proxy allowlisté. */
-export async function probeDeribit(fetchImpl = fetch) {
+export async function probeDeribit(fetchImpl: FetchLike = fetch): Promise<ProbeRaw> {
   return timed(async () => {
     const res = await fetchImpl(
       "/api/deribit/public/get_book_summary_by_currency?currency=BTC&kind=option",
       { headers: { Accept: "application/json" } },
     );
     if (!res.ok) return { ok: false, detail: `HTTP ${res.status}` };
-    const body = await res.json().catch(() => null);
+    const body = (await res.json().catch(() => null)) as { result?: unknown[] } | null;
     const n = Array.isArray(body?.result) ? body.result.length : 0;
     return { ok: n > 0, detail: n ? `${n} options` : "vide" };
   });
 }
 
-/**
- * Normalise un résultat probe → entrée UI.
- * @param {string} id
- * @param {{ ok?: boolean, unconfigured?: boolean, detail?: string, latencyMs?: number }} raw
- */
-export function toFeedStatus(id, raw = {}) {
-  const meta = FEED_CATALOG.find((f) => f.id === id) || { id, label: id, kind: "?", description: "" };
+/** Normalise un résultat probe → entrée UI. */
+export function toFeedStatus(id: string, raw: ProbeRaw = {}): FeedStatus {
+  const meta = FEED_CATALOG.find((f) => f.id === id) || {
+    id,
+    label: id,
+    kind: "market" as FeedKind,
+    description: "",
+  };
   if (meta.scopedOut) {
     return {
       id,
       label: meta.label,
       kind: meta.kind,
-      status: /** @type {FeedHealth} */ ("scoped_out"),
+      status: "scoped_out",
       detail: meta.description,
       latencyMs: null,
       checkedAt: Date.now(),
     };
   }
-  let status = /** @type {FeedHealth} */ ("unknown");
+  let status: FeedHealth = "unknown";
   if (raw.unconfigured) status = "unconfigured";
   else if (raw.ok === true) status = "ok";
   else if (raw.ok === false) status = "down";
@@ -187,7 +239,7 @@ export function toFeedStatus(id, raw = {}) {
   };
 }
 
-const PROBES = {
+const PROBES: Record<string, ProbeFn> = {
   binance: probeBinance,
   yahoo: probeYahoo,
   timescale: probeTimescale,
@@ -195,14 +247,16 @@ const PROBES = {
   deribit: probeDeribit,
 };
 
-/**
- * Probe tous les feeds (scoped_out inclus sans réseau).
- * @param {{ fetchImpl?: typeof fetch, ids?: string[] }} [opts]
- */
-export async function probeAllFeeds(opts = {}) {
+export interface ProbeAllOpts {
+  fetchImpl?: FetchLike;
+  ids?: string[];
+}
+
+/** Probe tous les feeds (scoped_out inclus sans réseau). */
+export async function probeAllFeeds(opts: ProbeAllOpts = {}): Promise<FeedStatus[]> {
   const fetchImpl = opts.fetchImpl || fetch;
   const ids = opts.ids || FEED_CATALOG.map((f) => f.id);
-  const out = [];
+  const out: FeedStatus[] = [];
   for (const id of ids) {
     const meta = FEED_CATALOG.find((f) => f.id === id);
     if (!meta) continue;
@@ -222,11 +276,12 @@ export async function probeAllFeeds(opts = {}) {
 }
 
 /** Résumé pour MetricCards. */
-export function summarizeFeeds(statuses) {
+export function summarizeFeeds(statuses: FeedStatus[] | null | undefined): FeedSummary {
   const list = statuses || [];
   const counts = { ok: 0, down: 0, unconfigured: 0, scoped_out: 0, unknown: 0 };
   for (const s of list) {
-    counts[s.status] = (counts[s.status] || 0) + 1;
+    const key = s.status in counts ? s.status : "unknown";
+    counts[key as keyof typeof counts] += 1;
   }
   return {
     n: list.length,

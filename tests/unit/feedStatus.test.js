@@ -9,7 +9,7 @@ import {
   summarizeFeeds,
   probeBinance,
   probeTimescale,
-} from "../../src/engine/feedStatus.js";
+} from "../../src/engine/feedStatus.ts";
 
 beforeEach(() => {
   const store = new Map();

@@ -48,9 +48,7 @@ function getBearer() {
 /**
  * Appel JSON authentifié (Bearer SSO prioritaire, sinon X-API-Key).
  * @param {string} path  ex. "/v1/strategy/from-prompt"
- * @param {object} [opts]
- * @param {boolean} [opts.preferApiKey] — force X-API-Key (ex. /v1/auth/session)
- * @param {boolean} [opts.skipAuth] — pas d'auth (échange OIDC)
+ * @param {RequestInit & { preferApiKey?: boolean, skipAuth?: boolean }} [opts]
  * @returns {Promise<object>}
  */
 export async function apiFetch(path, opts = {}) {
