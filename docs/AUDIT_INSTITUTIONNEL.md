@@ -158,7 +158,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P0-T | Golden tests, look-ahead, CI | ✅ 109 tests, Husky, workflow CI | Committer lot tests + custom strategies |
 | P0-T4 | VPIN causal | ✅ | Fait : `bucketVolume` calibré sur fenêtre d'amorce fixe (`calibBars`) ; invariance troncature vérifiée ; aucune régénération de golden requise |
 | P0-T5 | Cycle vie dossiers IndexedDB | ✅ | Fait : `tests/unit/dossierStore.test.js` (23 tests) — fake-indexeddb, writeChain, gradeLetter, cycle 6 étapes |
-| P0-ZDL | Bus ZDL + TimescaleDB | 🔴 | **Phase P0a :** schéma TS + API Python ingest bars/ticks ; **P0b :** sync bidirectionnelle dashboard ↔ API ; **P0c :** retirer IndexedDB comme source primaire |
+| P0-ZDL | Bus ZDL + TimescaleDB | 🟡 | **P0a ✅** schéma TS + API Python ingest bars/ticks/orderbook + lecture paginée (`backend/`, 13 tests) ; **P0b :** sync bidirectionnelle dashboard ↔ API + bus Redis Streams ; **P0c :** retirer IndexedDB comme source primaire |
 | P0-LLM | Qwen2.5-Coder-7B local | 🔴 | Service sidecar (Docker) + endpoint `/strategy/compile` ; Prompt Mode UI branché sur Rule Builder |
 | P0-MT5 | Pont VPS MT5 | 🔴 | EA MQL5 + bridge REST/WS ; commencer par **signaux paper** puis ordres démo |
 | P0-RBAC | Rôles + audit log | 🔴 | Après API Python ; table `audit_events` append-only |

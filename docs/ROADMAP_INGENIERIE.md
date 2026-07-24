@@ -27,14 +27,18 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 | Couverture P0.6 | walkforward, montecarlo, fao, costModel | Seuils CI 80 % lignes moteur |
 | DSR dans Reco | déjà fait | Documenter seuils dans audit |
 
-### P0-B — Backend Python + TimescaleDB (nouveau repo ou `backend/`)
+### P0-B — Backend Python + TimescaleDB (`backend/`) — ✅ scaffolding livré
 
-| Tâche | DoD |
-|-------|-----|
-| Schéma TS : `ticks`, `bars_1m`, `bars_5m`, `orderbook_l2_snapshots` | Migrations Alembic |
-| Ingest REST : POST bars depuis collector/dashboard | Idempotent (`symbol, t` PK) |
-| API GET : `/v1/bars/{symbol}` paginé | Remplace lecture primaire IndexedDB |
-| Health + metrics Railway | `/health`, logs structurés |
+| Tâche | DoD | État |
+|-------|-----|------|
+| Schéma TS : `ticks`, `bars_1m`, `bars_5m`, `orderbook_l2_snapshots` | Migrations Alembic (`0001`, hypertables) | ✅ |
+| Ingest REST : POST bars/ticks/orderbook | Idempotent (`ON CONFLICT DO UPDATE`, PK `symbol,ts`) | ✅ |
+| API GET : `/v1/bars/{symbol}` paginé | Keyset cursor sur `ts` | ✅ |
+| Health + logs structurés | `/health`, `/health/ready`, logs JSON | ✅ |
+| Reste (déploiement) | Railway + brancher collector/dashboard sur l'API (remplacer lecture IndexedDB) | ⬜ |
+
+> Livré : `backend/` (FastAPI async + SQLAlchemy 2.0 + Pydantic v2), 13 tests verts
+> (schémas + idempotence SQL, sans DB). Déploiement Railway = action infra à part.
 
 ### P0-C — Bus ZDL (minimal viable)
 

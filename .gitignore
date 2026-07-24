@@ -4,3 +4,12 @@ dist/
 *.log
 collector/collector-data.json
 coverage/
+
+# Python backend
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/.env

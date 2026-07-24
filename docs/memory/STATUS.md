@@ -11,10 +11,10 @@
 |-------|--------|
 | Branche git | `main` (+ locale `claude/hopeful-swartz-913305`) |
 | Tests | **132 passed** (109 + 23 dossiers) |
-| Commit HEAD | `f63a8d7` Renommage QuantEXPro + fix vol annualisée |
-| WIP non commité | Oui — custom strategies + suite tests P0 + **VPIN causal (P0-T4)** + **tests dossiers (P0-T5)** + `fake-indexeddb` |
-| Bloqueur | Aucun — **prêt à travailler** |
-| Prochaine action | Commit lot **P0-A** (custom + tests + VPIN + dossiers) → push CI ; puis Chantier 2 (backend ZDL/TimescaleDB, scaffolding) |
+| Commit HEAD | `b4f9a28` P0-A: custom strategies + test engine + VPIN causal + dossiers ZDL |
+| WIP non commité | Non — lot P0-A committé |
+| Bloqueur | **S0.3 push CI** : aucun remote git configuré (créer dépôt GitHub + `git remote add` côté user) |
+| Prochaine action | Chantier 3 : **Bus ZDL Redis Streams (P0-C)** dans `backend/app/bus/` (publish bar-close, consumer ACK, retry backoff) |
 
 ---
 
@@ -23,8 +23,8 @@
 | ID | Tâche | Owner | État |
 |----|-------|-------|------|
 | S0.1 | `npm test` + `npm run build` | — | ✅ tests OK (2026-07-24) |
-| S0.2 | Commit WIP custom + tests/CI | — | ⬜ |
-| S0.3 | Push → activer CI GitHub | — | ⬜ |
+| S0.2 | Commit WIP custom + tests/CI | — | ✅ `b4f9a28` (2026-07-24) |
+| S0.3 | Push → activer CI GitHub | — | ⛔ bloqué : pas de remote (action user) |
 | S0.4 | VPIN causal (`vpin.js`) | Engine | ✅ amorce fixe `calibBars` (2026-07-24) |
 | S0.5 | Tests dossiers IndexedDB | Engine + Reviewer | ✅ 23 tests (2026-07-24) |
 
@@ -48,6 +48,8 @@
 | 2026-07-24 | Mémoire multi-agents + Obsidian sync (cette session) |
 | 2026-07-24 | **P0-T4 VPIN causal livré** : `bucketVolume` sur amorce fixe ; sentinelle → invariance stricte |
 | 2026-07-24 | **P0-T5 tests dossiers livrés** : `dossierStore.test.js` (fake-indexeddb, writeChain, cycle 6 étapes) → **132 tests verts** ; Chantier 1 (P0-A) terminé |
+| 2026-07-24 | **Chantier 1 committé** `b4f9a28` (lot P0-A) |
+| 2026-07-24 | **Chantier 2 — Backend P0-B livré** : `backend/` FastAPI async + SQLAlchemy 2.0 + Pydantic v2 + Alembic hypertables ; ingest idempotent + lecture keyset ; 13 tests backend verts |
 
 ---
 
