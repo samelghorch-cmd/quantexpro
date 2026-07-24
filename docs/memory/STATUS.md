@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P4-HMM)
+> Dernière maj : **2026-07-24** (P4-OSC)
 
 ---
 
@@ -11,19 +11,19 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **326** · backend **68** |
-| Commit HEAD | P4-HMM |
+| Tests | JS **331** · backend **68** |
+| Commit HEAD | P4-OSC |
 | P0–P3 | ✅ clôturés |
-| P4 | … · REV · **HMM** ✅ |
+| P4 | … · HMM · **OSC** ✅ |
 | Prochaine action | Dire « go » (suite / ops) |
 
 ---
 
-## P4-HMM — livré
+## P4-OSC — livré
 
-- `hmmRegimes` → 4 états **Trend / Range / Vol / Choppy** (features causales vol × efficacité)  
-- UI : HMM Regime, Regime Clock, Quant Toolbox  
-- Badge Approximation JS conservé
+- `oscillators.js` — Z-Score / Hurst overlay / régimes HMM  
+- Statistical Edge : panneau multi-courbes + CSV OSC  
+- Tests causalité Z-Score
 
 ---
 

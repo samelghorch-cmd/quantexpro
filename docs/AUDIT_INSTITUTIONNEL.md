@@ -68,7 +68,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 |------|-------------------------|-----|
 | Bandeau feeds Databento/LSE/LMAX/CME | ✅ `feedStatus.js` + chips TickerBar (probes Binance/YF/TS/Collector/Deribit · Databento/CBOE `scoped_out`) | 🟢 statut ; 🟡 Databento L2 payant hors scope |
 | Grille 10 métriques (Noise, Persist., IC, Hit, Edge Net, Lag, …) | ✅ `statisticalEdge.js` + page Outils | CSV métriques/séries ✅ |
-| Oscillateurs multi-courbes Z-Score / Hurst / régimes | LineChart + ctx ; HMM dans Quant Toolbox / pages trading | 🟡 |
+| Oscillateurs multi-courbes Z-Score / Hurst / régimes | ✅ `oscillators.js` + panneau Statistical Edge | 🟢 |
 
 **Modules registry proches :** `outils/analyseQuant`, `macro/featureMining`, `trading/hmmRegime`, `optimisation/quantToolbox`.
 
@@ -198,6 +198,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.js` |
 | P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
 | P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` 4 états · pages HMM / Regime Clock / Toolbox |
+| P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.js` · Statistical Edge multi-courbes + CSV |
 
 ---
 

@@ -1,4 +1,4 @@
-// Statistical Edge — Module 1 : grille 10 métriques sur indicateurs + export CSV.
+// Statistical Edge — Module 1 : grille 10 métriques + oscillateurs Z/Hurst/régimes (P4-OSC).
 import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import {
@@ -7,17 +7,19 @@ import {
   seriesToCSV,
   defaultIndicatorSeries,
 } from "../../engine/statisticalEdge.js";
+import { buildMarketOscillators, oscillatorsToCSV } from "../../engine/oscillators.js";
 import { downloadCSV } from "../../engine/exportUtils.js";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, fmt, fmtPct } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
 const scoreColor = (s) => (s >= 60 ? T.green : s >= 40 ? T.yellow : T.red);
+const regimeColors = [T.green, T.blue, T.red, T.yellow];
 
 export function StatisticalEdgePage() {
   const { bars, ctx, assetKey, symbol, usingReal } = usePipeline();
   const [horizon, setHorizon] = useState(5);
-  const [windowN, setWindowN] = useState(0); // 0 = toute la série
+  const [windowN, setWindowN] = useState(0);
   const [selected, setSelected] = useState(null);
   const [auto, setAuto] = useState(true);
 
@@ -29,7 +31,12 @@ export function StatisticalEdgePage() {
       horizon,
       window: windowN > 0 ? windowN : null,
     });
-  }, [bars, ctx, horizon, windowN, auto]); // auto force refresh intent
+  }, [bars, ctx, horizon, windowN, auto]);
+
+  const osc = useMemo(() => {
+    if (!bars?.length || !ctx) return null;
+    return buildMarketOscillators(bars, ctx);
+  }, [bars, ctx]);
 
   const rows = report?.rows || [];
   const selName = selected || rows[0]?.name || null;
@@ -53,6 +60,7 @@ export function StatisticalEdgePage() {
 
   const exportMetrics = () => downloadCSV(metricsToCSV(rows), `stat_edge_metrics_${assetKey || symbol}.csv`);
   const exportSeries = () => downloadCSV(seriesToCSV(bars, catalog), `stat_edge_series_${assetKey || symbol}.csv`);
+  const exportOsc = () => osc && downloadCSV(oscillatorsToCSV(bars, osc), `stat_edge_osc_${assetKey || symbol}.csv`);
 
   const top = rows[0];
 
@@ -63,14 +71,60 @@ export function StatisticalEdgePage() {
           <div style={{ flex: 1, minWidth: 260 }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Statistical Edge — Module 1</div>
             <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.5 }}>
-              Grille de <b style={{ color: T.orange }}>10 métriques</b> sur chaque indicateur (bruit, Hurst, croisements,
-              corr, lag, IC, hit, edge net, N, Z/%ile) vs rendement futur à t+k.
+              Grille de <b style={{ color: T.orange }}>10 métriques</b> + oscillateurs multi-courbes{" "}
+              <b>Z-Score / Hurst / régimes</b> vs rendement futur à t+k.
               Actif : <b>{assetKey || symbol}</b> · {usingReal ? "données réelles" : "synthétique"}.
             </div>
           </div>
           <Badge color={auto ? T.green : T.yellow}>{auto ? "Auto" : "Manuel"}</Badge>
         </div>
       </Panel>
+
+      {osc && (
+        <Panel
+          title="Oscillateurs — Z-Score · Hurst · Régimes"
+          right={
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {osc.meta.heuristicRegime && <Badge color={T.yellow}>HMM approx. JS</Badge>}
+              <Button onClick={exportOsc}>CSV OSC</Button>
+            </div>
+          }
+        >
+          <MetricGrid min={120}>
+            <MetricCard label="Z-Score 20" value={fmt(osc.current.zScore, 2)} color={Math.abs(osc.current.zScore) > 2 ? T.red : T.orange} />
+            <MetricCard
+              label="Hurst 100"
+              value={fmt(osc.current.hurst, 3)}
+              color={osc.current.hurst > 0.55 ? T.green : osc.current.hurst < 0.45 ? T.red : T.yellow}
+              hint=">0.5 tendance · <0.5 MR"
+            />
+            <MetricCard
+              label="Régime"
+              value={osc.current.regimeLabel || "—"}
+              color={regimeColors[osc.current.regime] || T.textDim}
+            />
+          </MetricGrid>
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 10, color: T.textFaint, marginBottom: 4 }}>
+              Overlay : Z-Score (orange) · Hurst centré (bleu, (H−0.5)×4) · zéro = H 0.5
+            </div>
+            <LineChart
+              series={[
+                { data: osc.zScore, color: T.orange, width: 1.5 },
+                { data: osc.hurstOverlay, color: T.blue, width: 1.5 },
+              ]}
+              height={160}
+              showZero
+            />
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 10, color: T.textFaint, marginBottom: 4 }}>
+              Régime HMM : 0 Trend · 1 Range · 2 Vol · 3 Choppy
+            </div>
+            <LineChart series={[{ data: osc.regime, color: T.purple, width: 1.5 }]} height={100} />
+          </div>
+        </Panel>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 14, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
