@@ -11,12 +11,12 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **138** · backend **51** |
-| Commit HEAD | `3b0ad7b` — P1-DSR Usine |
-| CI GitHub | push `3b0ad7b` — à confirmer Actions |
+| Tests | JS **146** · backend **51** |
+| Commit HEAD | (P1-ANT en cours) |
+| CI GitHub | push précédent P1-DSR |
 | P0 | ✅ A–E clôturés |
-| P1 | 🔄 **P1-DSR** livré · reste Anti-Library, stress, TCA, tearsheet, Statistical Edge |
-| Prochaine action | **P1-ANT** — Anti-Library store + filtre Usine/FAO |
+| P1 | 🔄 **P1-DSR** + **P1-ANT** · reste stress, TCA, tearsheet, Statistical Edge |
+| Prochaine action | **Stress scenarios portefeuille** (après commit P1-ANT) |
 
 ---
 
@@ -52,6 +52,7 @@
 | 2026-07-24 | **UI Prompt Mode** : Strategy Engine → `/v1/strategy/from-prompt` |
 | 2026-07-24 | **P0 clôturé** — re-vérification zéro-erreur (JS 132, backend 51, ruff, mypy) |
 | 2026-07-24 | **P1-DSR** : DSR + nTrials dans Usine (filtre &lt;50 % avant leaderboard, colonne UI, 6 tests) → JS **138** |
+| 2026-07-24 | **P1-ANT** : Anti-Library (`antiLibrary.js`) — seeds involutifs, filtre Usine + blocage FAO, UI Optimisation, 8 tests → JS **146** |
 
 ---
 

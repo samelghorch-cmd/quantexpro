@@ -2,21 +2,31 @@
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runFAO } from "../../engine/fao.js";
+import { findBlockingEntry } from "../../engine/antiLibrary.js";
 import { Panel, Button, Field, NumberInput, DataTable, MetricCard, MetricGrid, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { T } from "../../components/shared/theme.js";
 
 export function FullAutoOptimPage() {
-  const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, log, attachToActive } = usePipeline();
+  const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, log, attachToActive, navigate } = usePipeline();
   const [stratId, setStratId] = useState(pipeline.selectedStrategyId || 3);
   const [cfg, setCfg] = useState({ nSamples: 150, minWR: 35, maxDD: 40 });
   const [busy, setBusy] = useState(false);
+  const [blockMsg, setBlockMsg] = useState(null);
   const set = (k, v) => setCfg((c) => ({ ...c, [k]: v }));
+  const pickStrat = (id) => { setStratId(id); setBlockMsg(null); };
 
   const run = useCallback(() => {
     const strat = library.find((s) => s.id === stratId);
     if (!strat) return;
+    const block = findBlockingEntry(strat);
+    if (block) {
+      setBlockMsg(`Anti-Library : « ${block.label} » — ${block.reason || "concept involutif"}. Choisis une autre stratégie ou retire l'entrée.`);
+      log("FAO", `Bloqué par Anti-Library (${block.conceptId}) : ${strat.name}`, "warn");
+      return;
+    }
+    setBlockMsg(null);
     setBusy(true);
     setTimeout(() => {
       const res = runFAO(bars, ctx, strat, { nSamples: cfg.nSamples, minWR: cfg.minWR, maxDD: cfg.maxDD, contract: symbol });
@@ -49,7 +59,7 @@ export function FullAutoOptimPage() {
       <PipelineStepper current="fao" />
       <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 14, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <Panel title="Stratégie"><StrategyPicker value={stratId} onChange={setStratId} compact /></Panel>
+          <Panel title="Stratégie"><StrategyPicker value={stratId} onChange={pickStrat} compact /></Panel>
           <Panel title="Paramètres FAO">
             <div style={{ fontSize: 11, color: T.textDim, lineHeight: 1.5, marginBottom: 12 }}>
               Sweep automatique SL/TP/BE + Direction + Régime par <b style={{ color: T.orange }}>random sampling</b>. Filtres qualité appliqués. Période : marché synthétique interne (5 ans équivalents selon barres).
@@ -60,6 +70,14 @@ export function FullAutoOptimPage() {
               <Field label="Max DD %"><NumberInput value={cfg.maxDD} onChange={(v) => set("maxDD", v)} /></Field>
             </div>
             <Button primary onClick={run} disabled={busy} style={{ width: "100%", marginTop: 12 }}>{busy ? "Sweep en cours…" : "▶ Lancer FAO"}</Button>
+            {blockMsg && (
+              <div style={{ marginTop: 10, fontSize: 11, color: T.red, lineHeight: 1.45 }}>
+                {blockMsg}{" "}
+                <span style={{ color: T.orange, cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate("antiLibrary")}>
+                  Ouvrir Anti-Library
+                </span>
+              </div>
+            )}
           </Panel>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

@@ -32,7 +32,7 @@ function dailyReturns(trades) {
   return [...byDay.entries()].map(([day, pnl]) => ({ day, pnl })).sort((a, b) => a.day - b.day);
 }
 
-function processPair(pair, topK) {
+function processPair(pair, topK, blockedIds = new Set()) {
   const { key, bars, classId, assetLabel, tfLabel } = pair;
   const cost = COST_MODELS[classId] || COST_MODELS.synthetic;
   const ctx = buildContext(bars);
@@ -44,9 +44,11 @@ function processPair(pair, topK) {
   const trainWin = oosOk ? { start: 50, end: split } : { start: 50, end: n };
   const testWin = oosOk ? { start: split, end: n } : { start: 50, end: n };
 
-  // --- SCREENING sur le TRAIN uniquement ---
+  // --- SCREENING sur le TRAIN uniquement (Anti-Library : skip les involutifs) ---
   const screened = [];
+  let rejectedByAnti = 0;
   for (const s of LIB) {
+    if (blockedIds.has(s.id)) { rejectedByAnti++; continue; }
     const m = runFactoryBacktest(bars, ctx, s.eval, { slAtr: 2 }, cost, 100000, trainWin);
     const sc = factoryScore(m);
     if (sc > 0) screened.push({ stratId: s.id, name: s.name, cat: s.cat, score: sc });
@@ -103,14 +105,15 @@ function processPair(pair, topK) {
     });
   }
   refined.sort((a, b) => b.score - a.score);
-  return { key, assetLabel, tfLabel, screenedCount: screened.length, refined, oos: oosOk, nTrials, rejectedByDsr };
+  return { key, assetLabel, tfLabel, screenedCount: screened.length, refined, oos: oosOk, nTrials, rejectedByDsr, rejectedByAnti };
 }
 
 self.onmessage = (e) => {
-  const { pairs, topK = 6 } = e.data;
+  const { pairs, topK = 6, blockedIds = [] } = e.data;
+  const blocked = new Set(blockedIds);
   for (const pair of pairs) {
     try {
-      const res = processPair(pair, topK);
+      const res = processPair(pair, topK, blocked);
       self.postMessage({ type: "pair-done", ...res });
     } catch (err) {
       self.postMessage({ type: "pair-error", key: pair.key, error: String(err && err.message || err) });

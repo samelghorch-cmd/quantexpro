@@ -57,6 +57,7 @@ export const SECTIONS = [
     id: "optimisation", label: "Optimisation", icon: "⚙",
     modules: [
       { id: "factory", label: "⚡ Usine à Stratégies" },
+      { id: "antiLibrary", label: "🚫 Anti-Library" },
       { id: "geneticOptim", label: "🧬 Optim Génétique" },
       { id: "fao", label: "Full Auto Optim" },
       { id: "postFao", label: "Post-FAO Synth" },

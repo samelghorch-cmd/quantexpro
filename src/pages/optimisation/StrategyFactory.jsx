@@ -164,6 +164,7 @@ export function StrategyFactoryPage() {
             <MetricGrid min={140}>
               <MetricCard label="Variantes retenues" value={fmtInt(result.stats.nVariants)} color={T.orange} />
               <MetricCard label="Rejetées DSR" value={fmtInt(result.stats.rejectedByDsr || 0)} color={T.red} hint="DSR &lt; 50 % (overfit)" />
+              <MetricCard label="Skip Anti-Lib" value={fmtInt(result.stats.rejectedByAnti || 0)} color={T.yellow} hint={`${result.stats.antiBlocked || 0} IDs bloqués × paires`} />
               <MetricCard label="nTrials / paire" value={fmtInt(result.stats.nTrialsPerPair || 0)} hint="essais pour déflater le Sharpe" />
               <MetricCard label="Paires actif×TF" value={result.stats.nPairs} />
               <MetricCard label="Cœurs utilisés" value={result.stats.nWorkers} />

@@ -26,6 +26,7 @@ import { ValidatorPage } from "./optimisation/Validator.jsx";
 import { Sensitivity2DPage, ParetoPage, CrossTFPage, CrossSymbolPage, PairsPage } from "./optimisation/AdvancedOptim.jsx";
 import { QuantToolboxPage } from "./optimisation/QuantToolbox.jsx";
 import { StrategyFactoryPage } from "./optimisation/StrategyFactory.jsx";
+import { AntiLibraryPage } from "./optimisation/AntiLibrary.jsx";
 import { GeneticOptimPage } from "./optimisation/GeneticOptim.jsx";
 // MACRO
 import { RecoFinalePage } from "./macro/RecoFinale.jsx";
@@ -81,6 +82,7 @@ const REAL = {
   forwardTest: ForwardTestPage,
   // Optimisation
   factory: StrategyFactoryPage,
+  antiLibrary: AntiLibraryPage,
   geneticOptim: GeneticOptimPage,
   fao: FullAutoOptimPage,
   postFao: PostFaoSynthPage,

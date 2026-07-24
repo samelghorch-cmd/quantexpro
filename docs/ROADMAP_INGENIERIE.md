@@ -79,7 +79,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P1 — Risque institutionnel
 
 - [x] **P1-DSR** DSR + nTrials dans **Usine** (`factoryDsr.js` + `factory.worker.js` + UI) ✅
-- [ ] Anti-Library store + filtre Usine/FAO
+- [x] **P1-ANT** Anti-Library store + filtre Usine/FAO (`antiLibrary.js` + UI) ✅
 - [ ] Stress scenarios portefeuille
 - [ ] TCA module (slippage observé vs modèle)
 - [ ] PDF tearsheet par dossier

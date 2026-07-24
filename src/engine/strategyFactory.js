@@ -3,6 +3,8 @@
 // agrège les variantes, construit la corrélation inter-stratégies et un portefeuille diversifié.
 import { fetchCandles, findSymbol } from "./marketData.js";
 import { TF_MAP } from "./marketData.js";
+import { buildStrategyLibrary } from "./strategyLibrary.js";
+import { blockedStrategyIds, ensureSeeded } from "./antiLibrary.js";
 
 // Espace de recherche par défaut (respecte « tous les actifs connectés » avec un actif fort par classe).
 export const FACTORY_DEFAULT_ASSETS = ["BTC", "SPX", "NDX", "EURUSD", "GOLD", "WTI"];
@@ -125,7 +127,12 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
   const perPair = [];
   let pairsDone = 0;
   let rejectedByDsr = 0;
+  let rejectedByAnti = 0;
   const totalPairs = pairs.length;
+
+  // Snapshot Anti-Library pour les workers (pas de localStorage dans le worker).
+  ensureSeeded();
+  const blockedIds = blockedStrategyIds(buildStrategyLibrary());
 
   emit({ phase: "compute", label: `Analyse en cours sur ${nWorkers} cœurs…`, pct: 0, pairsDone, totalPairs });
 
@@ -141,7 +148,8 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
         if (msg.type === "pair-done") {
           allRefined.push(...msg.refined);
           rejectedByDsr += msg.rejectedByDsr || 0;
-          perPair.push({ key: msg.key, asset: msg.assetLabel, tf: msg.tfLabel, screened: msg.screenedCount, refinedCount: msg.refined.length, nTrials: msg.nTrials, rejectedByDsr: msg.rejectedByDsr || 0 });
+          rejectedByAnti += msg.rejectedByAnti || 0;
+          perPair.push({ key: msg.key, asset: msg.assetLabel, tf: msg.tfLabel, screened: msg.screenedCount, refinedCount: msg.refined.length, nTrials: msg.nTrials, rejectedByDsr: msg.rejectedByDsr || 0, rejectedByAnti: msg.rejectedByAnti || 0 });
           pairsDone++;
           emit({ phase: "compute", label: `${msg.assetLabel} ${msg.tfLabel} terminé`, pct: (pairsDone / totalPairs) * 100, pairsDone, totalPairs });
         } else if (msg.type === "batch-done") {
@@ -153,7 +161,7 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
         }
       };
       worker.onerror = (err) => { active--; if (active === 0) resolve(); };
-      worker.postMessage({ pairs: buckets[w], topK });
+      worker.postMessage({ pairs: buckets[w], topK, blockedIds });
     }
     if (active === 0) resolve();
   });
@@ -177,6 +185,8 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
       covered: space.total,
       evaluated: pairs.length * (700 + topK * 54),
       rejectedByDsr,
+      rejectedByAnti,
+      antiBlocked: blockedIds.length,
       // nTrials typique par paire (screening + grille) — celui utilisé pour déflater le Sharpe.
       nTrialsPerPair: allRefined[0]?.nTrials ?? (700 + 54),
     },

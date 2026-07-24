@@ -84,7 +84,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Prompt Mode Qwen local | 🔴 | P0 backend LLM |
 | Reverse Engineering signaux | 🟡 Strategy Importer JSON | Mode « historique signaux externes » 🔴 |
 | Alpha Forge + Valid Edges | 🟡 Usine + FAO + dossiers | Pas de registre « Validated Edges » nommé Alpha Forge |
-| Anti-Library (Z-Score MR, BB MR, TRIX, …) | 🔴 | P1 — bloquer re-screening |
+| Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + UI + filtre Usine/FAO | Persist Timescale plus tard |
 | Scraper Reddit/X/QC/SSRN | 🔴 | P2 — avec garde-fous légaux + rate limit |
 | Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
 
@@ -171,7 +171,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P1-PORT | Stress 2008 / 2010 / 2020 sur équité portefeuille Usine |
 | P1-TCA | Slippage réel vs `costModel.js` |
 | P1-PDF | Tearsheet PDF par dossier |
-| P1-ANT | Anti-Library persistée (IndexedDB puis TS) |
+| P1-ANT | Anti-Library localStorage + filtre Usine/FAO + UI ✅ (TS plus tard) |
 
 ### 🔵 P2 — Microstructure & UI
 
