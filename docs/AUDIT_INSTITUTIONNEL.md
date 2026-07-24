@@ -67,8 +67,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
 | Bandeau feeds Databento/LSE/LMAX/CME | `TickerBar.jsx` — actifs Yahoo/Binance, pas de statut multi-feed institutionnel | 🔴 feeds + statuts |
-| Grille 10 métriques (Noise, Persist., IC, Hit, Edge Net, Lag, …) | `Analyse Quant` = vol/skew/kurt/Hurst/ADX ; **Feature Mining** = IC sur colonnes ctx ; pas de module unifié « Statistical Edge » | 🟡 → MODULE dédié |
-| CSV métriques / séries, Auto/Manuel | Exports partiels ailleurs ; pas de panneau unique | 🔴 |
+| Grille 10 métriques (Noise, Persist., IC, Hit, Edge Net, Lag, …) | ✅ `statisticalEdge.js` + page Outils | CSV métriques/séries ✅ |
 | Oscillateurs multi-courbes Z-Score / Hurst / régimes | LineChart + ctx ; HMM dans Quant Toolbox / pages trading | 🟡 |
 
 **Modules registry proches :** `outils/analyseQuant`, `macro/featureMining`, `trading/hmmRegime`, `optimisation/quantToolbox`.
@@ -172,6 +171,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P1-TCA | Slippage réel vs `costModel.js` | ✅ | `tca.js` + page Trading TCA (backtest next-open / démo / manuel) |
 | P1-PDF | Tearsheet PDF par dossier | ✅ | `tearsheet.js` + `pdfLite.js` (zéro dep) · bouton Dossiers |
 | P1-ANT | Anti-Library localStorage + filtre Usine/FAO + UI ✅ (TS plus tard) |
+| P1-EDGE | Statistical Edge Module 1 (10 métriques + CSV) | ✅ | `statisticalEdge.js` + page Outils |
 
 ### 🔵 P2 — Microstructure & UI
 

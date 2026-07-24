@@ -37,6 +37,7 @@ import { YieldCurvePage, InflationPage, UsdLiquidityPage } from "./macro/MacroFr
 import { CotPage } from "./macro/CotPage.jsx";
 // OUTILS
 import { VPINPage, AnalyseQuantPage, LogsPage } from "./outils/Outils.jsx";
+import { StatisticalEdgePage } from "./outils/StatisticalEdge.jsx";
 import { VpinCockpitPage } from "./outils/VpinCockpit.jsx";
 import { DataManagerPage } from "./outils/DataManager.jsx";
 // EXPORT
@@ -125,6 +126,7 @@ const REAL = {
   vpin: VPINPage,
   vpinLive: VpinCockpitPage,
   analyseQuant: AnalyseQuantPage,
+  statisticalEdge: StatisticalEdgePage,
   onchain: makeExternalPage("onchain"),
   logs: LogsPage,
   performanceTool: PerformancePage,

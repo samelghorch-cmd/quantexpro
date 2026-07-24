@@ -107,6 +107,7 @@ export const SECTIONS = [
       { id: "vpin", label: "VPIN" },
       { id: "vpinLive", label: "🔴 VPIN Live Cockpit" },
       { id: "analyseQuant", label: "Analyse Quant" },
+      { id: "statisticalEdge", label: "Statistical Edge" },
       { id: "onchain", label: "Onchain" },
       { id: "logs", label: "Logs" },
       { id: "performanceTool", label: "Performance" },

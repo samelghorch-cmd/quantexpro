@@ -11,12 +11,12 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **175** · backend **51** |
-| Commit HEAD | `1a43dd9` — P1-PDF tearsheet |
-| CI GitHub | push `1a43dd9` — à confirmer Actions |
+| Tests | JS **187** · backend **51** |
+| Commit HEAD | P1-EDGE Statistical Edge (en cours) |
+| CI GitHub | après push |
 | P0 | ✅ A–E clôturés |
-| P1 | 🔄 DSR+ANT+PORT+TCA+**PDF** · reste Statistical Edge |
-| Prochaine action | **Statistical Edge Module 1** — dire « go » |
+| P1 | ✅ **clôturé** (DSR · ANT · PORT · TCA · PDF · EDGE) |
+| Prochaine action | **P2** — L2 Binance / Dukascopy / MQL5 / Labs (dire « go ») |
 
 ---
 
@@ -56,6 +56,7 @@
 | 2026-07-24 | **P1-PORT** : stress 2008/2010/2020 sur équité Usine (`portfolioStress.js` + panneau), 9 tests → JS **155** |
 | 2026-07-24 | **P1-TCA** : TCA observé vs costModel (`tca.js` + page Trading), 13 tests → JS **168** |
 | 2026-07-24 | **P1-PDF** : Investor Tearsheet PDF par dossier (`tearsheet.js` + `pdfLite.js`), 7 tests → JS **175** |
+| 2026-07-24 | **P1-EDGE** : Statistical Edge Module 1 (10 métriques + CSV), 12 tests → JS **187** · **P1 clôturé** |
 
 ---
 
