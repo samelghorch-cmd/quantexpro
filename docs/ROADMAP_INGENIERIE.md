@@ -110,7 +110,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P4 — Alpha Forge & desk (post-P3)
 
 - [x] **P4-AF** Registre Validated Edges (`validatedEdges.ts` + page Alpha Forge + promote Dossiers) ✅
-- [x] **P4-AUDIT-UI** Journal serveur `/v1/audit` dans Risque → Audit (`auditLog.js` + vérif hash) ✅
+- [x] **P4-AUDIT-UI** Journal serveur `/v1/audit` dans Risque → Audit (`auditLog.ts` + vérif hash) ✅
 - [x] **P4-DESK** Desk PM unifié (equity flotte + réserve risque % capital) ✅
 - [x] **P4-SIGNAL-WS** Console Signal Engine (local + WS `/stream/bars`) ✅
 - [x] **P4-AF-SYNC** Validated Edges → Timescale (`/v1/edges` + Push/Pull Alpha Forge) ✅
@@ -118,7 +118,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-ANT-SYNC** Anti-Library → Timescale (`/v1/anti-library` + Push/Pull) ✅
 - [x] **P4-FEEDS** Statut multi-feeds TickerBar (`feedStatus.ts` · probes réels · Databento/CBOE `scoped_out`) ✅
 - [x] **P4-VP** pPOC / pVAL + confluence OI (`microstructure.js` · VP Footprint · Deribit) ✅
-- [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · Risque → Audit) ✅
+- [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · `ssoAuth.ts`) ✅
 - [x] **P4-REV** Reverse engineering signaux historiques (`signalReverse.js` · Signal Reverse) ✅
 - [x] **P4-HMM** Régimes Trend/Range/Vol/Choppy (`hmmRegimes` · HMM Regime / Regime Clock) ✅
 - [x] **P4-OSC** Oscillateurs Z-Score / Hurst / régimes (`oscillators.ts` · Statistical Edge) ✅
@@ -150,7 +150,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P7-TS-PAT** `patternsLibrary.js` → `patternsLibrary.ts` ✅
 - [x] **P7-TS-GEX** `gex.js` → `gex.ts` ✅
-- [ ] **P7-TS-MORE** Suite incremental (auditLog, ssoAuth, …)
+- [x] **P7-TS-MORE** `auditLog.ts` + `ssoAuth.ts` ✅
 
 ---
 

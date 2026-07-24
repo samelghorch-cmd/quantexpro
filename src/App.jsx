@@ -6,7 +6,7 @@ import { T } from "./components/shared/theme.js";
 import { ALL_MODULES } from "./registry.js";
 import { PAGES } from "./pages/index.jsx";
 import { GlobalControls } from "./components/layout/GlobalControls.jsx";
-import { completeOidcCallbackFromUrl } from "./engine/ssoAuth.js";
+import { completeOidcCallbackFromUrl } from "./engine/ssoAuth.ts";
 
 // Garde-fou : isole les erreurs d'UN module pour que le reste de la plateforme ne plante jamais.
 class ModuleErrorBoundary extends Component {

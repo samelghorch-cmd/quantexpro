@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { randomVerifier, pkceChallenge, hasAnyCredential } from "../../src/engine/ssoAuth.js";
+import { randomVerifier, pkceChallenge, hasAnyCredential } from "../../src/engine/ssoAuth.ts";
 
 describe("ssoAuth PKCE", () => {
   it("randomVerifier produit une chaîne url-safe", () => {

@@ -1,26 +1,45 @@
-// P4-AUDIT-UI — client lecture du journal d'audit append-only (`GET /v1/audit`).
+// P4-AUDIT-UI / P7-TS-MORE — client lecture du journal d'audit append-only (`GET /v1/audit`).
 // Parité hash avec backend `app/audit.py` (JSON canonique + SHA-256).
 import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
 
-/** @typedef {{
- *   id: number,
- *   ts: string,
- *   actor: string,
- *   role: string,
- *   action: string,
- *   resource: string,
- *   payload_hash: string,
- *   details: Record<string, unknown> | null,
- * }} AuditEvent */
+export interface AuditEvent {
+  id: number;
+  ts: string;
+  actor: string;
+  role: string;
+  action: string;
+  resource: string;
+  payload_hash: string;
+  details: Record<string, unknown> | null;
+}
+
+export interface AuditFilter {
+  q?: string;
+  action?: string;
+  role?: string;
+}
+
+export interface AuditSummary {
+  n: number;
+  lastId: number | null;
+  byAction: Record<string, number>;
+  byRole: Record<string, number>;
+}
+
+type ApiFetchFn = (
+  path: string,
+  opts?: RequestInit & { preferApiKey?: boolean; skipAuth?: boolean },
+) => Promise<unknown>;
 
 /** Tri récursif des clés — miroir de `json.dumps(..., sort_keys=True)`. */
-export function sortKeysDeep(value) {
+export function sortKeysDeep(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sortKeysDeep);
   if (value && typeof value === "object" && !(value instanceof Date)) {
-    return Object.keys(value)
+    const obj = value as Record<string, unknown>;
+    return Object.keys(obj)
       .sort()
-      .reduce((acc, k) => {
-        acc[k] = sortKeysDeep(value[k]);
+      .reduce<Record<string, unknown>>((acc, k) => {
+        acc[k] = sortKeysDeep(obj[k]);
         return acc;
       }, {});
   }
@@ -28,12 +47,12 @@ export function sortKeysDeep(value) {
 }
 
 /** JSON canonique (séparateurs compacts) pour hash. */
-export function canonicalPayloadJson(details) {
+export function canonicalPayloadJson(details: unknown): string {
   return JSON.stringify(sortKeysDeep(details ?? {}));
 }
 
 /** SHA-256 hex (Web Crypto ou node:crypto en tests). */
-export async function sha256Hex(text) {
+export async function sha256Hex(text: string): Promise<string> {
   const data = new TextEncoder().encode(String(text));
   if (typeof globalThis.crypto?.subtle?.digest === "function") {
     const buf = await globalThis.crypto.subtle.digest("SHA-256", data);
@@ -44,22 +63,18 @@ export async function sha256Hex(text) {
 }
 
 /** Vérifie `payload_hash` contre `details` (true si match). */
-export async function verifyEventHash(event) {
+export async function verifyEventHash(event: AuditEvent | null | undefined): Promise<boolean> {
   if (!event || !event.payload_hash) return false;
   const digest = await sha256Hex(canonicalPayloadJson(event.details ?? {}));
   return digest === String(event.payload_hash).toLowerCase();
 }
 
-export function isAuditApiConfigured() {
+export function isAuditApiConfigured(): boolean {
   return Boolean(getApiBaseUrl() && getApiKey());
 }
 
-/**
- * Normalise une ligne API → AuditEvent stable.
- * @param {Record<string, unknown>} raw
- * @returns {AuditEvent | null}
- */
-export function normalizeAuditEvent(raw) {
+/** Normalise une ligne API → AuditEvent stable. */
+export function normalizeAuditEvent(raw: Record<string, unknown> | null | undefined): AuditEvent | null {
   if (!raw || typeof raw !== "object") return null;
   const id = Number(raw.id);
   if (!Number.isFinite(id)) return null;
@@ -72,16 +87,21 @@ export function normalizeAuditEvent(raw) {
     action: String(raw.action || ""),
     resource: String(raw.resource || ""),
     payload_hash: String(raw.payload_hash || ""),
-    details: raw.details && typeof raw.details === "object" ? raw.details : null,
+    details:
+      raw.details && typeof raw.details === "object"
+        ? (raw.details as Record<string, unknown>)
+        : null,
   };
 }
 
-/**
- * `GET /v1/audit?limit=&after_id=` — rôles PM / Risk côté serveur.
- * @param {{ limit?: number, afterId?: number|null, fetchImpl?: typeof apiFetch }} [opts]
- * @returns {Promise<AuditEvent[]>}
- */
-export async function fetchAuditLog(opts = {}) {
+export interface FetchAuditOpts {
+  limit?: number;
+  afterId?: number | null;
+  fetchImpl?: ApiFetchFn;
+}
+
+/** `GET /v1/audit?limit=&after_id=` — rôles PM / Risk côté serveur. */
+export async function fetchAuditLog(opts: FetchAuditOpts = {}): Promise<AuditEvent[]> {
   if (!isAuditApiConfigured()) {
     throw new Error("Configure l'URL API + clé PM/Risk (Data Manager / Prompt Mode).");
   }
@@ -93,11 +113,16 @@ export async function fetchAuditLog(opts = {}) {
   const fetchImpl = opts.fetchImpl || apiFetch;
   const body = await fetchImpl(`/v1/audit?${params.toString()}`);
   if (!Array.isArray(body)) throw new Error("Réponse audit invalide (attendu tableau)");
-  return body.map(normalizeAuditEvent).filter(Boolean);
+  return body
+    .map((row) => normalizeAuditEvent(row as Record<string, unknown>))
+    .filter((e): e is AuditEvent => Boolean(e));
 }
 
 /** Filtre client (action / actor / resource contains, case-insensitive). */
-export function filterAuditEvents(events, { q = "", action = "", role = "" } = {}) {
+export function filterAuditEvents(
+  events: AuditEvent[] | null | undefined,
+  { q = "", action = "", role = "" }: AuditFilter = {},
+): AuditEvent[] {
   const qq = String(q || "").trim().toLowerCase();
   const aa = String(action || "").trim().toLowerCase();
   const rr = String(role || "").trim().toLowerCase();
@@ -110,7 +135,7 @@ export function filterAuditEvents(events, { q = "", action = "", role = "" } = {
   });
 }
 
-export function auditEventsToCsv(events) {
+export function auditEventsToCsv(events: AuditEvent[] | null | undefined): string {
   const header = ["id", "ts", "actor", "role", "action", "resource", "payload_hash"];
   const lines = [header.join(",")];
   for (const e of events || []) {
@@ -124,10 +149,10 @@ export function auditEventsToCsv(events) {
 }
 
 /** Résumé pour MetricCards. */
-export function summarizeAudit(events) {
+export function summarizeAudit(events: AuditEvent[] | null | undefined): AuditSummary {
   const list = events || [];
-  const byAction = {};
-  const byRole = {};
+  const byAction: Record<string, number> = {};
+  const byRole: Record<string, number> = {};
   for (const e of list) {
     byAction[e.action] = (byAction[e.action] || 0) + 1;
     byRole[e.role] = (byRole[e.role] || 0) + 1;

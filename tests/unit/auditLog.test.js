@@ -11,7 +11,7 @@ import {
   auditEventsToCsv,
   summarizeAudit,
   isAuditApiConfigured,
-} from "../../src/engine/auditLog.js";
+} from "../../src/engine/auditLog.ts";
 
 beforeEach(() => {
   const store = new Map();

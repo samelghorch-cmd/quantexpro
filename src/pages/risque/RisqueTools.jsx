@@ -11,7 +11,7 @@ import {
   summarizeAudit,
   verifyEventHash,
   isAuditApiConfigured,
-} from "../../engine/auditLog.js";
+} from "../../engine/auditLog.ts";
 import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";
 import {
   clearSession,
@@ -22,7 +22,7 @@ import {
   getAccessTokenMeta,
   startOidcLogin,
   ssoRedirectUri,
-} from "../../engine/ssoAuth.js";
+} from "../../engine/ssoAuth.ts";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { T } from "../../components/shared/theme.js";

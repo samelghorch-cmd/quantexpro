@@ -1,11 +1,43 @@
-// P4-SSO — session Bearer JWT + OIDC PKCE (SPA).
+// P4-SSO / P7-TS-MORE — session Bearer JWT + OIDC PKCE (SPA).
 import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
 
 const LS_TOKEN = "quantexpro:accessToken";
 const LS_TOKEN_META = "quantexpro:accessTokenMeta";
 const LS_PKCE = "quantexpro:oidcPkce";
 
-export function getAccessToken() {
+export interface TokenMeta {
+  role?: string;
+  sub?: string;
+  auth_method?: string;
+  expires_in?: number;
+  at?: number;
+  [key: string]: unknown;
+}
+
+export interface AuthConfig {
+  oidc_enabled?: boolean;
+  oidc_issuer?: string;
+  oidc_client_id?: string;
+  scopes?: string;
+  [key: string]: unknown;
+}
+
+export interface SessionBody {
+  access_token: string;
+  role?: string;
+  sub?: string;
+  auth_method?: string;
+  expires_in?: number;
+  [key: string]: unknown;
+}
+
+export interface PkceStore {
+  verifier: string;
+  state: string;
+  redirectUri: string;
+}
+
+export function getAccessToken(): string {
   try {
     return localStorage.getItem(LS_TOKEN) || "";
   } catch {
@@ -13,7 +45,7 @@ export function getAccessToken() {
   }
 }
 
-export function setAccessToken(token, meta = null) {
+export function setAccessToken(token: string, meta: TokenMeta | null = null): void {
   try {
     if (token) localStorage.setItem(LS_TOKEN, String(token));
     else localStorage.removeItem(LS_TOKEN);
@@ -24,34 +56,36 @@ export function setAccessToken(token, meta = null) {
   }
 }
 
-export function getAccessTokenMeta() {
+export function getAccessTokenMeta(): TokenMeta | null {
   try {
     const raw = localStorage.getItem(LS_TOKEN_META);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? (JSON.parse(raw) as TokenMeta) : null;
   } catch {
     return null;
   }
 }
 
-export function clearSession() {
+export function clearSession(): void {
   setAccessToken("", null);
 }
 
-export function isSsoConfigured() {
+export function isSsoConfigured(): boolean {
   return Boolean(getApiBaseUrl());
 }
 
-/** @returns {Promise<object>} */
-export async function fetchAuthConfig() {
-  const base = getApiBaseUrl();
+export async function fetchAuthConfig(): Promise<AuthConfig> {
+  const base = getApiBaseUrl() as string;
   const res = await fetch(`${base}/v1/auth/config`);
   if (!res.ok) throw new Error(`auth/config HTTP ${res.status}`);
-  return res.json();
+  return res.json() as Promise<AuthConfig>;
 }
 
 /** Échange X-API-Key → JWT session. */
-export async function createSessionFromApiKey() {
-  const body = await apiFetch("/v1/auth/session", { method: "POST", preferApiKey: true });
+export async function createSessionFromApiKey(): Promise<SessionBody> {
+  const body = (await apiFetch("/v1/auth/session", {
+    method: "POST",
+    preferApiKey: true,
+  })) as SessionBody;
   setAccessToken(body.access_token, {
     role: body.role,
     sub: body.sub,
@@ -62,24 +96,24 @@ export async function createSessionFromApiKey() {
   return body;
 }
 
-export async function fetchAuthMe() {
+export async function fetchAuthMe(): Promise<unknown> {
   return apiFetch("/v1/auth/me");
 }
 
-function b64url(buf) {
+function b64url(buf: ArrayBuffer | Uint8Array): string {
   const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
   let s = "";
   for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export function randomVerifier(len = 64) {
+export function randomVerifier(len = 64): string {
   const arr = new Uint8Array(len);
   crypto.getRandomValues(arr);
   return b64url(arr);
 }
 
-export async function pkceChallenge(verifier) {
+export async function pkceChallenge(verifier: string): Promise<string> {
   const dig = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
   return b64url(dig);
 }
@@ -87,7 +121,7 @@ export async function pkceChallenge(verifier) {
 /**
  * Lance le flow OIDC authorize (redirect). redirectUri = location.origin + pathname + ?sso=1
  */
-export async function startOidcLogin(cfg, redirectUri) {
+export async function startOidcLogin(cfg: AuthConfig, redirectUri: string): Promise<void> {
   if (!cfg?.oidc_enabled) throw new Error("OIDC non activé côté API");
   const verifier = randomVerifier();
   const challenge = await pkceChallenge(verifier);
@@ -98,19 +132,20 @@ export async function startOidcLogin(cfg, redirectUri) {
     /* noop */
   }
   const authBase = `${String(cfg.oidc_issuer).replace(/\/$/, "")}/oauth2/v1/authorize`;
-  // Fallback générique OIDC : /authorize
   let authorize = authBase;
   try {
-    const disc = await fetch(`${String(cfg.oidc_issuer).replace(/\/$/, "")}/.well-known/openid-configuration`);
+    const disc = await fetch(
+      `${String(cfg.oidc_issuer).replace(/\/$/, "")}/.well-known/openid-configuration`,
+    );
     if (disc.ok) {
-      const j = await disc.json();
+      const j = (await disc.json()) as { authorization_endpoint?: string };
       if (j.authorization_endpoint) authorize = j.authorization_endpoint;
     }
   } catch {
     authorize = `${String(cfg.oidc_issuer).replace(/\/$/, "")}/authorize`;
   }
   const u = new URL(authorize);
-  u.searchParams.set("client_id", cfg.oidc_client_id);
+  u.searchParams.set("client_id", String(cfg.oidc_client_id || ""));
   u.searchParams.set("response_type", "code");
   u.searchParams.set("scope", cfg.scopes || "openid email profile");
   u.searchParams.set("redirect_uri", redirectUri);
@@ -121,21 +156,23 @@ export async function startOidcLogin(cfg, redirectUri) {
 }
 
 /** Si URL contient ?sso=1&code=… — finalise l'échange. */
-export async function completeOidcCallbackFromUrl(search = window.location.search) {
+export async function completeOidcCallbackFromUrl(
+  search = typeof window !== "undefined" ? window.location.search : "",
+): Promise<SessionBody | null> {
   const params = new URLSearchParams(search.startsWith("?") ? search : `?${search}`);
   if (params.get("sso") !== "1" && !params.get("code")) return null;
   const code = params.get("code");
   const state = params.get("state");
   if (!code) return null;
-  let stored;
+  let stored: PkceStore | null;
   try {
-    stored = JSON.parse(sessionStorage.getItem(LS_PKCE) || "null");
+    stored = JSON.parse(sessionStorage.getItem(LS_PKCE) || "null") as PkceStore | null;
   } catch {
     stored = null;
   }
   if (!stored?.verifier) throw new Error("PKCE manquant (sessionStorage)");
   if (stored.state && state && stored.state !== state) throw new Error("state OIDC mismatch");
-  const body = await apiFetch("/v1/auth/oidc/exchange", {
+  const body = (await apiFetch("/v1/auth/oidc/exchange", {
     method: "POST",
     body: JSON.stringify({
       code,
@@ -143,7 +180,7 @@ export async function completeOidcCallbackFromUrl(search = window.location.searc
       redirect_uri: stored.redirectUri,
     }),
     skipAuth: true,
-  });
+  })) as SessionBody;
   setAccessToken(body.access_token, {
     role: body.role,
     sub: body.sub,
@@ -156,8 +193,7 @@ export async function completeOidcCallbackFromUrl(search = window.location.searc
   } catch {
     /* noop */
   }
-  // Nettoie la query sans recharger toute l'app
-  if (window.history?.replaceState) {
+  if (typeof window !== "undefined" && window.history?.replaceState) {
     const url = new URL(window.location.href);
     url.searchParams.delete("code");
     url.searchParams.delete("state");
@@ -168,7 +204,7 @@ export async function completeOidcCallbackFromUrl(search = window.location.searc
   return body;
 }
 
-export function ssoRedirectUri() {
+export function ssoRedirectUri(): string {
   const u = new URL(window.location.href);
   u.search = "";
   u.hash = "";
@@ -177,6 +213,6 @@ export function ssoRedirectUri() {
 }
 
 /** Utilitaire tests : présence clé ou token. */
-export function hasAnyCredential() {
+export function hasAnyCredential(): boolean {
   return Boolean(getAccessToken() || getApiKey());
 }
