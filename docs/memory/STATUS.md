@@ -12,8 +12,8 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **132** · backend **51** |
-| Commit HEAD | P0 finalisation (P0-E + Prompt Mode UI) — en cours de push |
-| CI GitHub | À vérifier après push final P0 |
+| Commit HEAD | `bd8bbda` — P0 clôturé (MT5+RBAC+audit + Prompt Mode UI) |
+| CI GitHub | ✅ **VERTE** (`bd8bbda`) |
 | Déploiement | Render (API) + Neon (Postgres) ; bus opt-in ; LLM opt-in Ollama |
 | P0 | ✅ **A + B + C + D + E** clôturés |
 | Prochaine action | **P1** — DSR dans Usine, Anti-Library, Statistical Edge, stress portfolio |
