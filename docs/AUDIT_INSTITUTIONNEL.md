@@ -81,7 +81,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (KAMA, LinReg, Ichimoku) | 🟢 |
 | Patterns Library 616 | ✅ `patternsLibrary.ts` · TF M1–MN · familles scalp/intra/swing | 🟢 |
 | Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
-| Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
+| Reverse Engineering signaux | ✅ `signalReverse.ts` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
 | Alpha Forge + Valid Edges | ✅ `validatedEdges.ts` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.ts` + `/v1/anti-library` ZDL | UI + filtre Usine/FAO · Push/Pull Timescale |
 | Scraper Reddit/X/QC/SSRN | ✅ RSS research allowlisté (arXiv · NBER · BIS) · X/Reddit/QC ⛔ ToS | 🟢 légal ; SSRN via arXiv/NBER |
@@ -196,7 +196,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.ts` · probes · Databento/CBOE scoped_out |
 | P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.ts` · sessions UTC · Deribit walls/MaxPain |
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.ts` |
-| P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
+| P4-REV | Reverse engineering signaux | ✅ | `signalReverse.ts` · page Signal Reverse · rules proposées |
 | P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` JS + `/v1/quant/hmm` Python |
 | P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.ts` · Statistical Edge multi-courbes + CSV |
 | P4-CORE | Core Mode KAMA / LinReg / Ichimoku | ✅ | `IND.kama/linreg` · RULE_SOURCES · overlays Core Mode |
@@ -214,6 +214,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P7-TS-GEX | gex → TypeScript | ✅ | `OptionRow` · GEX / Max Pain / PCR |
 | P7-TS-MORE | auditLog + ssoAuth → TS | ✅ | `AuditEvent` · PKCE / JWT session |
 | P8-TS-MICRO | microstructure → TypeScript | ✅ | VP / pPOC / pVAL / confluence OI |
+| P8-TS-REV | signalReverse → TypeScript | ✅ | NormalizedSignal · lift · Rule Builder |
 
 ---
 
@@ -221,14 +222,14 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 > Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P7 clôturés** · P8 en cours.
 
-**Prochaine action recommandée :** P8-TS-REV (`signalReverse`) ou P8-TS-DESK.
+**Prochaine action recommandée :** P8-TS-DESK (`portfolioDesk`).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5–P8-TS-MICRO livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5–P8-TS-REV livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).

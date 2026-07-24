@@ -6,7 +6,7 @@ import {
   replayExternalSignals,
   reverseEngineerRules,
   makeExternalSignalEval,
-} from "../../src/engine/signalReverse.js";
+} from "../../src/engine/signalReverse.ts";
 import { makeBars, DAY_MS, T0 } from "../helpers/fixtures.js";
 import { buildContext } from "../../src/engine/context.js";
 

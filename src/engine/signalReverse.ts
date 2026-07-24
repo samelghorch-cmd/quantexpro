@@ -1,24 +1,77 @@
-// P4-REV — reverse engineering d'un historique de signaux externes.
+// P4-REV / P8-TS-REV — reverse engineering d'un historique de signaux externes.
 // Parse CSV/JSON → alignement causal sur barres → replay backtest → candidats Rule Builder.
 import { RULE_SOURCES } from "./ruleBuilder.js";
 import { runBacktestExt } from "./backtestExtended.js";
 
+export type SignalSide = 1 | -1;
+
+export interface NormalizedSignal {
+  t: number | null;
+  side: SignalSide;
+  label?: string | null;
+}
+
+export interface AlignedSignal {
+  index: number;
+  side: SignalSide;
+  t: number | null;
+}
+
+export interface ParseResult {
+  signals: NormalizedSignal[];
+  format: string;
+  errors: string[];
+}
+
+export interface RuleCond {
+  left: string;
+  op: string;
+  right: string;
+  rightConst?: number;
+}
+
+export interface ScoredCond extends RuleCond {
+  hits: number;
+  n: number;
+  hitRate: number;
+  baseRate: number;
+  lift: number;
+}
+
+export interface ReverseResult {
+  long: ScoredCond[];
+  short: ScoredCond[];
+  proposedRules: { long: RuleCond[]; short: RuleCond[] };
+  nLong: number;
+  nShort: number;
+}
+
+export interface BarLike {
+  t?: number | null;
+  [key: string]: unknown;
+}
+
+type CtxLike = Record<string, unknown>;
+
+type RuleSource = { id: string; get?: (ctx: CtxLike, i: number) => number | undefined };
+
 /**
- * Normalise une ligne signal → { t: number|null, side: 1|-1, raw? }.
+ * Normalise une ligne signal → { t, side }.
  * side : 1 = long/buy, -1 = short/sell.
  */
-export function normalizeSignalRow(raw) {
+export function normalizeSignalRow(raw: unknown): NormalizedSignal | null {
   if (raw == null) return null;
   if (typeof raw === "number") {
-    const side = raw > 0 ? 1 : raw < 0 ? -1 : 0;
+    const side: SignalSide | 0 = raw > 0 ? 1 : raw < 0 ? -1 : 0;
     if (!side) return null;
     return { t: null, side };
   }
   if (typeof raw !== "object") return null;
 
-  let sideRaw = raw.side ?? raw.signal ?? raw.dir ?? raw.direction ?? raw.action;
-  if (sideRaw == null && raw.long != null) sideRaw = raw.long ? 1 : -1;
-  let side = 0;
+  const obj = raw as Record<string, unknown>;
+  let sideRaw: unknown = obj.side ?? obj.signal ?? obj.dir ?? obj.direction ?? obj.action;
+  if (sideRaw == null && obj.long != null) sideRaw = obj.long ? 1 : -1;
+  let side: SignalSide | 0 = 0;
   if (typeof sideRaw === "number") side = sideRaw > 0 ? 1 : sideRaw < 0 ? -1 : 0;
   else {
     const s = String(sideRaw || "").trim().toLowerCase();
@@ -27,34 +80,40 @@ export function normalizeSignalRow(raw) {
   }
   if (!side) return null;
 
-  let t = raw.t ?? raw.time ?? raw.timestamp ?? raw.date ?? raw.datetime ?? null;
+  let t: unknown = obj.t ?? obj.time ?? obj.timestamp ?? obj.date ?? obj.datetime ?? null;
+  let tMs: number | null;
   if (typeof t === "string") {
     const ms = Date.parse(t);
-    t = Number.isFinite(ms) ? ms : null;
+    tMs = Number.isFinite(ms) ? ms : null;
   } else if (typeof t === "number") {
-    // secondes unix → ms
-    if (t > 0 && t < 1e12) t = t * 1000;
+    tMs = t > 0 && t < 1e12 ? t * 1000 : t;
   } else {
-    t = null;
+    tMs = null;
   }
 
-  return { t, side, label: raw.label || raw.note || null };
+  return {
+    t: tMs,
+    side,
+    label: (obj.label as string) || (obj.note as string) || null,
+  };
 }
 
-/**
- * Parse CSV (header flexible) ou JSON array / { signals: [] }.
- * @returns {{ signals: {t,side}[], format: string, errors: string[] }}
- */
-export function parseSignalHistory(text) {
-  const errors = [];
+/** Parse CSV (header flexible) ou JSON array / { signals: [] }. */
+export function parseSignalHistory(text: string | null | undefined): ParseResult {
+  const errors: string[] = [];
   const trimmed = String(text || "").trim();
   if (!trimmed) return { signals: [], format: "empty", errors: ["texte vide"] };
 
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
-      const data = JSON.parse(trimmed);
-      const rows = Array.isArray(data) ? data : data.signals || data.rows || data.data || [];
-      const signals = [];
+      const data = JSON.parse(trimmed) as unknown;
+      const rows = Array.isArray(data)
+        ? data
+        : ((data as Record<string, unknown>).signals as unknown[]) ||
+          ((data as Record<string, unknown>).rows as unknown[]) ||
+          ((data as Record<string, unknown>).data as unknown[]) ||
+          [];
+      const signals: NormalizedSignal[] = [];
       for (const r of rows) {
         const n = normalizeSignalRow(r);
         if (n) signals.push(n);
@@ -62,11 +121,14 @@ export function parseSignalHistory(text) {
       }
       return { signals, format: "json", errors };
     } catch (e) {
-      return { signals: [], format: "json", errors: [e.message] };
+      return {
+        signals: [],
+        format: "json",
+        errors: [e instanceof Error ? e.message : String(e)],
+      };
     }
   }
 
-  // CSV
   const lines = trimmed.split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith("#"));
   if (!lines.length) return { signals: [], format: "csv", errors: ["CSV vide"] };
   const sep = lines[0].includes(";") ? ";" : ",";
@@ -75,7 +137,7 @@ export function parseSignalHistory(text) {
     ["t", "time", "timestamp", "date", "datetime", "side", "signal", "dir", "direction", "action"].includes(h),
   );
   const start = looksHeader ? 1 : 0;
-  const col = (names) => {
+  const col = (names: string[]) => {
     for (const n of names) {
       const i = header.indexOf(n);
       if (i >= 0) return i;
@@ -85,7 +147,7 @@ export function parseSignalHistory(text) {
   const iT = looksHeader ? col(["t", "time", "timestamp", "date", "datetime"]) : 0;
   const iS = looksHeader ? col(["side", "signal", "dir", "direction", "action"]) : 1;
 
-  const signals = [];
+  const signals: NormalizedSignal[] = [];
   for (let li = start; li < lines.length; li++) {
     const parts = lines[li].split(sep).map((p) => p.trim());
     const row = looksHeader
@@ -103,12 +165,13 @@ export function parseSignalHistory(text) {
 
 /**
  * Aligne chaque signal sur l'index de barre causal : première barre avec t >= signal.t.
- * Sans timestamp : répartition séquentielle ignorée — exige t.
- * @returns {{ index: number, side: 1|-1, t: number|null }[]}
  */
-export function alignSignalsToBars(signals, bars) {
+export function alignSignalsToBars(
+  signals: NormalizedSignal[] | null | undefined,
+  bars: BarLike[] | null | undefined,
+): AlignedSignal[] {
   if (!bars?.length) return [];
-  const aligned = [];
+  const aligned: AlignedSignal[] = [];
   let cursor = 0;
   const sorted = [...(signals || [])].filter((s) => s && s.side).sort((a, b) => {
     if (a.t == null && b.t == null) return 0;
@@ -118,36 +181,47 @@ export function alignSignalsToBars(signals, bars) {
   });
 
   for (const s of sorted) {
-    if (s.t == null) {
-      // Pas de temps : skip (évite faux alignements)
-      continue;
+    if (s.t == null) continue;
+    while (cursor < bars.length && (bars[cursor].t == null || (bars[cursor].t as number) < s.t)) {
+      cursor++;
     }
-    while (cursor < bars.length && (bars[cursor].t == null || bars[cursor].t < s.t)) cursor++;
     if (cursor >= bars.length) break;
     aligned.push({ index: cursor, side: s.side, t: s.t });
-    // Autorise plusieurs signaux sur la même barre ; avance d'1 pour le suivant si même t
   }
   return aligned;
 }
 
 /** Map barIndex → { long, short } (dernier signal gagne si conflit). */
-export function signalsToEvalMap(aligned) {
-  const map = new Map();
+export function signalsToEvalMap(
+  aligned: AlignedSignal[] | null | undefined,
+): Map<number, { long: boolean; short: boolean }> {
+  const map = new Map<number, { long: boolean; short: boolean }>();
   for (const a of aligned || []) {
     map.set(a.index, { long: a.side === 1, short: a.side === -1 });
   }
   return map;
 }
 
-export function makeExternalSignalEval(aligned) {
+export function makeExternalSignalEval(aligned: AlignedSignal[] | null | undefined) {
   const map = signalsToEvalMap(aligned);
-  return (_ctx, i) => map.get(i) || { long: false, short: false };
+  return (_ctx: CtxLike, i: number) => map.get(i) || { long: false, short: false };
 }
 
-/**
- * Replay des signaux externes via le moteur backtest étendu.
- */
-export function replayExternalSignals(bars, ctx, aligned, params = {}) {
+export interface ReplayParams {
+  contract?: string;
+  capital?: number;
+  slAtr?: number;
+  tpAtr?: number;
+  warmup?: number;
+}
+
+/** Replay des signaux externes via le moteur backtest étendu. */
+export function replayExternalSignals(
+  bars: BarLike[],
+  ctx: CtxLike,
+  aligned: AlignedSignal[],
+  params: ReplayParams = {},
+): Record<string, unknown> & { nSignals: number; nLong: number; nShort: number } {
   const evalFn = makeExternalSignalEval(aligned);
   const res = runBacktestExt(bars, ctx, evalFn, {
     contract: params.contract || "MES",
@@ -156,7 +230,7 @@ export function replayExternalSignals(bars, ctx, aligned, params = {}) {
     tpAtr: params.tpAtr ?? 0,
     direction: "both",
     warmup: params.warmup ?? 1,
-  });
+  }) as Record<string, unknown>;
   return {
     ...res,
     nSignals: aligned.length,
@@ -166,7 +240,7 @@ export function replayExternalSignals(bars, ctx, aligned, params = {}) {
 }
 
 /** Candidats Rule Builder explorés pour la rétro-ingénierie. */
-export const REVERSE_CANDIDATES = [
+export const REVERSE_CANDIDATES: readonly RuleCond[] = [
   { left: "close", op: "gt", right: "ema20" },
   { left: "close", op: "lt", right: "ema20" },
   { left: "close", op: "gt", right: "ema50" },
@@ -194,48 +268,57 @@ export const REVERSE_CANDIDATES = [
   { left: "adx14", op: "gt", right: "const", rightConst: 25 },
 ];
 
-function evalCond(cond, ctx, i) {
+function evalCond(cond: RuleCond, ctx: CtxLike, i: number): boolean {
   if (i < 1) return false;
-  const lg = RULE_SOURCES.find((s) => s.id === cond.left)?.get;
-  const rg = RULE_SOURCES.find((s) => s.id === cond.right)?.get;
+  const sources = RULE_SOURCES as RuleSource[];
+  const lg = sources.find((s) => s.id === cond.left)?.get;
+  const rg = sources.find((s) => s.id === cond.right)?.get;
   if (!lg) return false;
   const L = lg(ctx, i);
   const Lp = lg(ctx, i - 1);
   const R = cond.right === "const" ? Number(cond.rightConst) : rg?.(ctx, i);
   const Rp = cond.right === "const" ? Number(cond.rightConst) : rg?.(ctx, i - 1);
-  if ([L, R].some((v) => v === undefined || Number.isNaN(v))) return false;
+  if ([L, R].some((v) => v === undefined || Number.isNaN(v as number))) return false;
   switch (cond.op) {
     case "gt":
-      return L > R;
+      return (L as number) > (R as number);
     case "lt":
-      return L < R;
+      return (L as number) < (R as number);
     case "crossUp":
-      return Lp <= Rp && L > R;
+      return (Lp as number) <= (Rp as number) && (L as number) > (R as number);
     case "crossDn":
-      return Lp >= Rp && L < R;
+      return (Lp as number) >= (Rp as number) && (L as number) < (R as number);
     default:
       return false;
   }
 }
 
+export interface ReverseOpts {
+  topK?: number;
+  minHits?: number;
+}
+
 /**
  * Score les candidats : lift = P(cond|signaux side) / P(cond|baseline).
- * @returns {{ long: object[], short: object[], proposedRules: { long, short } }}
  */
-export function reverseEngineerRules(bars, ctx, aligned, opts = {}) {
+export function reverseEngineerRules(
+  bars: BarLike[],
+  ctx: CtxLike,
+  aligned: AlignedSignal[],
+  opts: ReverseOpts = {},
+): ReverseResult {
   const topK = opts.topK ?? 3;
   const minHits = opts.minHits ?? 2;
   const longIdx = aligned.filter((a) => a.side === 1).map((a) => a.index);
   const shortIdx = aligned.filter((a) => a.side === -1).map((a) => a.index);
 
-  // Baseline : échantillon régulier de barres (pas look-ahead — indices passés uniquement)
-  const baseline = [];
+  const baseline: number[] = [];
   const step = Math.max(1, Math.floor(bars.length / 200));
   for (let i = 50; i < bars.length; i += step) baseline.push(i);
 
-  const scoreSide = (indices) => {
+  const scoreSide = (indices: number[]): ScoredCond[] => {
     if (!indices.length) return [];
-    const scored = [];
+    const scored: ScoredCond[] = [];
     for (const cond of REVERSE_CANDIDATES) {
       let hits = 0;
       for (const i of indices) if (evalCond(cond, ctx, i)) hits++;
@@ -261,12 +344,12 @@ export function reverseEngineerRules(bars, ctx, aligned, opts = {}) {
   const longScores = scoreSide(longIdx);
   const shortScores = scoreSide(shortIdx);
 
-  const pick = (scores) =>
+  const pick = (scores: ScoredCond[]): RuleCond[] =>
     scores
       .filter((s) => (s.lift >= 1.15 && s.hitRate >= 0.35) || s.hitRate >= 0.6)
       .slice(0, topK)
       .map(({ left, op, right, rightConst }) => {
-        const c = { left, op, right };
+        const c: RuleCond = { left, op, right };
         if (right === "const") c.rightConst = rightConst;
         return c;
       });
@@ -284,7 +367,12 @@ export function reverseEngineerRules(bars, ctx, aligned, opts = {}) {
 }
 
 /** Résumé texte pour UI. */
-export function summarizeReverse(parsed, aligned, replay, reverse) {
+export function summarizeReverse(
+  parsed: ParseResult,
+  aligned: AlignedSignal[],
+  replay: { nTrades?: number } | null | undefined,
+  reverse: ReverseResult | null | undefined,
+): Record<string, unknown> {
   return {
     format: parsed.format,
     nParsed: parsed.signals.length,

@@ -6,7 +6,7 @@ import {
   alignSignalsToBars,
   replayExternalSignals,
   reverseEngineerRules,
-} from "../../engine/signalReverse.js";
+} from "../../engine/signalReverse.ts";
 import { describeRule } from "../../engine/ruleBuilder.js";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.js";
 import { Panel, Button, MetricCard, MetricGrid, DataTable, Badge, Field, NumberInput, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
