@@ -78,7 +78,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (KAMA, LinReg, Ichimoku) | 🟢 |
+| Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.ts` (KAMA, LinReg, Ichimoku) | 🟢 |
 | Patterns Library 616 | ✅ `patternsLibrary.ts` · TF M1–MN · familles scalp/intra/swing | 🟢 |
 | Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
 | Reverse Engineering signaux | ✅ `signalReverse.ts` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
@@ -218,21 +218,22 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P8-TS-DESK | portfolioDesk → TypeScript | ✅ | DeskConfig · sleeves · equity / réserve |
 | P9-TS-SIGNAL | signalConsole → TypeScript | ✅ | slots · consensus · ring · WS bars |
 | P9-TS-TCA | tca → TypeScript | ✅ | TcaFill · slipBps · runTCA · verdicts |
+| P9-TS-RULE | ruleBuilder → TypeScript | ✅ | RuleCond · compileRules · collector strip-types |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P9-TS-TCA** livrés.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P9-TS-RULE** livrés.
 
-**Prochaine action recommandée :** suite migration TS (`ruleBuilder` / modules engine restants).
+**Prochaine action recommandée :** suite migration TS (`costModel` / modules engine restants).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5–P9-TS-TCA livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5–P9-TS-RULE livrés. Collector Node 22 + `--experimental-strip-types` pour imports `.ts`.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).

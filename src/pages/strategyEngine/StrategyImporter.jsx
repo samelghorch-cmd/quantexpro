@@ -3,7 +3,7 @@
 // sauvegarder comme stratégie custom réutilisable dans tout le pipeline.
 import { useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { compileRules } from "../../engine/ruleBuilder.js";
+import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.js";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
 import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";

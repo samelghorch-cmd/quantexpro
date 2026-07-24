@@ -3,7 +3,7 @@
 // sauvegarde comme custom #9001+ — même parcours que Strategy Importer.
 import { useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { compileRules } from "../../engine/ruleBuilder.js";
+import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.js";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
 import { apiFetch, getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";

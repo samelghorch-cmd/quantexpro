@@ -10,7 +10,7 @@ import path from "node:path";
 import { buildStrategyLibrary } from "../src/engine/strategyLibrary.js";
 import { buildContext } from "../src/engine/context.js";
 import { runBacktestExt } from "../src/engine/backtestExtended.js";
-import { compileRules } from "../src/engine/ruleBuilder.js";
+import { compileRules } from "../src/engine/ruleBuilder.ts";
 import { validateRules } from "../src/engine/customStrategies.js";
 import {
   ingestConfigFromEnv,

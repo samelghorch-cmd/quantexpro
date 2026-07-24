@@ -3,7 +3,7 @@
 // puis compilée et FUSIONNÉE dans la librairie : elle devient une stratégie numérotée
 // (#9001+) utilisable partout — Backtest, Optimizer, FAO, dossiers, collector 24/7.
 // IDs ≥ 9001 : jamais de collision avec les stratégies intégrées (1..~701).
-import { compileRules, RULE_SOURCES, RULE_OPS } from "./ruleBuilder.js";
+import { compileRules, RULE_SOURCES, RULE_OPS } from "./ruleBuilder.ts";
 import { buildStrategyLibrary } from "./strategyLibrary.js";
 
 const LS_KEY = "quantexpro:customStrategies:v1";

@@ -8,8 +8,9 @@ accumule la data au fil du temps, et l'expose via une petite API HTTP (CORS ouve
 
 ```bash
 cd web/dashboard
-node collector/index.js          # écoute sur http://localhost:8787
+node --experimental-strip-types collector/index.js   # écoute sur http://localhost:8787
 # variables : PORT, POLL_MS (défaut 300000 = 5 min), DATA_DIR (où écrire collector-data.json)
+# Node ≥ 22 requis (strip-types pour imports `src/engine/*.ts`)
 ```
 
 ## API

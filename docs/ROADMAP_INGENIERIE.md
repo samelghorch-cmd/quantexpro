@@ -166,6 +166,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P9-TS-SIGNAL** `signalConsole.js` → `signalConsole.ts` (slots · consensus · WS bars) ✅
 - [x] **P9-TS-TCA** `tca.js` → `tca.ts` (slippage observé vs costModel) ✅
+- [x] **P9-TS-RULE** `ruleBuilder.js` → `ruleBuilder.ts` (+ collector strip-types) ✅
 
 ---
 

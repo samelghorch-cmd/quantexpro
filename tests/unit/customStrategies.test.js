@@ -7,7 +7,7 @@ import {
   validateRules, saveCustomDef, loadCustomDefs, deleteCustomDef,
   compileCustomDef, buildFullLibrary, CUSTOM_ID_BASE, CUSTOM_CAT,
 } from "../../src/engine/customStrategies.js";
-import { compileRules } from "../../src/engine/ruleBuilder.js";
+import { compileRules } from "../../src/engine/ruleBuilder.ts";
 import { buildStrategyLibrary, CATS } from "../../src/engine/strategyLibrary.js";
 import { runBacktestExt } from "../../src/engine/backtestExtended.js";
 import { buildContext } from "../../src/engine/context.js";
