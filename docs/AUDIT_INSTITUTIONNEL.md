@@ -86,7 +86,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Alpha Forge + Valid Edges | 🟡 Usine + FAO + dossiers | Pas de registre « Validated Edges » nommé Alpha Forge |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | 🔴 | P1 — bloquer re-screening |
 | Scraper Reddit/X/QC/SSRN | 🔴 | P2 — avec garde-fous légaux + rate limit |
-| Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans `recoFinale` + page Risque | Intégrer DSR **dans la boucle Usine** (P1 spec) |
+| Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
 
 **Travaux en cours (non commités) :** `customStrategies.js` — fusion règles custom (#9001+) dans toute la librairie ; validation stricte Importer/Core Mode ; fix collision id stratégie 117 (VPIN vs EMA).
 
@@ -167,7 +167,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 
 | ID | Action |
 |----|--------|
-| P1-DSR | DSR dans boucle **Usine à Stratégies** (`factory.worker.js`) — filtre avant push dossier |
+| P1-DSR | DSR dans boucle **Usine à Stratégies** | ✅ | `factoryDsr.js` + worker : nTrials, filtre DSR &lt; 50 %, colonne UI ; 6 tests |
 | P1-PORT | Stress 2008 / 2010 / 2020 sur équité portefeuille Usine |
 | P1-TCA | Slippage réel vs `costModel.js` |
 | P1-PDF | Tearsheet PDF par dossier |

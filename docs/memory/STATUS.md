@@ -12,8 +12,8 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **138** · backend **51** |
-| Commit HEAD | P1-DSR Usine (en cours de push) |
-| CI GitHub | ✅ verte au dernier P0 |
+| Commit HEAD | `3b0ad7b` — P1-DSR Usine |
+| CI GitHub | push `3b0ad7b` — à confirmer Actions |
 | P0 | ✅ A–E clôturés |
 | P1 | 🔄 **P1-DSR** livré · reste Anti-Library, stress, TCA, tearsheet, Statistical Edge |
 | Prochaine action | **P1-ANT** — Anti-Library store + filtre Usine/FAO |
