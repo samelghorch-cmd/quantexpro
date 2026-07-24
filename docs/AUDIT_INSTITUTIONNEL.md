@@ -119,7 +119,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
 | GEX multi-tenor 0DTE→365D | ✅ `gex.js` + Macro → Options Gamma | Deribit BTC/ETH public · JSON import · CBOE payant hors scope |
-| pPOC, pVAL, confluence OI | 🟡 VP Footprint, volume profile | 🔴 |
+| pPOC, pVAL, confluence OI | ✅ `volumeProfileSessions` + `findConfluence` · VP Footprint + Deribit | 🟢 |
 | PCR, Max Pain, Implied Move | ✅ PCR OI · Max Pain · implied move 1σ | Via `gex.js` |
 
 ---
@@ -193,6 +193,8 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.js` · Alembic 0004 |
 | P4-GEX | Options Gamma / GEX | ✅ | `gex.js` · Deribit proxy · Max Pain · PCR · implied move |
 | P4-ANT-SYNC | Anti-Library ZDL Timescale | ✅ | `anti_library` · `/v1/anti-library` · Alembic 0005 |
+| P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.js` · probes · Databento/CBOE scoped_out |
+| P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
 
 ---
 

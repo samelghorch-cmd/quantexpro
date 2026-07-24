@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P4-FEEDS)
+> Dernière maj : **2026-07-24** (P4-VP)
 
 ---
 
@@ -11,20 +11,19 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **302** · backend **59** |
-| Commit HEAD | P4-FEEDS |
+| Tests | JS **311** · backend **59** |
+| Commit HEAD | P4-VP |
 | P0–P3 | ✅ clôturés |
-| P4 | … · ANT-SYNC · **FEEDS** ✅ |
-| Prochaine action | Dire « go » (suite P4 / ops) |
+| P4 | … · FEEDS · **VP** ✅ |
+| Prochaine action | Dire « go » (suite P4+ / ops) |
 
 ---
 
-## P4-FEEDS — livré
+## P4-VP — livré
 
-- `feedStatus.js` — catalogue + probes (Binance/Yahoo/Timescale/Collector/Deribit)  
-- Databento / CBOE = `scoped_out` explicite (pas de fake live)  
-- TickerBar : chips statut + refresh 60s ; ticker prix reste **simulé**  
-- Proxy `/api/binance/ping` (Vite + Cloudflare Pages)
+- `microstructure.js` — sessions UTC, pPOC/pVAH/pVAL, confluence VP↔OI/GEX  
+- VP Footprint UI : niveaux previous + bouton Deribit confluence  
+- Tests unitaires `microstructure.test.js`
 
 ---
 

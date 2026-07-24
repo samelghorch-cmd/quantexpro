@@ -1,8 +1,15 @@
 // Modules TRADING purs (internes) : Performance, VP Footprint, Behavior Tracker, Spread Compare,
 // HMM Regime, Stratégies, Signaux, Signal Engine, Exec Quality, Risk Calc.
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { volumeProfile, generateOrderBook } from "../../engine/microstructure.js";
+import {
+  volumeProfileSessions,
+  vpLevelsFromSession,
+  oiLevelsFromGex,
+  findConfluence,
+  generateOrderBook,
+} from "../../engine/microstructure.js";
+import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../engine/gex.js";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
 import { CATS } from "../../engine/strategyLibrary.js";
 import { findSymbol } from "../../engine/marketData.js";
@@ -58,36 +65,142 @@ export function PerformancePage() {
 
 export function VPFootprintPage() {
   const { bars } = usePipeline();
-  const vp = useMemo(() => volumeProfile(bars, 40), [bars]);
-  const maxV = Math.max(...vp.bins);
+  const [currency, setCurrency] = useState("BTC");
+  const [oiBusy, setOiBusy] = useState(false);
+  const [oiErr, setOiErr] = useState(null);
+  const [oiLevels, setOiLevels] = useState([]);
+  const [oiMeta, setOiMeta] = useState(null);
+
+  const sess = useMemo(() => volumeProfileSessions(bars, 40), [bars]);
+  const vp = sess.developing;
+  const maxV = vp.bins.length ? Math.max(...vp.bins, 1) : 1;
+  const vpLevels = useMemo(() => vpLevelsFromSession(sess), [sess]);
+  const confluence = useMemo(() => findConfluence(vpLevels, oiLevels, 0.35), [vpLevels, oiLevels]);
+
+  const nearPrev = (price, level, step) => level != null && step > 0 && Math.abs(price - level) < step * 0.55;
+
+  const loadOi = useCallback(async () => {
+    setOiBusy(true);
+    setOiErr(null);
+    try {
+      const res = await fetchDeribitOptions(currency);
+      const profile = computeGexProfile(res.rows, res.spot);
+      const maxPain = computeMaxPain(res.rows);
+      setOiLevels(oiLevelsFromGex(profile, maxPain));
+      setOiMeta({ source: "deribit", currency: res.currency, n: res.rows.length, spot: res.spot });
+    } catch (e) {
+      setOiErr(e.message || String(e));
+    } finally {
+      setOiBusy(false);
+    }
+  }, [currency]);
+
+  const fmtLvl = (x) => (x == null ? "—" : Number(x).toFixed(2));
+
+  if (!bars?.length || !vp.bins.length) {
+    return <Panel title="Volume Profile / Footprint"><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Charge des barres (Data Manager) pour calculer POC / pPOC.</div></Panel>;
+  }
+
   return (
-    <Panel title="Volume Profile / Footprint" right={<SimBadge />}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 20 }}>
-        <div>
-          {vp.bins.slice().reverse().map((v, ri) => {
-            const i = vp.bins.length - 1 - ri;
-            const price = vp.lo + vp.step * (i + 0.5);
-            const isPoc = Math.abs(price - vp.poc) < vp.step;
-            const inVA = price >= vp.val && price <= vp.vah;
-            return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, height: 13 }}>
-                <span style={{ width: 60, fontSize: 9, color: T.textFaint, fontFamily: T.mono, textAlign: "right" }}>{price.toFixed(1)}</span>
-                <div style={{ flex: 1, height: 10, background: T.bg0, borderRadius: 2 }}>
-                  <div style={{ width: `${(v / maxV) * 100}%`, height: "100%", background: isPoc ? T.orange : inVA ? T.blue : T.textFaint, borderRadius: 2 }} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <Panel
+        title="Volume Profile · pPOC / pVAL"
+        right={
+          <span style={{ fontSize: 10, color: T.textDim }}>
+            {sess.sessionCount > 0
+              ? `${sess.sessionCount} sess. · ${sess.currentKey || ""}${sess.previousKey ? ` ← p=${sess.previousKey}` : ""}`
+              : "timestamps absents — pas de pPOC"}
+          </span>
+        }
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 20 }}>
+          <div>
+            {vp.bins.slice().reverse().map((v, ri) => {
+              const i = vp.bins.length - 1 - ri;
+              const price = vp.lo + vp.step * (i + 0.5);
+              const isPoc = Math.abs(price - vp.poc) < vp.step;
+              const inVA = price >= vp.val && price <= vp.vah;
+              const isPPoc = nearPrev(price, sess.pPoc, vp.step);
+              const isPVal = nearPrev(price, sess.pVal, vp.step) || nearPrev(price, sess.pVah, vp.step);
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, height: 13 }}>
+                  <span style={{ width: 60, fontSize: 9, color: T.textFaint, fontFamily: T.mono, textAlign: "right" }}>{price.toFixed(1)}</span>
+                  <div style={{ flex: 1, height: 10, background: T.bg0, borderRadius: 2, position: "relative" }}>
+                    <div style={{ width: `${(v / maxV) * 100}%`, height: "100%", background: isPoc ? T.orange : inVA ? T.blue : T.textFaint, borderRadius: 2 }} />
+                    {(isPPoc || isPVal) && (
+                      <div
+                        title={isPPoc ? "pPOC" : "pVA"}
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          borderLeft: `2px solid ${isPPoc ? T.yellow : T.purple}`,
+                          pointerEvents: "none",
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <div>
+            <MetricCard label="POC (session)" value={fmtLvl(vp.poc)} color={T.orange} />
+            <div style={{ height: 8 }} />
+            <MetricCard label="VAH" value={fmtLvl(vp.vah)} color={T.blue} />
+            <div style={{ height: 8 }} />
+            <MetricCard label="VAL" value={fmtLvl(vp.val)} color={T.blue} />
+            <div style={{ height: 12 }} />
+            <MetricCard label="pPOC" value={fmtLvl(sess.pPoc)} color={T.yellow} sub="session précédente" />
+            <div style={{ height: 8 }} />
+            <MetricCard label="pVAH" value={fmtLvl(sess.pVah)} color={T.yellow} />
+            <div style={{ height: 8 }} />
+            <MetricCard label="pVAL" value={fmtLvl(sess.pVal)} color={T.yellow} />
+          </div>
         </div>
-        <div>
-          <MetricCard label="POC" value={vp.poc.toFixed(2)} color={T.orange} />
-          <div style={{ height: 8 }} />
-          <MetricCard label="VAH" value={vp.vah.toFixed(2)} color={T.blue} />
-          <div style={{ height: 8 }} />
-          <MetricCard label="VAL" value={vp.val.toFixed(2)} color={T.blue} />
+      </Panel>
+
+      <Panel title="Confluence OI / GEX" right={oiMeta ? <Badge color={T.green}>{oiMeta.source} · {oiMeta.currency}</Badge> : null}>
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 12 }}>
+          <Field label="Deribit">
+            <Select value={currency} onChange={setCurrency} options={["BTC", "ETH"]} />
+          </Field>
+          <Button onClick={loadOi} disabled={oiBusy}>{oiBusy ? "…" : "Charger OI / GEX"}</Button>
+          {oiErr && <span style={{ fontSize: 11, color: T.red }}>{oiErr}</span>}
         </div>
-      </div>
-    </Panel>
+        {!oiLevels.length ? (
+          <div style={{ fontSize: 12, color: T.textDim }}>Charge Deribit (ou ouvre Options Gamma) pour croiser pPOC/VA avec walls / Max Pain / High OI (±0.35%).</div>
+        ) : (
+          <>
+            <MetricGrid min={120}>
+              <MetricCard label="Niveaux OI" value={oiLevels.length} />
+              <MetricCard label="Confluences" value={confluence.length} color={confluence.length ? T.green : T.textDim} />
+              {oiMeta?.spot != null && <MetricCard label="Spot" value={fmt(oiMeta.spot, 1)} />}
+            </MetricGrid>
+            <div style={{ height: 10 }} />
+            {confluence.length === 0 ? (
+              <div style={{ fontSize: 12, color: T.textDim }}>Aucune confluence dans la tolérance 0.35%.</div>
+            ) : (
+              <DataTable
+                columns={[
+                  { key: "vpLabel", label: "VP", render: (r) => r.vpLabel },
+                  { key: "oiLabel", label: "OI/GEX", render: (r) => r.oiLabel },
+                  { key: "mid", label: "Prix", align: "right", render: (r) => fmt(r.mid, 2) },
+                  { key: "distPct", label: "Δ%", align: "right", render: (r) => fmt(r.distPct, 3), color: () => T.green },
+                ]}
+                rows={confluence}
+                maxHeight={220}
+              />
+            )}
+            <div style={{ marginTop: 10, fontSize: 10, color: T.textFaint }}>
+              OI: {oiLevels.map((l) => `${l.label}@${fmt(l.price, 0)}`).join(" · ")}
+            </div>
+          </>
+        )}
+      </Panel>
+    </div>
   );
 }
 
