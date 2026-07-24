@@ -3,9 +3,9 @@
 // enregistrées + le journal des backtests de tous les outils.
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { downloadJSON } from "../../engine/exportUtils.js";
-import { generateEA, downloadMq5, listSupportedFamilies, resolveFamily } from "../../engine/mql5Export.js";
-import { saveStrategy, listStrategies, deleteStrategy, listBacktests } from "../../engine/strategyStore.js";
+import { downloadJSON } from "../../engine/exportUtils.ts";
+import { generateEA, downloadMq5, listSupportedFamilies, resolveFamily } from "../../engine/mql5Export.ts";
+import { saveStrategy, listStrategies, deleteStrategy, listBacktests } from "../../engine/strategyStore.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 

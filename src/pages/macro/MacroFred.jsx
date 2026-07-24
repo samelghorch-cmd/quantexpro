@@ -2,7 +2,7 @@
 // Yield Curve · Inflation · USD Liquidity — données réelles, mises à jour, en cache IndexedDB.
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.jsx";
-import { fetchFredMany, lastVal, lastDate, yoy, FRED } from "../../engine/macroData.js";
+import { fetchFredMany, lastVal, lastDate, yoy, FRED } from "../../engine/macroData.ts";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, fmt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";

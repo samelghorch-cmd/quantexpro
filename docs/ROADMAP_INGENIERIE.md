@@ -173,6 +173,16 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ---
 
+## P10 — Engine 100 % TypeScript (bulk)
+
+- [x] **P10-TS-ENGINE** tous les modules `src/engine/*.js` → `.ts` (sauf `factory.worker.js`) ✅
+  - `allowImportingTsExtensions` · imports `.ts` (Node strip-types + Vite)
+  - Collector + test parité causality
+  - Garde-fous : typecheck + **347** tests
+  - Suivi : retirer `@ts-nocheck` progressivement sur ~40 fichiers bulk
+
+---
+
 ## Mapping spec → pages actuelles (référence rapide)
 
 | Module spec | Entrées sidebar actuelles |

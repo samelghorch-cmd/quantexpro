@@ -1,9 +1,9 @@
 // Sensitivity 2D, Pareto Front, Cross-TF, Cross-Symbol, Pairs Trading.
 import { useState, useCallback, useMemo } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { runSensitivity2D, paretoFront, runCrossTF, runCrossSymbol, runPairsTrading } from "../../engine/analyticsAdvanced.js";
-import { generateBasket, SYNTH_ASSETS } from "../../engine/multiAssetSynthetic.js";
-import { runFAO } from "../../engine/fao.js";
+import { runSensitivity2D, paretoFront, runCrossTF, runCrossSymbol, runPairsTrading } from "../../engine/analyticsAdvanced.ts";
+import { generateBasket, SYNTH_ASSETS } from "../../engine/multiAssetSynthetic.ts";
+import { runFAO } from "../../engine/fao.ts";
 import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Field, Select, DataTable, SimBadge, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";

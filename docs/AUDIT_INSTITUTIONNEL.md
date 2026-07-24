@@ -222,21 +222,22 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P9-TS-COST | costModel → TypeScript | ✅ | COST_MODELS · runFactoryBacktest · factoryScore |
 | P9-TS-DSR | factoryDsr → TypeScript | ✅ | trials · DSR OOS · seuil 50 % |
 | P9-TS-API | apiClient → TypeScript | ✅ | ApiFetchOpts · Bearer / X-API-Key |
+| P10-TS-ENGINE | bulk `src/engine` → TypeScript | ✅ | 65 `.ts` · worker JS · `@ts-nocheck` progressif |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P9-TS-API** livrés.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P10-TS-ENGINE** livrés.
 
-**Prochaine action recommandée :** suite migration TS (`random` / modules engine restants).
+**Prochaine action recommandée :** retirer `@ts-nocheck` fichier par fichier · ops prod (`QX_SSO_SECRET`, alembic).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5–P9-TS-API livrés. Collector Node 22 + `--experimental-strip-types` pour imports `.ts`.
+2. **TypeScript :** `src/engine` quasi 100 % `.ts` (**P10-TS-ENGINE**) — modules P5–P9 typés stricts ; ~40 fichiers bulk sous `@ts-nocheck` à reprendre. Collector Node 22 + `--experimental-strip-types`. Imports internes en `.ts` (`allowImportingTsExtensions`).
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).

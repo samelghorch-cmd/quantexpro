@@ -2,14 +2,14 @@
 // résultats PERSISTANTS (survivent au changement de page) + enchaînement vers l'étape suivante.
 import { useState, useCallback, useMemo } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { runFactory, coveredSpace, FACTORY_DEFAULT_ASSETS, FACTORY_DEFAULT_TFS } from "../../engine/strategyFactory.js";
-import { ASSET_CLASSES } from "../../engine/marketData.js";
-import { CATS } from "../../engine/strategyLibrary.js";
-import { downloadJSON } from "../../engine/exportUtils.js";
+import { runFactory, coveredSpace, FACTORY_DEFAULT_ASSETS, FACTORY_DEFAULT_TFS } from "../../engine/strategyFactory.ts";
+import { ASSET_CLASSES } from "../../engine/marketData.ts";
+import { CATS } from "../../engine/strategyLibrary.ts";
+import { downloadJSON } from "../../engine/exportUtils.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, ScoreGauge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
-import { STRESS_MAX_DD_LIMIT } from "../../engine/portfolioStress.js";
+import { STRESS_MAX_DD_LIMIT } from "../../engine/portfolioStress.ts";
 
 const TF_OPTS = [{ v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }, { v: 3, l: "15m" }];
 

@@ -1,7 +1,7 @@
 // P4-FEEDS / P5-TS — statut multi-feeds (bandeau). Uniquement des sources réellement
 // branchées ou explicitement « hors scope ». Aucune cotation inventée présentée comme live.
-import { getApiBaseUrl, getApiKey } from "./apiClient.js";
-import { getCollectorUrl } from "./collectorClient.js";
+import { getApiBaseUrl, getApiKey } from "./apiClient.ts";
+import { getCollectorUrl } from "./collectorClient.ts";
 
 export type FeedHealth = "ok" | "down" | "unconfigured" | "scoped_out" | "unknown";
 export type FeedTone = "green" | "red" | "yellow" | "dim";

@@ -3,8 +3,8 @@
 // à jour à chaque nouvelle bougie. AUCUN ordre réel, aucun identifiant broker — 100 % simulation.
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { evalForwardTest } from "../../engine/forwardTest.js";
-import { logBacktest } from "../../engine/strategyStore.js";
+import { evalForwardTest } from "../../engine/forwardTest.ts";
+import { logBacktest } from "../../engine/strategyStore.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, NumberInput, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";

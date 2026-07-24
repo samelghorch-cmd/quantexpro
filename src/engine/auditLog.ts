@@ -1,6 +1,6 @@
 // P4-AUDIT-UI / P7-TS-MORE — client lecture du journal d'audit append-only (`GET /v1/audit`).
 // Parité hash avec backend `app/audit.py` (JSON canonique + SHA-256).
-import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
+import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.ts";
 
 export interface AuditEvent {
   id: number;

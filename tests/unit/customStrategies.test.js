@@ -6,11 +6,11 @@ import { describe, it, expect, beforeEach } from "vitest";
 import {
   validateRules, saveCustomDef, loadCustomDefs, deleteCustomDef,
   compileCustomDef, buildFullLibrary, CUSTOM_ID_BASE, CUSTOM_CAT,
-} from "../../src/engine/customStrategies.js";
+} from "../../src/engine/customStrategies.ts";
 import { compileRules } from "../../src/engine/ruleBuilder.ts";
-import { buildStrategyLibrary, CATS } from "../../src/engine/strategyLibrary.js";
-import { runBacktestExt } from "../../src/engine/backtestExtended.js";
-import { buildContext } from "../../src/engine/context.js";
+import { buildStrategyLibrary, CATS } from "../../src/engine/strategyLibrary.ts";
+import { runBacktestExt } from "../../src/engine/backtestExtended.ts";
+import { buildContext } from "../../src/engine/context.ts";
 import { makeBars } from "../helpers/fixtures.js";
 
 // Stub localStorage (environnement node)

@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P9-TS-API)
+> Dernière maj : **2026-07-24** (P10-TS-ENGINE)
 
 ---
 
@@ -11,22 +11,25 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **343** · backend **78** |
-| Commit HEAD | P9-TS-API |
-| P0–P8 | ✅ clôturés |
-| P9 | **TS-SIGNAL** … **TS-DSR** ✅ · **TS-API** ✅ |
-| Prochaine action | Dire « go » |
+| Tests | JS **347** · backend **78** |
+| Commit HEAD | P10-TS-ENGINE |
+| P0–P9 | ✅ clôturés |
+| P10 | **TS-ENGINE** ✅ (bulk) |
+| Prochaine action | Dire « go » (typage strict fichier par fichier / ops prod) |
 
 ---
 
-## P9-TS-API — livré
+## P10-TS-ENGINE — livré
 
-- `apiClient.ts` — ApiFetchOpts · getApiBaseUrl / apiFetch (Bearer / X-API-Key)  
-- Pages + hooks mis à jour (imports TS engine inchangés `.js`)
+- **65** modules `src/engine/*.ts` · seul `factory.worker.js` reste en JS (entry worker)
+- Imports internes en `.ts` + `allowImportingTsExtensions` (parité Node strip-types ↔ Vite)
+- Collector : imports `.ts` · smoke `buildStrategyLibrary()` → 701
+- Garde-fous : `npm run typecheck` · `npm test` · test parité causality mis à jour
+- **40** fichiers bulk encore sous `// @ts-nocheck` (typage strict progressif) · modules P5–P9 déjà typés stricts inchangés · `random.ts` typé
 
 ---
 
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh`.  
-- Dire **« go »** pour la suite TS (ex. `random`).
+- Suite utile : retirer `@ts-nocheck` module par module (gros : `strategyLibrary`, `indicators`, `mql5Export`).

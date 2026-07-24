@@ -1,7 +1,7 @@
 // Modèle de coûts par classe d'actif + backtest cross-actif en pourcentage (net de spread + commissions).
 // Permet de comparer équitablement des stratégies sur crypto / forex / indices / actions / métaux / énergie.
 // P9-TS-COST
-import { computeMetrics } from "./backtestExtended.js";
+import { computeMetrics } from "./backtestExtended.ts";
 
 export type CostClassId =
   | "crypto"

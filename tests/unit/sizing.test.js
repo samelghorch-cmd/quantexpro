@@ -2,7 +2,7 @@
 // Exigence due diligence : le sizing affiché dans l'UI doit être CELUI du moteur
 // (bug historique : inputs Lot Mode / Risk % affichés mais jamais branchés).
 import { describe, it, expect } from "vitest";
-import { runBacktestExt } from "../../src/engine/backtestExtended.js";
+import { runBacktestExt } from "../../src/engine/backtestExtended.ts";
 import { CONTRACTS, resolveSpec, roundTripCost } from "../../src/engine/contracts.ts";
 import { makeBars, minimalCtx, singleRoundTrip, REGIMES, alternating, DAY_MS, T0 } from "../helpers/fixtures.js";
 

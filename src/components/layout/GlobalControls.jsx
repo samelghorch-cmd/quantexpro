@@ -1,6 +1,6 @@
 // Contrôles globaux : bascule Synthétique/Réel, sélecteur d'actif réel, timeframe, seed.
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { ASSET_CLASSES } from "../../engine/marketData.js";
+import { ASSET_CLASSES } from "../../engine/marketData.ts";
 import { T, S } from "../shared/theme.js";
 
 export function GlobalControls() {

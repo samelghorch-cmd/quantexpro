@@ -11,8 +11,8 @@ import {
 } from "../../engine/microstructure.ts";
 import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../engine/gex.ts";
 import { hmmRegimes } from "../../engine/quantToolbox/index.js";
-import { CATS } from "../../engine/strategyLibrary.js";
-import { findSymbol } from "../../engine/marketData.js";
+import { CATS } from "../../engine/strategyLibrary.ts";
+import { findSymbol } from "../../engine/marketData.ts";
 import { eventsToCsv, filterEvents } from "../../engine/signalConsole.ts";
 import { useSignalConsole } from "../../hooks/useSignalConsole.js";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";

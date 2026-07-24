@@ -1,5 +1,5 @@
 // P4-SSO / P7-TS-MORE — session Bearer JWT + OIDC PKCE (SPA).
-import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
+import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.ts";
 
 const LS_TOKEN = "quantexpro:accessToken";
 const LS_TOKEN_META = "quantexpro:accessTokenMeta";

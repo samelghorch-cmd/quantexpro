@@ -1,10 +1,10 @@
 // Backtest étendu — 20+ métriques, config complète, courbe équité, distribution PnL.
 import { useState, useMemo, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { runBacktestExt } from "../../engine/backtestExtended.js";
-import { advancedMetrics } from "../../engine/backtestMetrics.js";
-import { logBacktest } from "../../engine/strategyStore.js";
-import { tradesToCSV, downloadCSV } from "../../engine/exportUtils.js";
+import { runBacktestExt } from "../../engine/backtestExtended.ts";
+import { advancedMetrics } from "../../engine/backtestMetrics.ts";
+import { logBacktest } from "../../engine/strategyStore.ts";
+import { tradesToCSV, downloadCSV } from "../../engine/exportUtils.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { Panel, MetricCard, MetricGrid, Button, Field, Select, NumberInput, SimBadge, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";

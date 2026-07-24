@@ -1,6 +1,6 @@
 // Volume profile (POC/VAH/VAL) + pPOC/pVAL session précédente + confluence OI/GEX.
 // P4-VP / P8-TS-MICRO — Order book mock L2 conservé pour outils démo.
-import { seededRandom } from "./random.js";
+import { seededRandom } from "./random.ts";
 
 export interface VpBar {
   t?: number;

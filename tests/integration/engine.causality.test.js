@@ -16,9 +16,9 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { buildContext } from "../../src/engine/context.js";
-import { buildStrategyLibrary } from "../../src/engine/strategyLibrary.js";
-import { runBacktestExt } from "../../src/engine/backtestExtended.js";
+import { buildContext } from "../../src/engine/context.ts";
+import { buildStrategyLibrary } from "../../src/engine/strategyLibrary.ts";
+import { runBacktestExt } from "../../src/engine/backtestExtended.ts";
 import { makeBars, makeCausalityGuard } from "../helpers/fixtures.js";
 
 const N_FULL = 600;
@@ -102,9 +102,9 @@ describe("C — Parité recherche/exécution (dashboard ↔ collector)", () => {
     const here = path.dirname(fileURLToPath(import.meta.url));
     const collector = readFileSync(path.join(here, "../../collector/index.js"), "utf8");
     // Si quelqu'un copie-colle un moteur local dans le collector, ce test casse.
-    expect(collector).toMatch(/from "\.\.\/src\/engine\/strategyLibrary\.js"/);
-    expect(collector).toMatch(/from "\.\.\/src\/engine\/context\.js"/);
-    expect(collector).toMatch(/from "\.\.\/src\/engine\/backtestExtended\.js"/);
+    expect(collector).toMatch(/from "\.\.\/src\/engine\/strategyLibrary\.ts"/);
+    expect(collector).toMatch(/from "\.\.\/src\/engine\/context\.ts"/);
+    expect(collector).toMatch(/from "\.\.\/src\/engine\/backtestExtended\.ts"/);
     expect(collector).not.toMatch(/function runBacktest/); // pas de moteur dupliqué
   });
 });

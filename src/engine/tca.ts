@@ -1,8 +1,8 @@
 // TCA — Transaction Cost Analysis (P1-TCA / P9-TS-TCA).
 // Compare le slippage / coût d'exécution OBSERVÉ (fills démo, backtest next-open, saisie manuelle)
 // au modèle théorique (`costModel.ts` / `contracts.ts`).
-import { COST_MODELS, roundTripCost as modelRtFrac } from "./costModel.js";
-import { resolveSpec, roundTripCost as absRtCost, REAL_ASSET_CLASS } from "./contracts.js";
+import { COST_MODELS, roundTripCost as modelRtFrac } from "./costModel.ts";
+import { resolveSpec, roundTripCost as absRtCost, REAL_ASSET_CLASS } from "./contracts.ts";
 
 const LS_KEY = "quantexpro:tcaFills:v1";
 const hasLS = (): boolean => typeof localStorage !== "undefined";

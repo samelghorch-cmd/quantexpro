@@ -1,9 +1,9 @@
 // Core Mode Developer — 4 onglets : INDICATEURS, CONFLUENCE (Rule Builder), PATTERNS LIBRARY 616, JSON.
 import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { runBacktestExt } from "../../engine/backtestExtended.js";
+import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { compileRules, RULE_SOURCES, RULE_OPS, describeRule } from "../../engine/ruleBuilder.ts";
-import { saveCustomDef } from "../../engine/customStrategies.js";
+import { saveCustomDef } from "../../engine/customStrategies.ts";
 import { buildPatternsLibrary, filterPatterns, PATTERN_FILTERS } from "../../engine/patternsLibrary.ts";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Tabs, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";

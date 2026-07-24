@@ -2,7 +2,7 @@
 // Registre des edges GO (lettres A–C) promus depuis les dossiers Reco Finale.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { listDossiers } from "../../engine/dossierStore.js";
+import { listDossiers } from "../../engine/dossierStore.ts";
 import {
   loadValidatedEdges,
   listActiveEdges,

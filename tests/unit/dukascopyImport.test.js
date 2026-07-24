@@ -7,7 +7,7 @@ import {
   yearChunks,
   DUKA_TF,
   DUKA_INSTRUMENT,
-} from "../../src/engine/dukascopyImport.js";
+} from "../../src/engine/dukascopyImport.ts";
 
 function makeBars(n, start = Date.UTC(2020, 0, 1), step = 3600_000) {
   return Array.from({ length: n }, (_, i) => {

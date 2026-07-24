@@ -1,11 +1,11 @@
 // P4-AF-SYNC / P5-TS-EDGES — pont Validated Edges ↔ API `/v1/edges`.
-import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
+import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.ts";
 import {
   loadValidatedEdges,
   listActiveEdges,
   edgeFingerprint,
   type ValidatedEdge,
-} from "./validatedEdges.js";
+} from "./validatedEdges.ts";
 
 const LS_KEY = "quantexpro:validatedEdges:v1";
 

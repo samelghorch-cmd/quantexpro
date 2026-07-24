@@ -2,10 +2,10 @@
 // Rejouer un backtest sur les données courantes, comparer, exporter en MQL5/JSON, supprimer.
 import { useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { listStrategies, deleteStrategy, clearStrategies, logBacktest } from "../../engine/strategyStore.js";
-import { runBacktestExt } from "../../engine/backtestExtended.js";
-import { downloadJSON } from "../../engine/exportUtils.js";
-import { generateEA, downloadMq5 } from "../../engine/mql5Export.js";
+import { listStrategies, deleteStrategy, clearStrategies, logBacktest } from "../../engine/strategyStore.ts";
+import { runBacktestExt } from "../../engine/backtestExtended.ts";
+import { downloadJSON } from "../../engine/exportUtils.ts";
+import { generateEA, downloadMq5 } from "../../engine/mql5Export.ts";
 import { Panel, Button, Badge, DataTable, MetricCard, MetricGrid, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";
 

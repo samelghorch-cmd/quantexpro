@@ -6,7 +6,7 @@ import {
   oscillatorsToCSV,
 } from "../../src/engine/oscillators.ts";
 import { makeBars, DAY_MS } from "../helpers/fixtures.js";
-import { buildContext } from "../../src/engine/context.js";
+import { buildContext } from "../../src/engine/context.ts";
 
 describe("rollingZScore", () => {
   it("null pendant warmup puis fini", () => {

@@ -1,7 +1,7 @@
 // P4-FEEDS — bandeau ticker simulé + statut multi-feeds réels.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { T } from "../shared/theme.js";
-import { seededRandom } from "../../engine/random.js";
+import { seededRandom } from "../../engine/random.ts";
 import { probeAllFeeds, feedStatusTone, summarizeFeeds } from "../../engine/feedStatus.ts";
 
 const INSTRUMENTS = [

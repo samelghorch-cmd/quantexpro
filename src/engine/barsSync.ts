@@ -1,8 +1,8 @@
 // P3-ZDL-SYNC — pont IndexedDB ↔ API TimescaleDB (/v1/bars).
 // Fail-soft : si l'API est absente, les fonctions lèvent une Error explicite (UI Data Manager).
 
-import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
-import { findSymbol, importSeries } from "./marketData.js";
+import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.ts";
+import { findSymbol, importSeries } from "./marketData.ts";
 
 /** Facteur TF dashboard → timeframe API. */
 export const TF_TO_API: Record<number, string> = {

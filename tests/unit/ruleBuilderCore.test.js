@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { IND } from "../../src/engine/indicators.js";
-import { buildContext } from "../../src/engine/context.js";
+import { IND } from "../../src/engine/indicators.ts";
+import { buildContext } from "../../src/engine/context.ts";
 import { RULE_SOURCES, compileRules } from "../../src/engine/ruleBuilder.ts";
-import { validateRules } from "../../src/engine/customStrategies.js";
+import { validateRules } from "../../src/engine/customStrategies.ts";
 import { makeBars, DAY_MS } from "../helpers/fixtures.js";
 
 describe("IND.kama / linreg", () => {

@@ -7,7 +7,7 @@
 //   exactes        → toBe / toBeCloseTo(x, 9)  : arithmétique pure, zéro transcendante
 //   transcendantes → toBeCloseTo(x, 3)  (±0.0005) : sqrt/pow/log (stables sur V8)
 import { describe, it, expect } from "vitest";
-import { computeMetrics } from "../../src/engine/backtestExtended.js";
+import { computeMetrics } from "../../src/engine/backtestExtended.ts";
 import { annualFactor, periodsPerYear } from "../../src/engine/annualize.ts";
 import { makeBars, DAY_MS, HOUR_MS, T0 } from "../helpers/fixtures.js";
 

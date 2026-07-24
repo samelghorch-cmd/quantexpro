@@ -5,7 +5,7 @@
 // On accumule en buckets à volume constant, VPIN = déséquilibre moyen glissant, CDF = percentile.
 // Warm start : on amorce la distribution depuis les klines 1m récentes (taker-buy k[9]).
 import { useEffect, useRef, useState } from "react";
-import { toxicityLevel } from "../engine/vpin.js";
+import { toxicityLevel } from "../engine/vpin.ts";
 
 const WS_BASE = "wss://stream.binance.com:9443/ws";
 const REST_KLINES = "https://api.binance.com/api/v3/klines";

@@ -1,7 +1,7 @@
 // P4-REV / P8-TS-REV — reverse engineering d'un historique de signaux externes.
 // Parse CSV/JSON → alignement causal sur barres → replay backtest → candidats Rule Builder.
-import { RULE_SOURCES } from "./ruleBuilder.js";
-import { runBacktestExt } from "./backtestExtended.js";
+import { RULE_SOURCES } from "./ruleBuilder.ts";
+import { runBacktestExt } from "./backtestExtended.ts";
 
 export type SignalSide = 1 | -1;
 

@@ -1,10 +1,10 @@
 // P4-ANT-SYNC / P6-TS-MORE — pont Anti-Library ↔ `/v1/anti-library`.
-import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.js";
+import { apiFetch, getApiBaseUrl, getApiKey } from "./apiClient.ts";
 import {
   ensureSeeded,
   loadAntiLibrary,
   type AntiEntry,
-} from "./antiLibrary.js";
+} from "./antiLibrary.ts";
 
 const LS_KEY = "quantexpro:antiLibrary:v1";
 

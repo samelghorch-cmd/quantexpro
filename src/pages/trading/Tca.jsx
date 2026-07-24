@@ -1,7 +1,7 @@
 // TCA — Transaction Cost Analysis : slippage observé vs modèle théorique (P1-TCA).
 import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { getDossier } from "../../engine/dossierStore.js";
+import { getDossier } from "../../engine/dossierStore.ts";
 import {
   runTCA,
   fillsFromTrades,

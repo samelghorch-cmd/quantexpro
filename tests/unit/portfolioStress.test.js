@@ -8,7 +8,7 @@ import {
   metricsFromCurve,
   applyScenario,
   stressPortfolio,
-} from "../../src/engine/portfolioStress.js";
+} from "../../src/engine/portfolioStress.ts";
 
 describe("STRESS_SCENARIOS", () => {
   it("expose les 3 crises requises (2008 / 2010 / 2020)", () => {

@@ -13,7 +13,7 @@ import {
   pullAntiLibraryFromApi,
   isAntiApiConfigured,
 } from "../../engine/antiLibrarySync.ts";
-import { buildStrategyLibrary } from "../../engine/strategyLibrary.js";
+import { buildStrategyLibrary } from "../../engine/strategyLibrary.ts";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";

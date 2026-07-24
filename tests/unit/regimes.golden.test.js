@@ -11,7 +11,7 @@
 // → bit-à-bit identique sur toute machine IEEE-754 / V8. Tolérances : ±0.5e-4 sur
 // les ratios (sqrt en jeu), ±0.5e-3 sur les P&L en dollars.
 import { describe, it, expect } from "vitest";
-import { runBacktestExt } from "../../src/engine/backtestExtended.js";
+import { runBacktestExt } from "../../src/engine/backtestExtended.ts";
 import { REGIMES, minimalCtx, smaCross, alternating } from "../helpers/fixtures.js";
 
 const extParams = { contract: "MES", contracts: 1, capital: 100000, direction: "both", slAtr: 2, tpAtr: 0, beAtr: 0 };

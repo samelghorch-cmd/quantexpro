@@ -13,8 +13,8 @@ import {
   seriesToCSV,
   zScoreAndPercentile,
   bestLag,
-} from "../../src/engine/statisticalEdge.js";
-import { buildContext } from "../../src/engine/context.js";
+} from "../../src/engine/statisticalEdge.ts";
+import { buildContext } from "../../src/engine/context.ts";
 
 function makeBars(n = 200, seed = 1) {
   let p = 100;

@@ -1,7 +1,7 @@
 // Post-FAO Synth — scoring composite (Robustesse 40 / Stabilité 35 / Performance 25), Top 10 + Δ%.
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { runPostFAO } from "../../engine/postFaoSynth.js";
+import { runPostFAO } from "../../engine/postFaoSynth.ts";
 import { Panel, Button, DataTable, SimBadge, Badge, ScoreGauge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { T } from "../../components/shared/theme.js";

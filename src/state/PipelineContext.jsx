@@ -2,11 +2,11 @@
 // résultats persistant par module (survit aux changements de page).
 import { createContext, useContext, useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { CONTRACTS } from "../engine/contracts.ts";
-import { generateSyntheticCandles, aggregateBars } from "../engine/syntheticData.js";
-import { buildContext } from "../engine/context.js";
-import { buildFullLibrary } from "../engine/customStrategies.js";
-import { fetchCandles } from "../engine/marketData.js";
-import { createDossier, getDossier, updateDossier, attachStage, setGrade as setDossierGrade, upsertDemoSession } from "../engine/dossierStore.js";
+import { generateSyntheticCandles, aggregateBars } from "../engine/syntheticData.ts";
+import { buildContext } from "../engine/context.ts";
+import { buildFullLibrary } from "../engine/customStrategies.ts";
+import { fetchCandles } from "../engine/marketData.ts";
+import { createDossier, getDossier, updateDossier, attachStage, setGrade as setDossierGrade, upsertDemoSession } from "../engine/dossierStore.ts";
 
 const Ctx = createContext(null);
 

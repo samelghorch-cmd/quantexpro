@@ -2,7 +2,7 @@
 // Même seuil que Reco Finale : un DSR < 50 % = résultat non significatif après nTrials essais
 // (López de Prado 2014). Calculé sur les PnL des trades OOS, avec nTrials = essais de
 // sélection sur la paire (screening + grille de refine).
-import { deflatedSharpe } from "./backtestMetrics.js";
+import { deflatedSharpe } from "./backtestMetrics.ts";
 
 export const FACTORY_DSR_MIN = 0.5;
 

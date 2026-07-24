@@ -7,11 +7,11 @@
 import http from "node:http";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { buildStrategyLibrary } from "../src/engine/strategyLibrary.js";
-import { buildContext } from "../src/engine/context.js";
-import { runBacktestExt } from "../src/engine/backtestExtended.js";
+import { buildStrategyLibrary } from "../src/engine/strategyLibrary.ts";
+import { buildContext } from "../src/engine/context.ts";
+import { runBacktestExt } from "../src/engine/backtestExtended.ts";
 import { compileRules } from "../src/engine/ruleBuilder.ts";
-import { validateRules } from "../src/engine/customStrategies.js";
+import { validateRules } from "../src/engine/customStrategies.ts";
 import {
   ingestConfigFromEnv,
   tickerToSymbol,

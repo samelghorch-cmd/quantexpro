@@ -1,7 +1,7 @@
 // Fixtures de test — données synthétiques 100% reproductibles (PRNG seedé, aucune
 // fonction Math transcendante → bit-à-bit identique sur toute plateforme IEEE-754).
 // Chaque générateur retourne des barres { o, h, l, c, v, t } au format du moteur.
-import { seededRandom } from "../../src/engine/random.js";
+import { seededRandom } from "../../src/engine/random.ts";
 
 export const DAY_MS = 24 * 3600 * 1000;
 export const HOUR_MS = 3600 * 1000;

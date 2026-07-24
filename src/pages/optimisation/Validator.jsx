@@ -1,8 +1,8 @@
 // Synthetic Validator — 3 gates (Block Bootstrap, GBM, Surrogate), verdict GO/WARN/NO-GO.
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { runValidator } from "../../engine/syntheticValidator.js";
-import { runBacktestExt } from "../../engine/backtestExtended.js";
+import { runValidator } from "../../engine/syntheticValidator.ts";
+import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, Field, NumberInput, SimBadge, fmt, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";

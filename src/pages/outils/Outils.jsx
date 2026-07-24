@@ -2,10 +2,10 @@
 // Quant Toolbox / Performance : canonical sous Optimisation / Trading (aliases P2-UI).
 import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { IND } from "../../engine/indicators.js";
-import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.js";
+import { IND } from "../../engine/indicators.ts";
+import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.ts";
 import { annualFactor } from "../../engine/annualize.ts";
-import { findSymbol } from "../../engine/marketData.js";
+import { findSymbol } from "../../engine/marketData.ts";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, ScoreGauge, Select, fmt, fmtPct } from "../../components/shared/ui.jsx";

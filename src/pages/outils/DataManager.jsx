@@ -1,8 +1,8 @@
 // Data Manager — pré-télécharge un univers d'actifs dans IndexedDB (gros stockage, hors-ligne),
 // affiche la santé des données en cache, et permet de rafraîchir / supprimer.
 // Une fois l'univers téléchargé, l'Usine à Stratégies tourne instantanément dessus.
-import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate, loadCachedBars } from "../../engine/marketData.js";
-import { parseImportPayload } from "../../engine/dukascopyImport.js";
+import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate, loadCachedBars } from "../../engine/marketData.ts";
+import { parseImportPayload } from "../../engine/dukascopyImport.ts";
 import { pushBarsToApi, pullBarsFromApi, pingApi, isApiConfigured, TF_TO_API } from "../../engine/barsSync.ts";
 import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.jsx";

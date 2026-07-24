@@ -4,10 +4,10 @@
 // Le dossier « actif » reçoit automatiquement le résultat de chaque outil lancé.
 import { useState, useEffect, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, updateDossier, upsertDemoSession } from "../../engine/dossierStore.js";
-import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.js";
-import { downloadJSON, downloadPDF } from "../../engine/exportUtils.js";
-import { generateTearsheetPdf } from "../../engine/tearsheet.js";
+import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, updateDossier, upsertDemoSession } from "../../engine/dossierStore.ts";
+import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.ts";
+import { downloadJSON, downloadPDF } from "../../engine/exportUtils.ts";
+import { generateTearsheetPdf } from "../../engine/tearsheet.ts";
 import { promoteFromDossier, isEligibleDossier } from "../../engine/validatedEdges.ts";
 import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, verdictColor } from "../../components/shared/theme.js";

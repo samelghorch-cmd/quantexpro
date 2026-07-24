@@ -1,7 +1,7 @@
 // COT — positionnement réel des gros spéculateurs (CFTC), par marché.
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.jsx";
-import { fetchCot, COT_MARKETS } from "../../engine/cotData.js";
+import { fetchCot, COT_MARKETS } from "../../engine/cotData.ts";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";

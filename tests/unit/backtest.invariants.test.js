@@ -7,8 +7,8 @@
 //   I5  Edge cases : zéro trade, trade unique, position jamais fermée, capital nul, drawdown 100%
 // Les tests "démonstration de faute" prouvent que chaque garde-fou DÉTECTE une version cassée.
 import { describe, it, expect } from "vitest";
-import { runBacktest, runBatchBacktest } from "../../src/engine/backtest.js";
-import { runBacktestExt, computeMetrics } from "../../src/engine/backtestExtended.js";
+import { runBacktest, runBatchBacktest } from "../../src/engine/backtest.ts";
+import { runBacktestExt, computeMetrics } from "../../src/engine/backtestExtended.ts";
 import { CONTRACTS } from "../../src/engine/contracts.ts";
 import {
   makeBars, REGIMES, minimalCtx, DAY_MS, T0,

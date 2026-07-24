@@ -1,8 +1,8 @@
 // Patterns Library — 616 patterns dérivés déterministiquement de la bibliothèque de stratégies,
 // avec métadonnées de filtrage (timeframe M1–MN, actifs, difficulté, nb d'indicateurs).
 // P4-PAT / P7-TS-PAT : grille TF complète alignée spec institutionnelle.
-import { seededRandom } from "./random.js";
-import { buildStrategyLibrary } from "./strategyLibrary.js";
+import { seededRandom } from "./random.ts";
+import { buildStrategyLibrary } from "./strategyLibrary.ts";
 
 export type Timeframe = "M1" | "M5" | "M15" | "M30" | "H1" | "H4" | "D1" | "W1" | "MN";
 export type TfFamily = "all" | "scalp" | "intraday" | "swing";

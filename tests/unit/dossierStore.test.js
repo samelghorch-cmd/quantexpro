@@ -27,7 +27,7 @@ import {
   deleteDossier,
   clearDossiers,
   gradeLetter,
-} from "../../src/engine/dossierStore.js";
+} from "../../src/engine/dossierStore.ts";
 
 beforeEach(async () => {
   await clearDossiers();

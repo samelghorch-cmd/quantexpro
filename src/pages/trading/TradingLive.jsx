@@ -2,8 +2,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { useSyntheticLiveFeed } from "../../hooks/useSyntheticLiveFeed.js";
-import { buildContext } from "../../engine/context.js";
-import { runFAO } from "../../engine/fao.js";
+import { buildContext } from "../../engine/context.ts";
+import { runFAO } from "../../engine/fao.ts";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Button, Badge, SimBadge, MetricCard, MetricGrid, DataTable, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T, sideColor } from "../../components/shared/theme.js";

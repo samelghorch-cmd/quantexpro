@@ -3,8 +3,8 @@
 // durablement (avec ses paramètres) et journalisée comme un backtest.
 import { useState, useCallback, useRef } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { createGA } from "../../engine/geneticOptimizer.js";
-import { saveStrategy, logBacktest } from "../../engine/strategyStore.js";
+import { createGA } from "../../engine/geneticOptimizer.ts";
+import { saveStrategy, logBacktest } from "../../engine/strategyStore.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, SimBadge, Field, NumberInput, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { T } from "../../components/shared/theme.js";

@@ -1,8 +1,8 @@
 // Optimizer — Mode A (sweep auto) / Mode B (catégories), tri multi-métrique, export.
 import { useState, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { runFAO } from "../../engine/fao.js";
-import { downloadCSV } from "../../engine/exportUtils.js";
+import { runFAO } from "../../engine/fao.ts";
+import { downloadCSV } from "../../engine/exportUtils.ts";
 import { Panel, Button, Field, Select, NumberInput, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { T } from "../../components/shared/theme.js";

@@ -1,11 +1,11 @@
 // P1-PDF — tearsheet + pdfLite
 import { describe, it, expect } from "vitest";
-import { buildTextPdf } from "../../src/engine/pdfLite.js";
+import { buildTextPdf } from "../../src/engine/pdfLite.ts";
 import {
   buildTearsheetModel,
   tearsheetLines,
   generateTearsheetPdf,
-} from "../../src/engine/tearsheet.js";
+} from "../../src/engine/tearsheet.ts";
 
 const sampleDossier = {
   id: "abc123",

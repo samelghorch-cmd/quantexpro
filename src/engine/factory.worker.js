@@ -1,8 +1,8 @@
 // Web Worker de l'Usine à Stratégies. Chaque worker traite un lot de paires (actif × timeframe) :
 // 1) SCREENING de toutes les stratégies (params baseline), 2) REFINE des meilleures (sweep SL/TP/BE/direction).
 // Tout le calcul lourd est ici → l'UI reste fluide.
-import { buildStrategyLibrary } from "./strategyLibrary.js";
-import { buildContext } from "./context.js";
+import { buildStrategyLibrary } from "./strategyLibrary.ts";
+import { buildContext } from "./context.ts";
 import { runFactoryBacktest, factoryScore, pickMetrics, COST_MODELS } from "./costModel.ts";
 import { evaluateFactoryDsr, passesFactoryDsr, trialsForFactoryPair } from "./factoryDsr.ts";
 

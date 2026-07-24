@@ -1,7 +1,7 @@
 // Quant Optimizer — TPE-like, Score Quant 0-100 (5 modules ML), contraintes fondamentales.
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { runQuantOptimizer } from "../../engine/quantOptimizer.js";
+import { runQuantOptimizer } from "../../engine/quantOptimizer.ts";
 import { Panel, Button, Field, NumberInput, DataTable, ScoreGauge, SimBadge, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";

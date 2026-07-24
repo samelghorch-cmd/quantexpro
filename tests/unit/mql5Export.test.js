@@ -6,7 +6,7 @@ import {
   generateEA,
   STRATEGY_EXPORT_META,
   SUPPORTED_FAMILIES,
-} from "../../src/engine/mql5Export.js";
+} from "../../src/engine/mql5Export.ts";
 
 describe("listSupportedFamilies", () => {
   it("expose les 5 familles v1", () => {

@@ -1,7 +1,7 @@
 // Sélecteur de stratégie réutilisable (recherche + catégories).
 import { useState, useMemo } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { CATS } from "../../engine/strategyLibrary.js";
+import { CATS } from "../../engine/strategyLibrary.ts";
 import { T, S } from "./theme.js";
 
 export function StrategyPicker({ value, onChange, compact }) {

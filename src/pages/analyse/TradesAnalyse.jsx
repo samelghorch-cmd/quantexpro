@@ -1,6 +1,6 @@
 // Trades & Analyse — décomposition heure/DOW/session, streaks, VaR/CVaR, du dernier backtest.
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { analyzeTrades } from "../../engine/analytics.js";
+import { analyzeTrades } from "../../engine/analytics.ts";
 import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { Panel, MetricCard, MetricGrid, fmt, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";

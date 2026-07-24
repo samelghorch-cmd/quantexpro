@@ -4,8 +4,8 @@
 // (Bug historique : `contract: symbol` avec symbol resté "MES" en mode réel.)
 import { describe, it, expect } from "vitest";
 import { CONTRACTS, REAL_ASSET_CLASS, REAL_CLASS_SPECS, resolveSpec, roundTripCost } from "../../src/engine/contracts.ts";
-import { ALL_SYMBOLS } from "../../src/engine/marketData.js";
-import { runBacktestExt } from "../../src/engine/backtestExtended.js";
+import { ALL_SYMBOLS } from "../../src/engine/marketData.ts";
+import { runBacktestExt } from "../../src/engine/backtestExtended.ts";
 import { minimalCtx, singleRoundTrip, DAY_MS, T0 } from "../helpers/fixtures.js";
 
 describe("resolveSpec — résolution futures / actif réel", () => {

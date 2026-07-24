@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { drawdownDistribution, varCvar } from "../../engine/quantToolbox/index.js";
-import { deflatedSharpe } from "../../engine/backtestMetrics.js";
+import { deflatedSharpe } from "../../engine/backtestMetrics.ts";
 import {
   fetchAuditLog,
   filterAuditEvents,

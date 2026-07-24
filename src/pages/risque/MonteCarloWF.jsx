@@ -1,8 +1,8 @@
 // Monte Carlo + Walk-Forward — réutilise les moteurs v4 sur le dernier backtest.
 import { useState, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
-import { monteCarlo } from "../../engine/montecarlo.js";
-import { walkForward } from "../../engine/walkforward.js";
+import { monteCarlo } from "../../engine/montecarlo.ts";
+import { walkForward } from "../../engine/walkforward.ts";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
 import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
