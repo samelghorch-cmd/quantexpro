@@ -2,9 +2,11 @@
   "name": "quantexpro-dukascopy-ingest",
   "private": true,
   "type": "module",
-  "description": "Ingestion Dukascopy (15-20 ans OHLCV) → JSON importable dans QuantExPro. Outil séparé de l'app.",
+  "description": "Ingestion Dukascopy production (15-20 ans OHLCV) → JSON QuantEXPro. Outil séparé de l'app.",
   "scripts": {
-    "fetch": "node fetch.mjs"
+    "fetch": "node fetch.mjs",
+    "fetch:deep": "node fetch.mjs --symbols EURUSD,GBPUSD,USDJPY,GOLD,SPX,BTC --tf h1,h4,d1 --from 2008-01-01 --resume",
+    "validate": "node validate.mjs"
   },
   "dependencies": {
     "dukascopy-node": "^1.49.0"

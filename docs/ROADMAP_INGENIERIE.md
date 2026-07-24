@@ -90,7 +90,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P2 — Microstructure & polish
 
 - [x] **P2-L2** Binance L2 WS (`@depth` + `@bookTicker`) ✅
-- [ ] Dukascopy batch historique
+- [x] **P2-DUKA** Dukascopy batch historique (15–20 ans, validate + Data Manager) ✅
 - [ ] Export MQL5 EA templates
 - [ ] UI Labs + fusion navigation
 - [ ] Migration **Next.js + TS strict** (si SSR/WS justifié)

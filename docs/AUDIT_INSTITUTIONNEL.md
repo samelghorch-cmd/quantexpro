@@ -178,7 +178,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | ID | Action |
 |----|--------|
 | P2-L2 | Binance `@depth` + `bookTicker` | ✅ | `binanceOrderBook.js` + `useBinanceOrderBook` · Microstructure Live / Exec Quality |
-| P2-DUKA | `tools/dukascopy` production 15–20 ans |
+| P2-DUKA | `tools/dukascopy` production 15–20 ans | ✅ | `dukascopyImport.js` + `fetch:deep` / `validate` · Data Manager |
 | P2-MQL5 | Export EA familles simples |
 | P2-UI | Labs (Ship Tracker, Live TV), fusion doublons Quant Toolbox / Performance |
 

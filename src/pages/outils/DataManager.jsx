@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.jsx";
 import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, deleteCachedSeries, clearMarketCache, storageEstimate } from "../../engine/marketData.js";
+import { parseImportPayload } from "../../engine/dukascopyImport.js";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
@@ -63,19 +64,28 @@ export function DataManagerPage() {
     setImportMsg({ label: `Import de ${file.name}…` });
     try {
       const data = JSON.parse(await file.text());
-      const list = Array.isArray(data) ? data : [data]; // 1 série ou tableau de séries
-      let ok = 0, fail = 0;
-      for (const s of list) {
-        try { await importSeries(s.symbolKey, s.tf, s.bars, { provider: s.provider || "dukascopy" }); ok++; }
-        catch { fail++; }
+      const { ok, failed } = parseImportPayload(data);
+      let imported = 0;
+      for (const s of ok) {
+        try {
+          await importSeries(s.symbolKey, s.tf, s.bars, { provider: s.provider || "dukascopy" });
+          imported++;
+        } catch {
+          failed.push({ symbolKey: s.symbolKey, errors: ["écriture cache"] });
+        }
       }
       await refresh();
-      setImportMsg({ done: true, label: `${ok} série(s) importée(s)${fail ? `, ${fail} échec(s)` : ""}` });
+      const failN = failed.length;
+      setImportMsg({
+        done: true,
+        label: `${imported} série(s) importée(s)${failN ? `, ${failN} rejetée(s)` : ""}`
+          + (failN ? ` — ${failed.slice(0, 3).map((f) => f.symbolKey || `#${f.index}`).join(", ")}` : ""),
+      });
     } catch (err) {
       setImportMsg({ done: true, label: `Échec import : ${err.message}` });
     }
     e.target.value = "";
-    setTimeout(() => setImportMsg(null), 5000);
+    setTimeout(() => setImportMsg(null), 6000);
   }, [refresh]);
 
   const totalBars = cached.reduce((s, c) => s + (c.bars || 0), 0);

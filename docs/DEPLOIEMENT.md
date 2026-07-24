@@ -87,7 +87,22 @@ changement de code** (la migration détecte l'extension et crée les hypertables
 
 ---
 
-## 3. Variables d'environnement (rappel)
+## 3. Historique profond Dukascopy (P2-DUKA)
+
+Batch **local** (pas déployé sur Render) pour 15–20 ans d'OHLCV :
+
+```bash
+cd tools/dukascopy && npm install
+npm run fetch:deep          # 2008→aujourd'hui, multi-actifs, --resume
+npm run validate            # schéma avant import
+```
+
+Puis dans l'app : **Outils → Data Manager → 📥 Importer JSON** → `out/import-all.json`.  
+Détail : `tools/dukascopy/README.md`. Failover optionnel : `TWELVE_DATA_API_KEY`.
+
+---
+
+## 4. Variables d'environnement (rappel)
 
 Voir `backend/.env.example`. En **production**, si `QX_API_KEYS` est vide, l'API se
 verrouille (503) — c'est volontaire (fail-safe).

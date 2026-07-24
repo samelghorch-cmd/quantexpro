@@ -1,40 +1,56 @@
-# Ingestion Dukascopy — historique profond 15-20 ans
+# Ingestion Dukascopy — historique profond 15-20 ans (P2-DUKA)
 
-Outil **local** (Node) qui télécharge les données **Dukascopy** (gratuites, tick bid/ask,
-~2003→aujourd'hui) et les agrège en barres OHLCV **légères** importables dans QuantExPro.
+Outil **local** (Node) qui télécharge **Dukascopy** (gratuit, ~2003→aujourd'hui), agrège en OHLCV,
+valide le schéma, et produit un JSON importable dans QuantEXPro (Data Manager).
 
-> Pourquoi un outil séparé ? Le dump de **ticks** complet Dukascopy pèse ~500 Go et **ne peut pas
-> tenir dans le navigateur** (quota IndexedDB de quelques Go). On agrège donc les ticks en OHLCV
-> côté machine (20 ans de 1h ≈ quelques Mo), et on n'importe que ça dans l'app. L'app reste
-> zéro-dépendance ; ce dossier a ses propres `node_modules`.
+> Les ticks bruts (~500 Go) ne tiennent pas dans IndexedDB. On n'importe que l'OHLCV agrégé
+> (20 ans × 1h ≈ quelques Mo).
 
 ## Installation
 
 ```bash
-cd web/dashboard/tools/dukascopy
+cd tools/dukascopy
 npm install
 ```
 
-## Utilisation
+## Batch production (recommandé)
 
 ```bash
-# Forex + Or, 3 timeframes, 20 ans
-node fetch.mjs --symbols EURUSD,GBPUSD,USDJPY,GOLD --tf h1,h4,d1 --from 2005-01-01 --to 2025-01-01
+# Univers multi-actifs, 2008→aujourd'hui, h1/h4/d1, reprise si interruption
+npm run fetch:deep
 ```
 
-Options : `--symbols` (clés de l'app), `--tf` (m5,m15,h1,h4,d1), `--from`, `--to`.
-Symboles mappés : EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, GOLD, SILVER, SPX, NDX, DJI, DAX, WTI, BRENT, BTC, ETH.
+Options :
+| Flag | Défaut | Rôle |
+|------|--------|------|
+| `--symbols` | EURUSD,GBPUSD,GOLD | Clés app (voir mapping) |
+| `--tf` | h1,h4,d1 | m5, m15, h1, h4, d1 |
+| `--from` / `--to` | 2008-01-01 / aujourd'hui | Plage |
+| `--resume` | off | Skip les fichiers `out/` déjà valides |
 
-Sortie dans `./out/` :
-- `<SYMBOL>_<tf>.json` — une série par fichier
-- `import-all.json` — **toutes les séries en un seul fichier** (le plus pratique)
+**Retry** : 3 tentatives avec backoff par année.  
+**Failover** : si Dukascopy échoue et `TWELVE_DATA_API_KEY` est défini → Twelve Data.
+
+```bash
+export TWELVE_DATA_API_KEY=...   # optionnel
+npm run fetch:deep
+npm run validate                 # contrôle schéma avant import
+```
+
+## Sortie `./out/`
+
+- `<SYMBOL>_<tf>.json` — une série
+- `import-all.json` — toutes les séries (à importer d'un coup)
+- `manifest.json` — inventaire (n barres, années, erreurs)
 
 ## Import dans l'app
 
-1. Lance l'app (`npm run dev` à la racine du dashboard).
-2. **Outils → Data Manager → « 📥 Importer JSON »** → sélectionne `out/import-all.json`.
-3. Les séries apparaissent dans le tableau avec leur profondeur (15-20 ans) et remplacent les
-   séries Yahoo (plafonnées à ~10 ans) pour ces symboles dans les backtests et l'Usine à Stratégies.
+1. `npm run dev` (racine dashboard)
+2. **Outils → Data Manager → 📥 Importer JSON** → `out/import-all.json`
+3. Les séries Dukascopy remplacent Yahoo/Binance en cache pour ces symboles (Usine / backtests)
 
-> ⚠️ « Tout rafraîchir » dans le Data Manager écrase l'import par la source par défaut (Yahoo/Binance).
-> Ré-importe après un rafraîchissement si besoin.
+> « Tout rafraîchir » dans le Data Manager **écrase** l'import. Ré-importe après si besoin.
+
+## Symboles mappés
+
+EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, GOLD, SILVER, SPX, NDX, DJI, DAX, WTI, BRENT, BTC, ETH.
