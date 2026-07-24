@@ -56,6 +56,7 @@ uvicorn app.main:app --reload
 | GET  | `/v1/bars/{symbol}?timeframe=&start=&end=&cursor=&limit=` | lecture paginée (keyset) |
 | POST | `/v1/ticks` | ingestion idempotente de ticks |
 | POST | `/v1/orderbook` | ingestion idempotente d'instantanés L2 |
+| WS   | `/stream/bars/{timeframe}?api_key=` | flux temps réel des bar-close (bus ZDL) |
 
 Auth : header `X-API-Key` (clés dans `QX_API_KEYS`, CSV). En production, aucune clé
 configurée ⇒ API verrouillée (503).
@@ -69,7 +70,22 @@ configurée ⇒ API verrouillée (503).
 pytest            # validation schémas + idempotence SQL (aucune DB requise)
 ```
 
-## Prochain chantier (P0-C)
+## Bus ZDL (P0-C) — `app/bus/`
 
-Bus ZDL (`app/bus/`) : Redis Streams, publish sur bar close, consumer groups avec ACK,
-retry backoff exponentiel et backpressure. Voir `docs/ROADMAP_INGENIERIE.md`.
+Redis Streams : publication sur bar-close, consumer groups (ACK), retry backoff
+exponentiel, **Dead-Letter Queue** (`<stream>.dlq`), reclaim des messages en attente
+(XAUTOCLAIM), reconnexion auto et backpressure (MAXLEN approx).
+
+- **Opt-in** : `QX_BUS_ENABLED=true` (+ `QX_REDIS_URL`). Désactivé → publication no-op
+  (la base TS reste la source de vérité), idéal pour un hébergement gratuit sans Redis.
+- **Publication** : automatique à l'ingestion de barres (best-effort, n'échoue jamais l'API).
+- **Worker consommateur** : `python -m app.bus.consumer 1m` (handler par défaut = log).
+- **WebSocket** : `GET /stream/bars/{timeframe}` — tail temps réel pour le terminal.
+- **Redis gratuit** : Upstash (free tier) ou Redis Cloud free ; sinon laisser désactivé.
+
+```bash
+# Redis local (dev)
+docker run -d --name qx-redis -p 6379:6379 redis:7-alpine
+QX_BUS_ENABLED=true uvicorn app.main:app --reload
+QX_BUS_ENABLED=true python -m app.bus.consumer 1m
+```

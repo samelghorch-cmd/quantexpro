@@ -38,6 +38,16 @@ class Settings(BaseSettings):
 
     # Bus ZDL (Redis Streams) — consommé par app.bus.
     redis_url: str = Field(default="redis://localhost:6379/0")
+    # Opt-in : sur un hébergement gratuit sans Redis, laisser désactivé (la base TS reste
+    # la source de vérité ; la publication devient un no-op silencieux).
+    bus_enabled: bool = Field(default=False)
+    bus_consumer_group: str = Field(default="quant-engines")
+    bus_stream_maxlen: int = Field(default=100_000, ge=1000)
+    bus_block_ms: int = Field(default=5000, ge=100)
+    bus_batch: int = Field(default=100, ge=1, le=10000)
+    bus_max_retries: int = Field(default=3, ge=1, le=20)
+    bus_backoff_base_s: float = Field(default=0.5, gt=0)
+    bus_reclaim_idle_ms: int = Field(default=60_000, ge=1000)
 
     # Sécurité : clés d'API acceptées (header X-API-Key). Vide → l'API refuse tout accès
     # authentifié en production (fail-safe) mais reste ouverte en development.

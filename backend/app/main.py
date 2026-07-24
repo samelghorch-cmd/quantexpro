@@ -16,10 +16,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from . import __version__
+from .bus.redis_bus import close_bus
 from .config import get_settings
 from .db import dispose_engine
 from .logging_config import configure_logging
-from .routers import bars, health, orderbook, ticks
+from .routers import bars, health, orderbook, stream, ticks
 
 _logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        await close_bus()
         await dispose_engine()
         _logger.info("backend_stop")
 
@@ -58,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(bars.router)
     app.include_router(ticks.router)
     app.include_router(orderbook.router)
+    app.include_router(stream.router)
 
     @app.exception_handler(RequestValidationError)
     async def _on_validation_error(

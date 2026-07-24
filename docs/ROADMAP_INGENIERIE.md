@@ -40,13 +40,17 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 > Livré : `backend/` (FastAPI async + SQLAlchemy 2.0 + Pydantic v2), 13 tests verts
 > (schémas + idempotence SQL, sans DB). Déploiement Railway = action infra à part.
 
-### P0-C — Bus ZDL (minimal viable)
+### P0-C — Bus ZDL (minimal viable) — ✅ livré (`backend/app/bus/`)
 
-| Tâche | DoD |
-|-------|-----|
-| Redis Streams ou NATS JetStream | Publish bar close events |
-| Consumer collector → TS + ACK | Retry 3x backoff |
-| Dashboard WS `/stream/bars` | Reconnexion auto client |
+| Tâche | DoD | État |
+|-------|-----|------|
+| Redis Streams | Publish bar-close events (`publish` + wiring ingestion) | ✅ |
+| Consumer + ACK | Consumer groups, ACK, **retry backoff exponentiel**, **DLQ**, reclaim (XAUTOCLAIM) | ✅ |
+| Dashboard WS `/stream/bars` | WS `GET /stream/bars/{tf}` (tail temps réel) ; reconnexion côté client | ✅ |
+| Résilience | Reconnexion auto, backpressure (MAXLEN), opt-in `QX_BUS_ENABLED` | ✅ |
+
+> Livré : bus typé (mypy strict), 6 tests avec faux client Redis en mémoire (ACK,
+> retry→DLQ, message empoisonné, run_consumer, reclaim). Worker : `python -m app.bus.consumer`.
 
 ### P0-D — LLM local (Qwen2.5-Coder-7B)
 

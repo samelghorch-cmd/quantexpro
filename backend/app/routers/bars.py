@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import datetime as dt
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..bus import bars_stream, get_bus, make_bar_closed
 from ..config import Settings, get_settings
 from ..db import get_session
 from ..repositories import read_bars, upsert_bars
@@ -14,6 +16,18 @@ from ..schemas import BarIn, BarOut, IngestResult, Page, Timeframe
 from ..security import require_api_key
 
 router = APIRouter(prefix="/v1/bars", tags=["bars"])
+_logger = logging.getLogger(__name__)
+
+
+async def _publish_bar_events(timeframe: Timeframe, bars: list[BarIn]) -> None:
+    """Publie les bar-close sur le bus (best-effort : la base TS reste la source de vérité)."""
+    stream = bars_stream(str(timeframe))
+    bus = get_bus()
+    try:
+        for bar in bars:
+            await bus.publish(stream, make_bar_closed(bar.symbol, str(timeframe), bar.model_dump()))
+    except Exception:  # noqa: BLE001 - un bus indisponible ne doit pas faire échouer l'ingestion
+        _logger.exception("bus_publish_failed", extra={"stream": stream, "count": len(bars)})
 
 
 @router.post(
@@ -37,6 +51,8 @@ async def ingest_bars(
             f"Lot de {len(bars)} > max {settings.max_ingest_batch} (backpressure).",
         )
     written = await upsert_bars(session, timeframe, bars)
+    if settings.bus_enabled:
+        await _publish_bar_events(timeframe, bars)
     return IngestResult(
         received=len(bars),
         written=written,
