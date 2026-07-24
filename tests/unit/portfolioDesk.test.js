@@ -10,7 +10,7 @@ import {
   computeDeskMetrics,
   buildPmDesk,
   deskToCsv,
-} from "../../src/engine/portfolioDesk.js";
+} from "../../src/engine/portfolioDesk.ts";
 
 beforeEach(() => {
   const store = new Map();

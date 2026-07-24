@@ -95,7 +95,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| Equity / PnL flotte multi-actifs | ✅ `portfolioDesk.js` + Trading → Desk PM | Capital / budget risque / sleeves Alpha Forge + démo + collector |
+| Equity / PnL flotte multi-actifs | ✅ `portfolioDesk.ts` + Trading → Desk PM | Capital / budget risque / sleeves Alpha Forge + démo + collector |
 | Signal Engine WS localhost:5050 | ✅ `signalConsole.js` + hook · Trading → Signal Engine | Local pipeline + WS `/stream/bars/{tf}` (bus ZDL) · journal unifié |
 | Stratégies nommées (ORB, Order Block, …) | Librairie ICT/SMC partielle dans 700 strats | Mapping marketing ↔ ids à documenter |
 
@@ -188,7 +188,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P3-MT5-VPS | Pack go-live VPS | ✅ | `mt5/VPS_DEPLOY.md` · `smoke.mjs` · dry-run tests |
 | P4-AF | Alpha Forge Validated Edges | ✅ | `validatedEdges.ts` · page Optimisation · promote Dossiers |
 | P4-AUDIT-UI | UI journal audit serveur | ✅ | `auditLog.ts` · Risque → Audit · hash SHA-256 · CSV |
-| P4-DESK | Desk PM flotte / réserve risque | ✅ | `portfolioDesk.js` · Trading → Desk PM |
+| P4-DESK | Desk PM flotte / réserve risque | ✅ | `portfolioDesk.ts` · Trading → Desk PM |
 | P4-SIGNAL-WS | Console Signal Engine + WS bars | ✅ | `signalConsole.js` · `/stream/bars` · journal local/WS |
 | P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.ts` · Alembic 0004 |
 | P4-GEX | Options Gamma / GEX | ✅ | `gex.ts` · Deribit proxy · Max Pain · PCR · implied move |
@@ -215,21 +215,22 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P7-TS-MORE | auditLog + ssoAuth → TS | ✅ | `AuditEvent` · PKCE / JWT session |
 | P8-TS-MICRO | microstructure → TypeScript | ✅ | VP / pPOC / pVAL / confluence OI |
 | P8-TS-REV | signalReverse → TypeScript | ✅ | NormalizedSignal · lift · Rule Builder |
+| P8-TS-DESK | portfolioDesk → TypeScript | ✅ | DeskConfig · sleeves · equity / réserve |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P7 clôturés** · P8 en cours.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P8-TS-DESK** livrés.
 
-**Prochaine action recommandée :** P8-TS-DESK (`portfolioDesk`).
+**Prochaine action recommandée :** suite migration TS (`signalConsole` / autres modules engine restants).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5–P8-TS-REV livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5–P8-TS-DESK livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).

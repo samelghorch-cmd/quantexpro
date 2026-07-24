@@ -158,7 +158,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P8-TS-MICRO** `microstructure.js` → `microstructure.ts` (VP / pPOC / confluence) ✅
 - [x] **P8-TS-REV** `signalReverse.js` → `signalReverse.ts` ✅
-- [ ] **P8-TS-DESK** `portfolioDesk.js` → TypeScript
+- [x] **P8-TS-DESK** `portfolioDesk.js` → `portfolioDesk.ts` ✅
 
 ---
 

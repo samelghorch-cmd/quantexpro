@@ -9,7 +9,7 @@ import {
   saveDeskConfig,
   buildPmDesk,
   deskToCsv,
-} from "../../engine/portfolioDesk.js";
+} from "../../engine/portfolioDesk.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
