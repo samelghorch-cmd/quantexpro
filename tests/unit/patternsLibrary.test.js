@@ -7,7 +7,7 @@ import {
   countByTimeframe,
   clearPatternsCache,
   PATTERN_FILTERS,
-} from "../../src/engine/patternsLibrary.js";
+} from "../../src/engine/patternsLibrary.ts";
 
 beforeEach(() => clearPatternsCache());
 

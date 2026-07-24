@@ -79,7 +79,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
 | Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (KAMA, LinReg, Ichimoku) | 🟢 |
-| Patterns Library 616 | ✅ `patternsLibrary.js` · TF M1–MN · familles scalp/intra/swing | 🟢 |
+| Patterns Library 616 | ✅ `patternsLibrary.ts` · TF M1–MN · familles scalp/intra/swing | 🟢 |
 | Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
 | Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
 | Alpha Forge + Valid Edges | ✅ `validatedEdges.ts` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |

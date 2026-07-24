@@ -4,7 +4,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
 import { compileRules, RULE_SOURCES, RULE_OPS, describeRule } from "../../engine/ruleBuilder.js";
 import { saveCustomDef } from "../../engine/customStrategies.js";
-import { buildPatternsLibrary, filterPatterns, PATTERN_FILTERS } from "../../engine/patternsLibrary.js";
+import { buildPatternsLibrary, filterPatterns, PATTERN_FILTERS } from "../../engine/patternsLibrary.ts";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Tabs, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";

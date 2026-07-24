@@ -123,7 +123,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-HMM** Régimes Trend/Range/Vol/Choppy (`hmmRegimes` · HMM Regime / Regime Clock) ✅
 - [x] **P4-OSC** Oscillateurs Z-Score / Hurst / régimes (`oscillators.ts` · Statistical Edge) ✅
 - [x] **P4-CORE** Catalogue Core Mode KAMA / LinReg / Ichimoku (`ruleBuilder` + overlays) ✅
-- [x] **P4-PAT** Patterns Library TF M1–MN + familles scalp/intra/swing ✅
+- [x] **P4-PAT** Patterns Library TF M1–MN + familles scalp/intra/swing (`patternsLibrary.ts`) ✅
 - [x] **P4-RESEARCH** RSS recherche légaux (arXiv q-fin · NBER · BIS) ✅
 
 ---
@@ -143,6 +143,14 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P6-THEME** Tokens long/short `#00e676` / `#ff1744` + `T.card` (`theme.js`) ✅
 - [x] **P6-TS-MORE** `antiLibrary` + `antiLibrarySync` → TypeScript ✅
 - [x] **P6-HMM-BW** Baum-Welch Gaussian 1D (`hmm_bw.py` · `engine=baum_welch`) ✅
+
+---
+
+## P7 — Suite TS & produit (post-P6)
+
+- [x] **P7-TS-PAT** `patternsLibrary.js` → `patternsLibrary.ts` ✅
+- [ ] **P7-TS-GEX** `gex.js` → TypeScript
+- [ ] **P7-TS-MORE** Suite incremental (auditLog, ssoAuth, …)
 
 ---
 
