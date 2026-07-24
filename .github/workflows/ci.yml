@@ -1,0 +1,41 @@
+# CI QuantEXPro — pipeline bloquant : zéro test en échec = zéro merge.
+# Étages : tests unitaires (invariants + goldens, rapides) → intégration (causalité
+# moteur complet) → couverture avec seuils bloquants → build production.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+
+
+
+
+jobs:
+  test:
+    name: Invariants · Goldens · Causalité · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install (repro stricte)
+        run: npm ci --ignore-scripts
+
+      - name: Tests unitaires — invariants backtester + goldens métriques (<30 s)
+        run: npm run test:unit
+
+      - name: Tests d'intégration — causalité moteur + librairie complète (<2 min)
+        run: npm run test:integration
+
+      - name: Couverture — seuils bloquants (100 % annualize, ≥90 % moteur étendu)
+        run: npm run coverage
+
+      - name: Build production
+        run: npm run build

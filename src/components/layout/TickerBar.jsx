@@ -37,7 +37,7 @@ export function TickerBar() {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 0, background: T.bg1, borderBottom: `1px solid ${T.border}`, height: 30, overflow: "hidden", position: "relative" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: "100%", borderRight: `1px solid ${T.border}`, flexShrink: 0, background: T.panel }}>
-        <span style={{ fontSize: 9, fontWeight: 700, color: T.yellow, border: `1px solid ${T.yellow}55`, borderRadius: 4, padding: "1px 5px", letterSpacing: 0.4 }}>SIMULÉ</span>
+        <span title="Ce bandeau décoratif est une marche aléatoire — il ne reflète JAMAIS le marché réel, quel que soit le mode de données de la plateforme." style={{ fontSize: 9, fontWeight: 700, color: T.yellow, border: `1px solid ${T.yellow}55`, borderRadius: 4, padding: "1px 5px", letterSpacing: 0.4 }}>TICKER SIMULÉ</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
         <div style={{ display: "inline-flex", animation: "ticker 60s linear infinite", gap: 0 }}>

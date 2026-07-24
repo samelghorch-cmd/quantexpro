@@ -45,6 +45,7 @@ const INTERVALS = ["5m", "15m", "1h", "4h", "1d"];
 
 // Panneau 24/7 : lance la stratégie du dossier sur le collecteur cloud et synchronise la data collectée.
 function Cloud24Panel({ d, refresh }) {
+  const { library } = usePipeline();
   const [url, setUrl] = useState(getCollectorUrl() || "http://localhost:8787");
   const [health, setHealth] = useState(null);
   const [jobs, setJobs] = useState([]);
@@ -65,7 +66,10 @@ function Cloud24Panel({ d, refresh }) {
   const launch = async () => {
     setBusy(true); setMsg("");
     try {
-      const j = await createJob({ name: d.name, strategyId: d.strategyId, ticker, interval, params: d.params });
+      // Stratégie custom : le collector ne connaît pas le localStorage du navigateur —
+      // les règles AST voyagent dans le job et sont compilées côté Node (même ruleBuilder).
+      const strat = library.find((s) => s.id === d.strategyId);
+      const j = await createJob({ name: d.name, strategyId: d.strategyId, ticker, interval, params: d.params, ...(strat?.custom ? { rules: strat.rules } : {}) });
       await updateDossier(d.id, { cloudJobId: j.id });
       setMsg("✓ Lancé en 24/7"); await probe(); await refresh();
     } catch (e) { setMsg("⚠️ " + (e.message || e)); }

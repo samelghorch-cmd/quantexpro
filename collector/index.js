@@ -10,6 +10,8 @@ import path from "node:path";
 import { buildStrategyLibrary } from "../src/engine/strategyLibrary.js";
 import { buildContext } from "../src/engine/context.js";
 import { runBacktestExt } from "../src/engine/backtestExtended.js";
+import { compileRules } from "../src/engine/ruleBuilder.js";
+import { validateRules } from "../src/engine/customStrategies.js";
 
 const PORT = process.env.PORT || 8787;
 const POLL_MS = Number(process.env.POLL_MS || 60000);      // fréquence de collecte (défaut 60 s)
@@ -51,13 +53,21 @@ function mergeBars(series, incoming) {
 }
 
 // Évalue la stratégie du job sur sa série accumulée — MÊME moteur que le dashboard.
+// Stratégie du job : custom (règles AST transportées dans le job, compilées avec le MÊME
+// ruleBuilder que le dashboard) ou intégrée (lookup par id dans la librairie partagée).
+function resolveStrat(job) {
+  if (job.rules) return { id: job.strategyId, name: job.name, eval: compileRules(job.rules) };
+  return lib.find((s) => s.id === job.strategyId);
+}
+
 function evalJob(job) {
-  const strat = lib.find((s) => s.id === job.strategyId);
+  const strat = resolveStrat(job);
   if (!strat || (job.series || []).length < 120) return null;
   const ctx = buildContext(job.series);
   const p = job.params || {};
   const params = { contract: p.contract || "MES", capital: p.capital || 100000, direction: p.direction || "both",
-    slAtr: p.slAtr ?? 2, tpAtr: p.tpAtr ?? 0, beAtr: p.beAtr ?? 0, contracts: p.contracts || 1 };
+    slAtr: p.slAtr ?? 2, tpAtr: p.tpAtr ?? 0, beAtr: p.beAtr ?? 0, contracts: p.contracts || 1,
+    lotMode: p.lotMode || "FIXED_LOTS", riskPct: p.riskPct ?? 1, warmup: p.warmup ?? 50 };
   return runBacktestExt(job.series, ctx, strat.eval, params);
 }
 
@@ -105,7 +115,15 @@ const server = http.createServer(async (req, res) => {
       if (req.method === "POST") {
         const b = await readBody(req);
         if (!b.ticker || !ALLOWED_INTERVALS.has(b.interval) || b.strategyId == null) return send(res, 400, { error: "champs requis : ticker, interval (5m/15m/1h/4h/1d), strategyId" });
-        const job = { id: uid(), name: b.name || `${b.ticker} #${b.strategyId}`, strategyId: b.strategyId, ticker: String(b.ticker).toUpperCase(), interval: b.interval, params: b.params || {}, series: [], result: null, createdAt: Date.now(), updatedAt: Date.now(), polls: 0, lastError: null };
+        // Stratégie custom : les règles voyagent avec le job (le collector ne peut pas lire
+        // le localStorage du navigateur) — validées ici avec le même validateur que l'app.
+        let rules = null;
+        if (b.rules) {
+          try { rules = validateRules(b.rules); } catch (e) { return send(res, 400, { error: `rules invalides : ${e.message}` }); }
+        } else if (b.strategyId >= 9001 || !lib.some((s) => s.id === b.strategyId)) {
+          return send(res, 400, { error: `stratégie #${b.strategyId} inconnue du collector — joindre 'rules' pour une stratégie custom` });
+        }
+        const job = { id: uid(), name: b.name || `${b.ticker} #${b.strategyId}`, strategyId: b.strategyId, rules, ticker: String(b.ticker).toUpperCase(), interval: b.interval, params: b.params || {}, series: [], result: null, createdAt: Date.now(), updatedAt: Date.now(), polls: 0, lastError: null };
         try { job.series = await fetchKlines(job.ticker, job.interval, 1000); const r = evalJob(job); if (r) job.result = r; } catch (e) { job.lastError = String(e.message || e); }
         jobs[job.id] = job; persist();
         return send(res, 201, { job: summary(job) });

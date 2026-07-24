@@ -1,0 +1,113 @@
+# Feuille de route ingénierie — QuantEXPro
+
+Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTITUTIONNEL.md` et la spec Terminal Quant institutionnel.
+
+**Règle d’or :** P0 tests & moteur JS d’abord → backend ZDL → MT5 → Next/TS massif.
+
+---
+
+## Sprint 0 — Reprise (1–2 jours)
+
+- [ ] **S0.1** Vérifier `npm test` (109) + `npm run build`
+- [ ] **S0.2** Committer le WIP : custom strategies, tests, CI, husky, fix id 117
+- [ ] **S0.3** Pousser `main` → activer GitHub Actions CI bloquante
+- [x] **S0.4** Corriger **VPIN causal** (`vpin.js` bucketVolume) — P0-T4 ✅ (amorce fixe `calibBars`)
+- [x] **S0.5** Tests dossiers IndexedDB — P0-T5 ✅ (fake-indexeddb, 23 tests writeChain/grade/cycle)
+
+---
+
+## P0 — Fondations critiques
+
+### P0-A — Moteur & qualité (JS, inchangé stack)
+
+| Tâche | Fichiers / zone | DoD |
+|-------|-----------------|-----|
+| ~~VPIN causal~~ ✅ | `src/engine/vpin.js`, tests intégration | Fait : calibration `bucketVolume` sur amorce fixe ; sentinelle retirée ; invariance troncature verte |
+| ~~Dossiers ZDL tests~~ ✅ | `dossierStore.js`, `tests/unit/dossierStore.test.js` | Fait : fake-indexeddb ; writeChain prouvée (anti lost-update) ; cycle 6 étapes snapshot |
+| Couverture P0.6 | walkforward, montecarlo, fao, costModel | Seuils CI 80 % lignes moteur |
+| DSR dans Reco | déjà fait | Documenter seuils dans audit |
+
+### P0-B — Backend Python + TimescaleDB (nouveau repo ou `backend/`)
+
+| Tâche | DoD |
+|-------|-----|
+| Schéma TS : `ticks`, `bars_1m`, `bars_5m`, `orderbook_l2_snapshots` | Migrations Alembic |
+| Ingest REST : POST bars depuis collector/dashboard | Idempotent (`symbol, t` PK) |
+| API GET : `/v1/bars/{symbol}` paginé | Remplace lecture primaire IndexedDB |
+| Health + metrics Railway | `/health`, logs structurés |
+
+### P0-C — Bus ZDL (minimal viable)
+
+| Tâche | DoD |
+|-------|-----|
+| Redis Streams ou NATS JetStream | Publish bar close events |
+| Consumer collector → TS + ACK | Retry 3x backoff |
+| Dashboard WS `/stream/bars` | Reconnexion auto client |
+
+### P0-D — LLM local (Qwen2.5-Coder-7B)
+
+| Tâche | DoD |
+|-------|-----|
+| Container inference (CPU/GPU doc) | Endpoint OpenAI-compatible local |
+| `POST /strategy/from-prompt` → JSON Rule Builder | Valide via `validateRules` |
+| UI Prompt Mode | Module Strategy Engine |
+
+### P0-E — MT5 & gouvernance
+
+| Tâche | DoD |
+|-------|-----|
+| EA bridge : réception signal JSON | Logs + ACK HTTP |
+| Auth API keys par environnement | Pas de secrets en repo |
+| Audit log table append-only | who, what, payload hash |
+
+---
+
+## P1 — Risque institutionnel
+
+- [ ] DSR + nTrials dans **Usine** (`StrategyFactory.jsx` + worker)
+- [ ] Anti-Library store + filtre Usine/FAO
+- [ ] Stress scenarios portefeuille
+- [ ] TCA module (slippage observé vs modèle)
+- [ ] PDF tearsheet par dossier
+- [ ] **Statistical Edge Module 1** (grille 10 métriques + CSV)
+
+---
+
+## P2 — Microstructure & polish
+
+- [ ] Binance L2 WS
+- [ ] Dukascopy batch historique
+- [ ] Export MQL5 EA templates
+- [ ] UI Labs + fusion navigation
+- [ ] Migration **Next.js + TS strict** (si SSR/WS justifié)
+- [ ] Scrapers sentiment (Module 6) — légal + rate limits
+
+---
+
+## Mapping spec → pages actuelles (référence rapide)
+
+| Module spec | Entrées sidebar actuelles |
+|-------------|---------------------------|
+| 1 Statistical Edge | `analyseQuant`, `featureMining`, `quantToolbox` → **à fusionner** |
+| 2 Alpha Forge | `factory`, `coreMode`, `strategyImporter`, `fao`, `validator` → **à regrouper UX** |
+| 3 Algorithmic Desk | `cockpit`, `signalEngine`, `forwardTest`, collector |
+| 4 Backtest KPIs | `backtest`, `recoFinale`, `vpin` |
+| 5 GEX | `optionsGamma`, `vpFootprint` |
+| 6 Sentiment | *(à créer section ou Macro)* |
+| 7 Macro HMM | `hmmRegime`, `yieldCurve`, `usdLiquidity`, `cot`, … |
+
+---
+
+## Prompt système Cursor / Claude (extrait opérationnel)
+
+Pour chaque tâche :
+
+1. Lire `docs/AUDIT_INSTITUTIONNEL.md` + ce fichier.
+2. Code production complet — pas de TODO placeholder.
+3. Tests pour toute modification `src/engine/*`.
+4. Préserver parité `collector/index.js` ↔ dashboard.
+5. Typage : JSDoc strict maintenant ; `.ts` quand fichier touché en refactor P1+.
+
+---
+
+*Maintenu avec l’audit du 2026-07-24.*

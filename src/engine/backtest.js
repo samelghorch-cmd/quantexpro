@@ -1,10 +1,10 @@
 // Extrait de v4core.js — moteur de backtest (PnL réaliste) + batch.
-import { CONTRACTS } from "./contracts.js";
+import { resolveSpec, roundTripCost } from "./contracts.js";
 import { annualFactor } from "./annualize.js";
 
 export function runBacktest(bars, ctx, strategyEval, options) {
   const { contract, contracts, useAtrStop, atrMult, direction, capital } = options;
-  const spec = CONTRACTS[contract];
+  const spec = resolveSpec(contract);
   const trades = [];
   let position = null;
   let equity = capital;
@@ -29,7 +29,7 @@ export function runBacktest(bars, ctx, strategyEval, options) {
 
       if (exit) {
         const gross = (exitPrice - position.entry) * position.side * spec.pv * contracts;
-        const cost = 2 * (spec.commission * contracts + spec.slippage * spec.tick * spec.pv * contracts);
+        const cost = roundTripCost(spec, contracts, position.entry, exitPrice);
         const net = gross - cost;
         equity += net;
         trades.push({

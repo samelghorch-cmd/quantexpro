@@ -1,23 +1,38 @@
 // Backtest étendu : ajoute Stop Loss / Take Profit / Break-Even paramétrables
 // à la logique de runBacktest (qui ne gère que stop ATR + signal inverse).
 // Utilisé par le pipeline d'optimisation (FAO, Quant Optimizer).
-import { CONTRACTS } from "./contracts.js";
+import { resolveSpec, roundTripCost } from "./contracts.js";
 import { annualFactor, periodsPerYear } from "./annualize.js";
 
-// params : { slAtr, tpAtr, beAtr, direction, contracts, capital }
-//  slAtr : multiple d'ATR pour le stop (0 = pas de SL)
-//  tpAtr : multiple d'ATR pour le take-profit (0 = pas de TP)
-//  beAtr : profit en multiples d'ATR déclenchant le passage du stop à break-even (0 = off)
+// params : { slAtr, tpAtr, beAtr, direction, contracts, capital, lotMode, riskPct, warmup }
+//  slAtr   : multiple d'ATR pour le stop (0 = pas de SL)
+//  tpAtr   : multiple d'ATR pour le take-profit (0 = pas de TP)
+//  beAtr   : profit en multiples d'ATR déclenchant le passage du stop à break-even (0 = off)
+//  lotMode : "FIXED_LOTS" (défaut — qty = contracts) | "RISK_PERCENT" (qty dimensionnée
+//            pour risquer riskPct % de l'ÉQUITÉ COURANTE jusqu'au stop ; nécessite slAtr > 0,
+//            sinon repli documenté sur contracts). Quantité fractionnaire si spec.fractional.
+//  warmup  : barres ignorées en début de série (défaut 50 — historique du moteur)
 export function runBacktestExt(bars, ctx, strategyEval, params) {
   const { contract = "MES", contracts = 1, capital = 100000, direction = "both",
-          slAtr = 2, tpAtr = 0, beAtr = 0 } = params || {};
-  const spec = CONTRACTS[contract];
+          slAtr = 2, tpAtr = 0, beAtr = 0,
+          lotMode = "FIXED_LOTS", riskPct = 1, warmup = 50 } = params || {};
+  const spec = resolveSpec(contract);
   const trades = [];
   let position = null;
   let equity = capital;
   const equityCurve = [equity];
 
-  for (let i = 50; i < bars.length; i++) {
+  // Quantité à l'ouverture : risque fixe en % de l'équité courante (compounding),
+  // convertie en unités via la distance de stop. Jamais silencieux : qty 0 = pas de trade.
+  const sizeFor = (atr) => {
+    if (lotMode !== "RISK_PERCENT" || !(slAtr > 0) || !(atr > 0)) return contracts;
+    const riskPerUnit = slAtr * atr * spec.pv;
+    if (!(riskPerUnit > 0)) return contracts;
+    const qty = (equity * riskPct / 100) / riskPerUnit;
+    return spec.fractional ? qty : Math.floor(qty);
+  };
+
+  for (let i = warmup; i < bars.length; i++) {
     const signal = strategyEval(ctx, i);
     const price = bars[i].c;
     const atr = ctx.atr14[i];
@@ -49,12 +64,12 @@ export function runBacktestExt(bars, ctx, strategyEval, params) {
       }
 
       if (exit) {
-        const gross = (exitPrice - position.entry) * position.side * spec.pv * contracts;
-        const cost = 2 * (spec.commission * contracts + spec.slippage * spec.tick * spec.pv * contracts);
+        const gross = (exitPrice - position.entry) * position.side * spec.pv * position.qty;
+        const cost = roundTripCost(spec, position.qty, position.entry, exitPrice);
         const net = gross - cost;
         equity += net;
         trades.push({ entry: position.entry, exit: exitPrice, side: position.side, bars: i - position.barIdx,
-          pnl: net, entryTime: position.time, exitTime: bars[i].t, reason: exitReason });
+          qty: position.qty, pnl: net, entryTime: position.time, exitTime: bars[i].t, reason: exitReason });
         position = null;
       }
     }
@@ -63,13 +78,16 @@ export function runBacktestExt(bars, ctx, strategyEval, params) {
       const openLong = signal.long && (direction === "both" || direction === "long");
       const openShort = signal.short && (direction === "both" || direction === "short");
       if ((openLong || openShort) && !isNaN(atr)) {
-        const side = openLong ? 1 : -1;
-        const stop = slAtr > 0 ? (side === 1 ? price - slAtr * atr : price + slAtr * atr) : NaN;
-        const tp = tpAtr > 0 ? (side === 1 ? price + tpAtr * atr : price - tpAtr * atr) : NaN;
-        position = { entry: price, side, stop, tp, barIdx: i, time: bars[i].t, entryAtr: atr, beActive: false };
+        const qty = sizeFor(atr);
+        if (qty > 0) {
+          const side = openLong ? 1 : -1;
+          const stop = slAtr > 0 ? (side === 1 ? price - slAtr * atr : price + slAtr * atr) : NaN;
+          const tp = tpAtr > 0 ? (side === 1 ? price + tpAtr * atr : price - tpAtr * atr) : NaN;
+          position = { entry: price, side, stop, tp, qty, barIdx: i, time: bars[i].t, entryAtr: atr, beActive: false };
+        }
       }
     }
-    equityCurve.push(equity + (position ? (price - position.entry) * position.side * spec.pv * contracts : 0));
+    equityCurve.push(equity + (position ? (price - position.entry) * position.side * spec.pv * position.qty : 0));
   }
 
   return computeMetrics(trades, equityCurve, capital, bars);

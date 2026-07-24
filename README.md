@@ -2,6 +2,9 @@
 
 Réplique fidèle de la plateforme quant "PROTOS" : 8 sections de sidebar, 69 modules réellement fonctionnels, pipeline scientifique complet. React 18 + Vite, aucune dépendance de chart ou ML externe (tout en SVG/Canvas custom).
 
+**Mémoire & agents (lire en premier) :** [`AGENTS.md`](AGENTS.md) · [`docs/memory/STATUS.md`](docs/memory/STATUS.md) · [`docs/memory/MEMORY.md`](docs/memory/MEMORY.md)  
+**Institutionnel :** [`docs/AUDIT_INSTITUTIONNEL.md`](docs/AUDIT_INSTITUTIONNEL.md) · [`docs/ROADMAP_INGENIERIE.md`](docs/ROADMAP_INGENIERIE.md) · tests P0 [`docs/TESTING.md`](docs/TESTING.md).
+
 ## Lancer
 
 ```bash

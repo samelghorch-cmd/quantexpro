@@ -1,0 +1,3 @@
+# Pre-commit BLOQUANT : la suite unitaire (invariants + goldens, <30 s) doit passer.
+# Zéro test en échec = zéro commit. La suite d'intégration tourne en CI.
+npx vitest run tests/unit --silent

@@ -4,7 +4,7 @@ import { createContext, useContext, useMemo, useState, useCallback, useEffect, u
 import { CONTRACTS } from "../engine/contracts.js";
 import { generateSyntheticCandles, aggregateBars } from "../engine/syntheticData.js";
 import { buildContext } from "../engine/context.js";
-import { buildStrategyLibrary } from "../engine/strategyLibrary.js";
+import { buildFullLibrary } from "../engine/customStrategies.js";
 import { fetchCandles } from "../engine/marketData.js";
 import { createDossier, getDossier, updateDossier, attachStage, setGrade as setDossierGrade, upsertDemoSession } from "../engine/dossierStore.js";
 
@@ -18,8 +18,9 @@ export function PipelineProvider({ children }) {
   // Magasin de résultats persistant : { [key]: data } — ne se vide pas quand on change de page
   const [store, setStore] = useState({});
 
-  // Paramètres de marché globaux
-  const [symbol, setSymbol] = useState("MES");
+  // Paramètres de marché globaux — futSymbol = contrat du mode synthétique ;
+  // le `symbol` exposé (clé de trading/coûts) est calculé plus bas selon le mode.
+  const [futSymbol, setSymbol] = useState("MES");
   const [nBars, setNBars] = useState(1500);
   const [seed, setSeed] = useState(42);
   const [tf, setTf] = useState(1);
@@ -55,7 +56,11 @@ export function PipelineProvider({ children }) {
     setLogs((l) => [{ t: Date.now(), module, message, level }, ...l].slice(0, 500));
   }, []);
 
-  const library = useMemo(() => buildStrategyLibrary(), []);
+  // Librairie = 700 intégrées + stratégies CUSTOM persistées. libVersion invalide le memo
+  // quand une custom est sauvegardée/supprimée (refreshLibrary) — dispo instantanément partout.
+  const [libVersion, setLibVersion] = useState(0);
+  const refreshLibrary = useCallback(() => setLibVersion((v) => v + 1), []);
+  const library = useMemo(() => buildFullLibrary(), [libVersion]);
   const synthRaw = useMemo(() => generateSyntheticCandles(nBars, seed, 4500), [nBars, seed]);
   const synthBars = useMemo(() => aggregateBars(synthRaw, tf), [synthRaw, tf]);
 
@@ -79,6 +84,9 @@ export function PipelineProvider({ children }) {
   useEffect(() => { if (dataMode === "live") loadLive(); }, [dataMode, assetKey, tf, loadLive]);
 
   const usingReal = dataMode === "live" && liveBars && liveBars.length >= 60;
+  // LA clé de trading : en mode réel c'est l'actif réel (BTC, SPX, EURUSD…) → resolveSpec
+  // applique ses coûts propres (fee % + spread). Fini le Bitcoin facturé comme un Micro S&P.
+  const symbol = usingReal ? assetKey : futSymbol;
   const bars = usingReal ? liveBars : synthBars;
   const rawBars = usingReal ? liveBars : synthRaw;
   const ctx = useMemo(() => buildContext(bars), [bars]);
@@ -122,7 +130,7 @@ export function PipelineProvider({ children }) {
     activeModule, navigate,
     _store: store, _setStore: setStore,
     symbol, setSymbol, nBars, setNBars, seed, setSeed, tf, setTf,
-    CONTRACTS, library, rawBars, bars, ctx,
+    CONTRACTS, library, refreshLibrary, rawBars, bars, ctx,
     dataMode, setDataMode, assetKey, setAssetKey, liveBars, dataLoading, dataError, dataMeta,
     usingReal, reloadData: () => loadLive(true),
     pipeline, setPipe, logs, log, journal, addJournal,

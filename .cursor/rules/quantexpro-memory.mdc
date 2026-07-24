@@ -1,0 +1,14 @@
+---
+description: Mémoire QuantEXPro — lire STATUS/MEMORY, multi-agents, règles ZDL
+alwaysApply: true
+---
+
+# QuantEXPro — contexte permanent
+
+- Projet : **QuantEXPro** (pas TradoBot Shopify). Racine = ce repo `web/dashboard`.
+- Mémoire : `docs/memory/STATUS.md` puis `docs/memory/MEMORY.md` en début de session.
+- Roadmap : `docs/ROADMAP_INGENIERIE.md` · Audit : `docs/AUDIT_INSTITUTIONNEL.md`.
+- Agents : déléguer via `.cursor/agents/` (engine / frontend / infra / reviewer).
+- Parité : `collector/` importe `src/engine/*` — jamais de second moteur.
+- Après travail moteur : `npm test`. Mettre à jour `STATUS.md`.
+- WIP non commité (custom strategies + tests) = normal jusqu’à Sprint 0.2.

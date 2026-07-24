@@ -1,5 +1,6 @@
 // Composants UI partagés v5.
 import { T, S } from "./theme.js";
+import { usePipeline } from "../../state/PipelineContext.jsx";
 
 export function Panel({ title, right, children, style, bodyStyle }) {
   return (
@@ -33,7 +34,13 @@ export function Badge({ children, color = T.textDim }) {
   return <span style={S.chip(color)}>{children}</span>;
 }
 
+// Badge de provenance des données — DYNAMIQUE : reflète le mode courant.
+// (Historique : chip statique "SIMULÉ" qui s'affichait même sur un backtest en données réelles.)
 export function SimBadge() {
+  const { usingReal, dataMeta } = usePipeline();
+  if (usingReal) {
+    return <span style={{ ...S.chip(T.green), border: `1px solid ${T.green}55` }} title={`Données réelles — ${dataMeta?.symbol?.label ?? ""} (${dataMeta?.symbol?.classLabel ?? ""}), coûts propres à l'actif appliqués.`}>RÉEL</span>;
+  }
   return <span style={{ ...S.chip(T.yellow), border: `1px solid ${T.yellow}55` }} title="Données synthétiques générées en interne — jamais de vraies données de marché.">SIMULÉ</span>;
 }
 

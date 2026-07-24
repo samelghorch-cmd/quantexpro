@@ -14,6 +14,7 @@ export const CATS = {
   j: { name: "Composite",      color: "#B5B5B5" },
   k: { name: "Chandelier",     color: "#E056FD" },
   l: { name: "MTF",            color: "#00D4FF" },
+  z: { name: "Custom",         color: "#FF6B00" },
 };
 
 export const STRAT_FAMILIES = {
@@ -633,67 +634,70 @@ export function buildStrategyLibrary() {
     return { long: orb.long && ctx.close[i] > ctx.vwap[i], short: orb.short && ctx.close[i] < ctx.vwap[i] };
   });
 
-  // 117-170 · Croisements MA paramétrés (EMA, SMA, DEMA, TEMA, HMA, WMA)
+  // 118-171 · Croisements MA paramétrés (EMA, SMA, DEMA, TEMA, HMA, WMA)
+  // idCounter démarre à 118 : le 117 est pris par "VPIN Toxicity Fade" (ajouté plus haut).
+  // Historique : démarrait à 117 → doublon d'id 117 (VPIN masquait "EMA 5/20 Cross") détecté
+  // par le test d'unicité de customStrategies.test.js. Les ids générés ont glissé de +1.
   const maPairs = [[5,20],[9,21],[10,30],[12,26],[20,50],[50,100],[50,200],[100,200],[200,400]];
   const maTypes = [["ema","EMA"],["sma","SMA"],["dema","DEMA"],["tema","TEMA"],["hma","HMA"],["wma","WMA"]];
-  let idCounter = 117;
+  let idCounter = 118;
   maTypes.forEach(([type, label]) => {
     maPairs.forEach(([f, s]) => {
       add(idCounter++, `${label} ${f}/${s} Cross`, "a", STRAT_FAMILIES.maCross(type, f, s));
     });
   });
 
-  // 171-198 · RSI paramétrés
+  // 172-199 · RSI paramétrés
   const rsiPeriods = [2, 3, 4, 5, 7, 14, 21];
   const rsiLevels = [[20,80],[25,75],[30,70],[35,65]];
   rsiPeriods.forEach(p => rsiLevels.forEach(([lo,hi]) => add(idCounter++, `RSI(${p}) ${lo}/${hi}`, "b", STRAT_FAMILIES.rsiRev(p, lo, hi))));
 
-  // 199-210 · Williams %R paramétrés
+  // 200-211 · Williams %R paramétrés
   [7,14,21,28].forEach(p => [[-80,-20],[-85,-15],[-90,-10]].forEach(([lo,hi]) => add(idCounter++, `Williams%R(${p}) ${lo}/${hi}`, "b", STRAT_FAMILIES.wprRev(p, lo, hi))));
 
-  // 211-222 · CCI paramétrés
+  // 212-223 · CCI paramétrés
   [14,20,30,40].forEach(p => [100,150,200].forEach(l => add(idCounter++, `CCI(${p}) ±${l}`, "b", STRAT_FAMILIES.cciRev(p, l))));
 
-  // 223-234 · Stochastic paramétrés
+  // 224-235 · Stochastic paramétrés
   [[5,3],[9,3],[14,3],[21,5]].forEach(([p,d]) => [[20,80],[15,85],[10,90]].forEach(([lo,hi]) => add(idCounter++, `Stoch(${p},${d}) ${lo}/${hi}`, "b", STRAT_FAMILIES.stochRev(p, d, lo, hi))));
 
-  // 235-274 · Bollinger paramétrés (breakout + bounce)
+  // 236-275 · Bollinger paramétrés (breakout + bounce)
   [10,15,20,25,30].forEach(n => [1.5,2,2.5,3].forEach(m => {
     add(idCounter++, `Bollinger ${n}/${m} Breakout`, "c", STRAT_FAMILIES.bbBreakout(n, m));
     add(idCounter++, `Bollinger ${n}/${m} Bounce`, "b", STRAT_FAMILIES.bbBounce(n, m));
   }));
 
-  // 275-292 · Keltner paramétrés
+  // 276-293 · Keltner paramétrés
   [14,20,30].forEach(n => [1.5,2,2.5].forEach(m => {
     add(idCounter++, `Keltner ${n}/${m} Breakout`, "c", STRAT_FAMILIES.keltBreakout(n, m));
     add(idCounter++, `Keltner ${n}/${m} Bounce`, "b", STRAT_FAMILIES.keltBounce(n, m));
   }));
 
-  // 293-299 · Donchian paramétrés
+  // 294-300 · Donchian paramétrés
   [5,10,15,25,40,100,200].forEach(n => add(idCounter++, `Donchian ${n}-bar Breakout`, "c", STRAT_FAMILIES.donchianBreak(n)));
 
-  // 300-319 · ORB paramétrés (NY, London, Asia, Overlap)
+  // 301-320 · ORB paramétrés (NY, London, Asia, Overlap)
   ["NY", "London", "Asia", "Overlap"].forEach(sess => [3,4,6,8,12].forEach(l => add(idCounter++, `ORB ${sess} (length ${l})`, "c", STRAT_FAMILIES.orb(l, 0))));
 
-  // 320-325 · MACD paramétrés
+  // 321-326 · MACD paramétrés
   [[5,13,9],[8,17,9],[12,26,9],[5,35,5],[3,10,16],[19,39,9]].forEach(([f,s,sig]) => add(idCounter++, `MACD(${f},${s},${sig})`, "i", STRAT_FAMILIES.macdCross(f, s, sig)));
 
-  // 326-361 · ADX × Trend (7,14,21,28 × 20,25,30 × 20,50,100)
+  // 327-362 · ADX × Trend (7,14,21,28 × 20,25,30 × 20,50,100)
   [7,14,21,28].forEach(a => [20,25,30].forEach(t => [20,50,100].forEach(e => add(idCounter++, `ADX(${a})>${t} + EMA(${e})`, "a", STRAT_FAMILIES.adxTrend(t, e)))));
 
-  // 362-377 · SuperTrend paramétrés
+  // 363-378 · SuperTrend paramétrés
   [7,10,14,20].forEach(n => [1.5,2,2.5,3].forEach(m => add(idCounter++, `SuperTrend(${n},${m})`, "a", STRAT_FAMILIES.superTrend(n, m))));
 
-  // 378-404 · Squeeze paramétrés
+  // 379-405 · Squeeze paramétrés
   [10,20,30].forEach(n => [1.5,2,2.5].forEach(bb => [1,1.5,2].forEach(kc => add(idCounter++, `Squeeze(${n},BB${bb},KC${kc})`, "e", STRAT_FAMILIES.squeeze(n, bb, kc)))));
 
-  // 405-424 · Z-Score paramétrés
+  // 406-425 · Z-Score paramétrés
   [10,15,20,30,50].forEach(n => [1.5,2,2.5,3].forEach(s => add(idCounter++, `Z-Score(${n}) ±${s}σ`, "d", STRAT_FAMILIES.zscoreRev(n, s))));
 
-  // 425-442 · Hurst paramétrés
+  // 426-443 · Hurst paramétrés
   [50,100,200].forEach(hl => [0.5,0.55,0.6].forEach(t => [20,50].forEach(e => add(idCounter++, `Hurst(${hl})>${t} + EMA(${e})`, "d", STRAT_FAMILIES.hurstTrend(hl, t, e)))));
 
-  // 443-454 · Structural Break paramétrés
+  // 444-455 · Structural Break paramétrés
   [5,8,10,15,20,30].forEach(l => {
     add(idCounter++, `Structural Break L=${l}`, "f", STRAT_FAMILIES.structBreak(l));
     add(idCounter++, `Structural Break L=${l} + ADX>25`, "f", (ctx, i) => {
@@ -704,7 +708,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 455-470 · Demand/Supply Zone paramétrés
+  // 456-471 · Demand/Supply Zone paramétrés
   [[1.2,14],[1.2,20],[1.5,14],[1.5,20],[2,14],[2,20],[2.5,14],[2.5,20]].forEach(([mult,atrLen]) => {
     add(idCounter++, `Demand Zone (${mult}× ATR${atrLen})`, "f", (ctx, i) => {
       const atr = atrLen === 14 ? ctx.atr14 : ctx.atr20;
@@ -720,7 +724,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 471-485 · Stop Run paramétrés
+  // 472-486 · Stop Run paramétrés
   [5,8,10,15,20].forEach(l => {
     add(idCounter++, `Stop Run L=${l} (Osler)`, "f", STRAT_FAMILIES.stopRun(l));
     add(idCounter++, `Stop Run L=${l} + EMA(20)`, "f", (ctx, i) => {
@@ -737,7 +741,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 486-501 · Chandeliers avec filtres
+  // 487-502 · Chandeliers avec filtres
   const candles = [
     ["Hammer/Star", (ctx, i) => {
       const body = Math.abs(ctx.close[i] - ctx.open[i]);
@@ -782,7 +786,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 502-507 · VWAP Session
+  // 503-508 · VWAP Session
   [[13, 22, "NY"], [7, 16, "London"], [13, 16, "Overlap"]].forEach(([hs, he, sess]) => {
     add(idCounter++, `VWAP Break (Session ${sess})`, "g", (ctx, i) => {
       const h = new Date(ctx.time[i]).getUTCHours();
@@ -797,7 +801,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 508-511 · EMA Stack
+  // 509-512 · EMA Stack
   [[5,10,20],[10,20,50],[20,50,100],[50,100,200]].forEach(([a,b,c]) => {
     add(idCounter++, `EMA Stack ${a}/${b}/${c}`, "a", (ctx, i) => {
       if (i < c) return { long: false, short: false };
@@ -808,7 +812,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 512-538 · BB + RSI combos
+  // 513-539 · BB + RSI combos
   [10,20,30].forEach(bn => [7,14,21].forEach(rp => [[25,75],[30,70],[35,65]].forEach(([lo,hi]) => {
     add(idCounter++, `BB(${bn}) + RSI(${rp}) ${lo}/${hi}`, "b", (ctx, i) => {
       const bb = ctx.bb[`${bn}_2`], r = ctx.rsi[rp];
@@ -817,7 +821,7 @@ export function buildStrategyLibrary() {
     });
   })));
 
-  // 539-543 · Day-of-week bias
+  // 540-544 · Day-of-week bias
   [1,2,3,4,5].forEach(day => {
     const names = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
     add(idCounter++, `${names[day]} Bullish Bias`, "h", (ctx, i) => {
@@ -827,7 +831,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 544-549 · Hour bias
+  // 545-550 · Hour bias
   [[7, "London Open"], [13, "NY Open"], [15, "London Fix"], [20, "Power Hour"], [0, "Asia Open"], [10, "London Mid"]].forEach(([hr, label]) => {
     add(idCounter++, `Hour ${String(hr).padStart(2,'0')}:00 (${label})`, "h", (ctx, i) => {
       const h = new Date(ctx.time[i]).getUTCHours();
@@ -836,10 +840,10 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 550-555 · NR compression
+  // 551-556 · NR compression
   [4,5,6,7,8,10].forEach(n => add(idCounter++, `NR${n} Compression Breakout`, "c", STRAT_FAMILIES.nrN(n)));
 
-  // 556-560 · MTF Trend
+  // 557-561 · MTF Trend
   [[200,9,21],[200,20,50],[100,9,21],[100,12,26],[50,5,13]].forEach(([trend,f,s]) => {
     add(idCounter++, `MTF EMA(${trend}) + ${f}/${s}`, "l", (ctx, i) => {
       const cross = STRAT_FAMILIES.maCross("ema", f, s)(ctx, i);
@@ -849,10 +853,10 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 561-569 · MFI paramétrés
+  // 562-570 · MFI paramétrés
   [7,14,21].forEach(p => [[20,80],[25,75],[15,85]].forEach(([lo,hi]) => add(idCounter++, `MFI(${p}) ${lo}/${hi}`, "g", STRAT_FAMILIES.mfiRev(p, lo, hi))));
 
-  // 570-589 · Drawdown buy-the-dip
+  // 571-590 · Drawdown buy-the-dip
   [20,50,100,200].forEach(w => [3,5,7,10,15].forEach(dd => {
     add(idCounter++, `Drawdown ≥ ${dd}% on ${w}-bar`, "d", (ctx, i) => {
       if (i < w) return { long: false, short: false };
@@ -863,7 +867,7 @@ export function buildStrategyLibrary() {
     });
   }));
 
-  // 590-616 · ATR Percentile
+  // 591-617 · ATR Percentile
   [10,14,20].forEach(alen => [50,100,200].forEach(win => [[0.2,'basse'],[0.5,'haute'],[0.8,'haute']].forEach(([thr, lab]) => {
     add(idCounter++, `ATR Percentile ${alen}/${win} vol ${lab} (${thr})`, "e", (ctx, i) => {
       const atr = alen === 10 ? ctx.atr10 : alen === 14 ? ctx.atr14 : ctx.atr20;
@@ -876,7 +880,7 @@ export function buildStrategyLibrary() {
     });
   })));
 
-  // 617-624 · PSAR paramétrés
+  // 618-625 · PSAR paramétrés
   [[0.01,0.1],[0.02,0.2],[0.03,0.3],[0.04,0.4]].forEach(([step,max]) => {
     add(idCounter++, `PSAR (${step}/${max}) Flip`, "a", STRAT_FAMILIES.psarFlip(step, max));
     add(idCounter++, `PSAR (${step}/${max}) + ADX>25`, "a", (ctx, i) => {
@@ -887,7 +891,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 625-633 · Ichimoku paramétrés
+  // 626-634 · Ichimoku paramétrés
   [[9,26,52],[7,22,44],[12,24,120]].forEach(([t,k,s]) => {
     add(idCounter++, `Ichimoku TK (${t}/${k})`, "a", STRAT_FAMILIES.ichimokuTK(t, k));
     add(idCounter++, `Ichimoku Kijun (${t}/${k})`, "a", (ctx, i) => {
@@ -904,7 +908,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 634-642 · StochRSI paramétrés
+  // 635-643 · StochRSI paramétrés
   [8,14,21].forEach(p => [[0.2,0.8],[0.15,0.85],[0.1,0.9]].forEach(([lo,hi]) => {
     add(idCounter++, `StochRSI(${p}) ${lo}/${hi}`, "b", (ctx, i) => {
       const s = ctx.stochRSI;
@@ -913,7 +917,7 @@ export function buildStrategyLibrary() {
     });
   }));
 
-  // 643-658 · ROC/Momentum paramétrés
+  // 644-659 · ROC/Momentum paramétrés
   [[5,1],[10,1],[10,3],[20,2],[20,5],[63,5]].forEach(([p,t]) => add(idCounter++, `ROC(${p}) > ${t}%`, "i", STRAT_FAMILIES.rocThresh(p, t)));
   [5,10,20,63].forEach(p => add(idCounter++, `ROC(${p}) Zero Cross`, "i", STRAT_FAMILIES.rocThresh(p, 0)));
   [10,20,63].forEach(p => add(idCounter++, `Momentum(${p}) Zero Cross`, "i", STRAT_FAMILIES.momZero(p)));
@@ -924,7 +928,7 @@ export function buildStrategyLibrary() {
     return { long: m.long && ctx.close[i] > e[i], short: m.short && ctx.close[i] < e[i] };
   }));
 
-  // 659-676 · Oscillateurs paramétrés
+  // 660-677 · Oscillateurs paramétrés
   add(idCounter++, "AO Zero Cross + EMA(50)", "i", (ctx, i) => {
     const s1 = ctx.sma[5], s2 = ctx.sma[34], e = ctx.ema[50];
     if (!s1 || !s2 || !e || isNaN(s1[i])) return { long: false, short: false };
@@ -953,7 +957,7 @@ export function buildStrategyLibrary() {
   add(idCounter++, "Ultimate Osc (5,10,20) 30/70", "b", STRAT_FAMILIES.rsiRev(10, 30, 70));
   add(idCounter++, "Ultimate Osc (7,14,28) 25/75", "b", STRAT_FAMILIES.rsiRev(14, 25, 75));
 
-  // 677-684 · Gap Go / Fade
+  // 678-685 · Gap Go / Fade
   [0.3, 0.5, 0.75, 1.0].forEach(g => {
     add(idCounter++, `Gap / Go ≥ ${g}%`, "c", (ctx, i) => {
       if (i < 1 || i % 78 !== 0) return { long: false, short: false };
@@ -967,7 +971,7 @@ export function buildStrategyLibrary() {
     });
   });
 
-  // 685-700 · Volume avancé
+  // 686-701 · Volume avancé
   add(idCounter++, "OBV Rising + EMA(20)", "g", (ctx, i) => {
     if (!ctx.obv || i < 20) return { long: false, short: false };
     return { long: ctx.obv[i] > ctx.obv[i-20] && ctx.close[i] > ctx.ema[20][i], short: ctx.obv[i] < ctx.obv[i-20] && ctx.close[i] < ctx.ema[20][i] };

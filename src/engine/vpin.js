@@ -6,6 +6,8 @@
 //     du volume de chaque barre entre achats/ventes via la CDF normale de la variation de prix
 //     standardisée, au lieu du tick-rule tout-ou-rien (bien moins bruité — c'est la méthode du papier).
 //   • Buckets à VOLUME CONSTANT avec découpage d'une barre à cheval sur deux buckets.
+//     La taille de bucket est calibrée de façon CAUSALE sur une fenêtre d'amorce fixe
+//     (les `calibBars` premières barres) — jamais sur le volume futur (fix P0-T4).
 //   • Signal de krach = CDF DU VPIN (percentile glissant), pas un seuil fixe arbitraire.
 //     C'est cette CDF qui a atteint son maximum ~1h avant le Flash Crash du 6 mai 2010.
 //
@@ -118,10 +120,13 @@ export function toxicityLevel(cdf) {
  *   - method     : "bvc" (déf.) | "tick"
  *   - sigmaWindow: fenêtre d'écart-type pour la BVC (déf. 50)
  *   - cdfWindow  : historique glissant pour la CDF du VPIN (déf. 250 buckets ; 0 = expanding)
+ *   - calibBars  : fenêtre d'amorce (barres) pour calibrer la taille de bucket de façon
+ *                  CAUSALE (déf. max(buckets, 100)). Le volume futur ne déplace jamais
+ *                  les frontières de buckets → backtest ≡ live (fix P0-T4).
  * @returns { vpinByBar, cdfByBar, buckets, lastVPIN, lastCDF, tox, method, bucketVolume, avgVPIN, maxVPIN }
  */
 export function computeVPIN(bars, opt = {}) {
-  const { buckets: nBucketsTarget = 200, window = 50, method = "auto", sigmaWindow = 50, cdfWindow = 250 } = opt;
+  const { buckets: nBucketsTarget = 200, window = 50, method = "auto", sigmaWindow = 50, cdfWindow = 250, calibBars: calibBarsOpt } = opt;
   const n = bars?.length || 0;
   // "auto" → classification réelle si les barres portent un volume acheteur, sinon BVC.
   const effMethod = method === "auto" ? (hasRealFlow(bars) ? "real" : "bvc") : method;
@@ -132,8 +137,21 @@ export function computeVPIN(bars, opt = {}) {
   const totalV = vols.reduce((a, b) => a + b, 0);
   if (totalV <= 0) return empty;
 
+  // CALIBRATION CAUSALE de la taille de bucket (fix P0-T4).
+  // La taille de bucket est figée sur une FENÊTRE D'AMORCE (les `calibBars` premières
+  // barres) et ne dépend JAMAIS du volume futur. Conséquences :
+  //   • en backtest, tronquer la série ne déplace pas les frontières de buckets passées
+  //     (invariance par troncature de buildContext — plus de look-ahead) ;
+  //   • en live, une fois l'amorce dépassée, bucketVolume est figé → l'historique VPIN
+  //     ne se réécrit plus à chaque nouvelle barre (backtest ≡ live).
+  // Ancienne version NON causale : bucketVolume = totalV(série ENTIÈRE) / nBucketsTarget.
+  const calibBars = Math.min(n, Math.max(20, calibBarsOpt ?? Math.max(nBucketsTarget, 100)));
+  let calibVol = 0;
+  for (let i = 0; i < calibBars; i++) calibVol += vols[i];
+  if (calibVol <= 0) return empty;
+
   const buyFrac = classifyBuyFraction(bars, effMethod, sigmaWindow);
-  const bucketVolume = totalV / nBucketsTarget;
+  const bucketVolume = calibVol / nBucketsTarget;
 
   const vpinByBar = new Array(n).fill(NaN);
   const cdfByBar = new Array(n).fill(NaN);

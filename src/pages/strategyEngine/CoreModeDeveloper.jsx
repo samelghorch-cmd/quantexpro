@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
 import { compileRules, RULE_SOURCES, RULE_OPS, describeRule } from "../../engine/ruleBuilder.js";
+import { saveCustomDef } from "../../engine/customStrategies.js";
 import { buildPatternsLibrary, filterPatterns, PATTERN_FILTERS } from "../../engine/patternsLibrary.js";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Tabs, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
@@ -84,9 +85,22 @@ function IndicateursTab() {
 const emptyCond = () => ({ left: "close", op: "crossUp", right: "ema20", rightConst: 0 });
 
 function ConfluenceTab() {
-  const { bars, ctx, symbol } = usePipeline();
+  const { bars, ctx, symbol, refreshLibrary, setPipe, navigate } = usePipeline();
   const [rules, setRules] = useState({ long: [emptyCond()], short: [{ left: "close", op: "crossDn", right: "ema20", rightConst: 0 }] });
   const [result, setResult] = useState(null);
+  const [stratName, setStratName] = useState("");
+  const [saved, setSaved] = useState(null);
+  const [saveError, setSaveError] = useState(null);
+
+  const saveAsStrategy = () => {
+    try {
+      const def = saveCustomDef({ name: stratName, rules });
+      refreshLibrary();
+      setPipe({ selectedStrategyId: def.id });
+      setSaved(def);
+      setSaveError(null);
+    } catch (e) { setSaveError(e.message); setSaved(null); }
+  };
 
   const addCond = (side) => setRules((r) => ({ ...r, [side]: [...r[side], emptyCond()] }));
   const rmCond = (side, i) => setRules((r) => ({ ...r, [side]: r[side].filter((_, k) => k !== i) }));
@@ -134,6 +148,16 @@ function ConfluenceTab() {
             <MetricCard label="Max DD" value={fmtPct(result.maxDD * 100)} color={T.red} />
           </MetricGrid>
         )}
+        {result && (
+          <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <input value={stratName} onChange={(e) => setStratName(e.target.value)} placeholder="Nom de la stratégie…"
+              style={{ flex: 1, minWidth: 180, background: T.bg0, color: T.text, border: `1px solid ${T.border}`, borderRadius: 6, padding: "7px 9px" }} />
+            <Button primary onClick={saveAsStrategy}>💾 Sauvegarder comme stratégie</Button>
+            {saved && <Button onClick={() => navigate("backtest")}>→ Backtester dans le pipeline</Button>}
+          </div>
+        )}
+        {saved && <div style={{ marginTop: 8, fontSize: 12, color: T.green }}>✓ Sauvegardée <b>#{saved.id} · {saved.name}</b> — disponible dans Backtest, Optimizer, Walk-Forward, dossiers et collector 24/7 (sélectionnée dans le pipeline).</div>}
+        {saveError && <div style={{ marginTop: 8, fontSize: 12, color: T.red }}>Erreur : {saveError}</div>}
         <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint }}>Les conditions sont interprétées comme un AST (pas d'eval), branchées directement dans le moteur de backtest.</div>
       </Panel>
     </div>

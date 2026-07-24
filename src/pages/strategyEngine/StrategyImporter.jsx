@@ -1,7 +1,10 @@
-// Strategy Importer — importe une config JSON (Rule Builder / mode) et la teste.
+// Strategy Importer — importe une config JSON (Rule Builder / mode), la VALIDE
+// strictement (échec explicite, jamais silencieux), la teste, et permet de la
+// sauvegarder comme stratégie custom réutilisable dans tout le pipeline.
 import { useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { compileRules } from "../../engine/ruleBuilder.js";
+import { validateRules, saveCustomDef } from "../../engine/customStrategies.js";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
 import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
@@ -15,23 +18,37 @@ const SAMPLE = JSON.stringify({
 }, null, 2);
 
 export function StrategyImporterPage() {
-  const { bars, ctx, symbol } = usePipeline();
+  const { bars, ctx, symbol, refreshLibrary, setPipe, navigate } = usePipeline();
   const [text, setText] = useState(SAMPLE);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [saved, setSaved] = useState(null);
 
   const importAndTest = () => {
+    setSaved(null);
     try {
       const parsed = JSON.parse(text);
-      if (!parsed.rules) throw new Error("Champ 'rules' manquant");
-      const evalFn = compileRules(parsed.rules);
+      // Validation stricte AVANT compilation : une source/op inconnue lève une erreur
+      // explicite au lieu de produire un « 0 trades » silencieux et trompeur.
+      const rules = validateRules(parsed.rules);
+      const evalFn = compileRules(rules);
       const res = runBacktestExt(bars, ctx, evalFn, { contract: symbol, capital: 100000, slAtr: 2, direction: "both" });
-      setResult({ name: parsed.name || "Import", res });
+      setResult({ name: parsed.name || "Import", rules, res });
       setError(null);
     } catch (e) {
       setError(e.message);
       setResult(null);
     }
+  };
+
+  const saveAsStrategy = () => {
+    try {
+      const def = saveCustomDef({ name: result.name, rules: result.rules });
+      refreshLibrary();
+      setPipe({ selectedStrategyId: def.id });
+      setSaved(def);
+      setError(null);
+    } catch (e) { setError(e.message); }
   };
 
   return (
@@ -40,7 +57,7 @@ export function StrategyImporterPage() {
         <textarea value={text} onChange={(e) => setText(e.target.value)} spellCheck={false}
           style={{ width: "100%", height: 380, background: T.bg0, color: T.green, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12, fontFamily: T.mono, fontSize: 12, boxSizing: "border-box", resize: "vertical" }} />
         {error && <div style={{ marginTop: 8, color: T.red, fontSize: 12 }}>Erreur : {error}</div>}
-        <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint }}>Format : {"{ name, rules: { long: [conditions], short: [conditions] } }"}. Sources : close, ema20, rsi14, vwap, macd… Ops : gt, lt, crossUp, crossDn.</div>
+        <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint }}>Format : {"{ name, rules: { long: [conditions], short: [conditions] } }"} · condition : {"{ left, op, right, rightConst? }"}. Sources : close, ema20, rsi14, vwap, macd… Ops : gt, lt, crossUp, crossDn.</div>
       </Panel>
       <Panel title="Résultat du test">
         {!result && <div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Colle une config et clique sur Importer & tester.</div>}
@@ -55,6 +72,12 @@ export function StrategyImporterPage() {
               <MetricCard label="Total PnL" value={fmtUsd(result.res.totalPnL)} color={result.res.totalPnL >= 0 ? T.green : T.red} />
               <MetricCard label="Max DD" value={fmtPct(result.res.maxDD * 100)} color={T.red} />
             </MetricGrid>
+            <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
+              <Button primary onClick={saveAsStrategy}>💾 Sauvegarder comme stratégie</Button>
+              {saved && <Button onClick={() => navigate("backtest")}>→ Backtester dans le pipeline</Button>}
+            </div>
+            {saved && <div style={{ marginTop: 8, fontSize: 12, color: T.green }}>✓ Sauvegardée <b>#{saved.id} · {saved.name}</b> — disponible dans toute la plateforme (sélectionnée dans le pipeline).</div>}
+            {result.res.nTrades === 0 && <div style={{ marginTop: 8, fontSize: 11, color: T.yellow }}>⚠ 0 trade : les conditions sont valides mais ne se déclenchent jamais sur ces données ({bars.length} barres). Vérifie les seuils.</div>}
           </>
         )}
       </Panel>

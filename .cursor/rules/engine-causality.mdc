@@ -1,0 +1,15 @@
+---
+description: Règles moteur quant — causalité, goldens, pas de look-ahead
+globs: src/engine/**,tests/**,collector/**
+alwaysApply: false
+---
+
+# Engine quant
+
+- Toute stratégie / indicateur : **causal** (pas de future data).
+- Coûts : passer par `costModel` / contrats — ne pas omettre spread/commission.
+- Métriques (Sharpe, DD, PF…) : alignées sur `backtestMetrics.js` + goldens `tests/unit`.
+- VPIN : calibration `bucketVolume` doit rester causale (voir P0-T4 / TESTING.md).
+- Custom strats : IDs ≥ 9001 via `customStrategies.js` ; valider avec `validateRules`.
+- Collector : importer le même module — tester la parité si l’import change.
+- Après modif : `npm test` (unit + integration).

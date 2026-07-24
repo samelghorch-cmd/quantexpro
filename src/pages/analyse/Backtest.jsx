@@ -17,7 +17,7 @@ export function BacktestPage() {
   const [stratId, setStratId] = useState(pipeline.selectedStrategyId || 3);
   const sp = pipeline.strategyParams || {};
   const [cfg, setCfg] = useState({
-    lotMode: "RISK_PERCENT", riskPct: 1, fixedLots: 1, maxPositions: 1, slippagePts: 1,
+    lotMode: "RISK_PERCENT", riskPct: 1, fixedLots: 1,
     capital: 100000, warmup: 50,
     direction: sp.direction || "both", slAtr: sp.slAtr ?? 2, tpAtr: sp.tpAtr ?? 0, beAtr: sp.beAtr ?? 0,
   });
@@ -28,7 +28,8 @@ export function BacktestPage() {
   const run = useCallback(() => {
     const strat = library.find((s) => s.id === stratId);
     if (!strat) return;
-    const params = { contract: symbol, capital: cfg.capital, direction: cfg.direction, slAtr: cfg.slAtr, tpAtr: cfg.tpAtr, beAtr: cfg.beAtr, contracts: cfg.fixedLots };
+    const params = { contract: symbol, capital: cfg.capital, direction: cfg.direction, slAtr: cfg.slAtr, tpAtr: cfg.tpAtr, beAtr: cfg.beAtr,
+      contracts: cfg.fixedLots, lotMode: cfg.lotMode, riskPct: cfg.riskPct, warmup: cfg.warmup };
     const res = runBacktestExt(bars, ctx, strat.eval, params);
     const adv = advancedMetrics(res, bars, cfg.capital);
     const scoreParts = [
@@ -89,22 +90,27 @@ export function BacktestPage() {
         <Panel title="Configuration">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <Field label="Lot Mode"><Select value={cfg.lotMode} onChange={(v) => set("lotMode", v)} options={["RISK_PERCENT", "FIXED_LOTS"]} /></Field>
-            <Field label="Risk %"><NumberInput value={cfg.riskPct} step={0.5} onChange={(v) => set("riskPct", v)} /></Field>
-            <Field label="Fixed Lots"><NumberInput value={cfg.fixedLots} onChange={(v) => set("fixedLots", v)} /></Field>
-            <Field label="Max Positions"><NumberInput value={cfg.maxPositions} onChange={(v) => set("maxPositions", v)} /></Field>
+            {cfg.lotMode === "RISK_PERCENT"
+              ? <Field label="Risk % / trade"><NumberInput value={cfg.riskPct} step={0.5} onChange={(v) => set("riskPct", v)} /></Field>
+              : <Field label="Fixed Lots"><NumberInput value={cfg.fixedLots} onChange={(v) => set("fixedLots", v)} /></Field>}
             <Field label="Capital Initial"><NumberInput value={cfg.capital} step={10000} onChange={(v) => set("capital", v)} /></Field>
             <Field label="Warmup Bars"><NumberInput value={cfg.warmup} onChange={(v) => set("warmup", v)} /></Field>
             <Field label="Direction"><Select value={cfg.direction} onChange={(v) => set("direction", v)} options={[{ value: "both", label: "LONG_AND_SHORT" }, { value: "long", label: "LONG_ONLY" }, { value: "short", label: "SHORT_ONLY" }]} /></Field>
-            <Field label="Slippage Pts"><NumberInput value={cfg.slippagePts} onChange={(v) => set("slippagePts", v)} /></Field>
             <Field label="SL (× ATR)"><NumberInput value={cfg.slAtr} step={0.5} onChange={(v) => set("slAtr", v)} /></Field>
             <Field label="TP (× ATR)"><NumberInput value={cfg.tpAtr} step={0.5} onChange={(v) => set("tpAtr", v)} /></Field>
             <Field label="Break-Even (× ATR)"><NumberInput value={cfg.beAtr} step={0.5} onChange={(v) => set("beAtr", v)} /></Field>
           </div>
+          {cfg.lotMode === "RISK_PERCENT" && cfg.slAtr <= 0 && (
+            <div style={{ marginTop: 8, fontSize: 11, color: T.yellow }}>⚠ RISK_PERCENT exige un SL &gt; 0 (le risque par trade est défini par la distance de stop) — sinon repli sur lots fixes.</div>
+          )}
           <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
             <Button primary onClick={run} style={{ flex: 1 }}>▶ Lancer le backtest</Button>
           </div>
           <div style={{ marginTop: 8, fontSize: 10, color: T.textFaint }}>
-            Source de données : <b style={{ color: T.yellow }}>LSE synthétique</b> (générée en interne). L'auto-download Databento sera branché via une clé API dans un module dédié.
+            Source de données : {dataMode === "live"
+              ? <b style={{ color: T.green }}>réelles ({symbol})</b>
+              : <b style={{ color: T.yellow }}>synthétiques (générées en interne)</b>}
+            {" "}· coûts du spec <b>{symbol}</b> appliqués (voir Spread Compare).
           </div>
         </Panel>
       </div>
@@ -132,7 +138,7 @@ export function BacktestPage() {
             <Panel title="Trades" right={<Button onClick={() => downloadCSV(tradesToCSV(result.res.trades), `backtest_${result.strat.id}.csv`)}>Export CSV</Button>}>
               <div style={{ maxHeight: 240, overflow: "auto", fontFamily: T.mono, fontSize: 11 }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead><tr>{["#", "Entrée", "Sortie", "Sens", "Barres", "Raison", "PnL"].map((h) => <th key={h} style={{ textAlign: "left", padding: "4px 8px", color: T.textDim, position: "sticky", top: 0, background: T.panel, fontSize: 10 }}>{h}</th>)}</tr></thead>
+                  <thead><tr>{["#", "Entrée", "Sortie", "Sens", "Qté", "Barres", "Raison", "PnL"].map((h) => <th key={h} style={{ textAlign: "left", padding: "4px 8px", color: T.textDim, position: "sticky", top: 0, background: T.panel, fontSize: 10 }}>{h}</th>)}</tr></thead>
                   <tbody>
                     {result.res.trades.slice(0, 200).map((t, i) => (
                       <tr key={i}>
@@ -140,6 +146,7 @@ export function BacktestPage() {
                         <td style={{ padding: "3px 8px" }}>{t.entry.toFixed(2)}</td>
                         <td style={{ padding: "3px 8px" }}>{t.exit.toFixed(2)}</td>
                         <td style={{ padding: "3px 8px", color: t.side === 1 ? T.green : T.red }}>{t.side === 1 ? "LONG" : "SHORT"}</td>
+                        <td style={{ padding: "3px 8px", color: T.textDim }}>{t.qty != null ? (Number.isInteger(t.qty) ? t.qty : t.qty.toFixed(4)) : "—"}</td>
                         <td style={{ padding: "3px 8px", color: T.textDim }}>{t.bars}</td>
                         <td style={{ padding: "3px 8px", color: T.textDim }}>{t.reason}</td>
                         <td style={{ padding: "3px 8px", color: t.pnl >= 0 ? T.green : T.red }}>{fmtUsd(t.pnl)}</td>
