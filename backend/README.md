@@ -57,6 +57,7 @@ uvicorn app.main:app --reload
 | POST | `/v1/ticks` | ingestion idempotente de ticks |
 | POST | `/v1/orderbook` | ingestion idempotente d'instantanés L2 |
 | WS   | `/stream/bars/{timeframe}?api_key=` | flux temps réel des bar-close (bus ZDL) |
+| POST | `/v1/strategy/from-prompt` | prompt langage naturel → stratégie JSON (LLM local) |
 
 Auth : header `X-API-Key` (clés dans `QX_API_KEYS`, CSV). En production, aucune clé
 configurée ⇒ API verrouillée (503).
@@ -89,3 +90,32 @@ docker run -d --name qx-redis -p 6379:6379 redis:7-alpine
 QX_BUS_ENABLED=true uvicorn app.main:app --reload
 QX_BUS_ENABLED=true python -m app.bus.consumer 1m
 ```
+
+## LLM local (P0-D) — `app/llm/`
+
+Prompt Mode « zero-token » : un endpoint local traduit une idée en langage naturel en une
+stratégie JSON **validée contre le même contrat que le Rule Builder** (`src/engine/ruleBuilder.js`).
+Aucune sortie non conforme ne peut sortir de l'API (parité Importer / Core Mode garantie).
+
+- **Endpoint** : `POST /v1/strategy/from-prompt` `{ "prompt": "...", "name": "..." }`
+  → `{ "strategy": { "name", "rules": { long, short } }, "source": "qwen-local" }`.
+- **Opt-in** : `QX_LLM_ENABLED=true` + un serveur d'inférence OpenAI-compatible local.
+- **Modèle recommandé** : Qwen2.5-Coder-7B via **Ollama** (le plus simple) :
+
+```bash
+# 1) Installer Ollama (https://ollama.com), puis :
+ollama pull qwen2.5-coder:7b
+ollama serve                 # expose http://localhost:11434
+
+# 2) Activer côté backend
+QX_LLM_ENABLED=true QX_LLM_BASE_URL=http://localhost:11434/v1 \
+QX_LLM_MODEL=qwen2.5-coder:7b uvicorn app.main:app --reload
+
+# 3) Tester
+curl -X POST localhost:8000/v1/strategy/from-prompt -H 'X-API-Key: <clé>' \
+  -H 'content-type: application/json' \
+  -d '{"prompt":"achat quand EMA20 croise au-dessus de EMA50 et RSI < 70"}'
+```
+
+Alternatives d'inférence : **llama.cpp** (`llama-server`), **vLLM**, **LM Studio** — tout
+endpoint exposant `/v1/chat/completions` (variable `QX_LLM_BASE_URL`).

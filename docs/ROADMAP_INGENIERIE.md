@@ -52,13 +52,16 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 > Livré : bus typé (mypy strict), 6 tests avec faux client Redis en mémoire (ACK,
 > retry→DLQ, message empoisonné, run_consumer, reclaim). Worker : `python -m app.bus.consumer`.
 
-### P0-D — LLM local (Qwen2.5-Coder-7B)
+### P0-D — LLM local (Qwen2.5-Coder-7B) — ✅ backend livré (`backend/app/llm/`)
 
-| Tâche | DoD |
-|-------|-----|
-| Container inference (CPU/GPU doc) | Endpoint OpenAI-compatible local |
-| `POST /strategy/from-prompt` → JSON Rule Builder | Valide via `validateRules` |
-| UI Prompt Mode | Module Strategy Engine |
+| Tâche | DoD | État |
+|-------|-----|------|
+| Endpoint OpenAI-compatible local | Client httpx (Ollama/llama.cpp/vLLM), retry, opt-in `QX_LLM_ENABLED` | ✅ |
+| `POST /v1/strategy/from-prompt` → JSON Rule Builder | Schéma Pydantic **miroir de `validateRules`** (parité) | ✅ |
+| UI Prompt Mode | Frontend (module Strategy Engine) à brancher sur l'endpoint | ⬜ (frontend) |
+
+> Livré : `app/llm/` (rules mirror + prompt + client + service), extraction JSON robuste
+> (fences/prose), 15 tests (schéma + service avec faux client, sans modèle). Doc Ollama.
 
 ### P0-E — MT5 & gouvernance
 

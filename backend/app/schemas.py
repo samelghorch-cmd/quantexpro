@@ -160,3 +160,19 @@ class Page(BaseModel):
     items: list[Any]
     count: int
     next_cursor: str | None = None
+
+
+class PromptRequest(BaseModel):
+    """Requête de génération de stratégie par prompt (LLM local)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    prompt: str = Field(min_length=3, max_length=4000)
+    name: str | None = Field(default=None, max_length=80)
+
+
+class StrategyResponse(BaseModel):
+    """Stratégie générée, prête à importer dans le Rule Builder."""
+
+    strategy: dict[str, Any]
+    source: str

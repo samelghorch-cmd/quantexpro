@@ -60,6 +60,17 @@ class Settings(BaseSettings):
     # Taille maximale d'un lot d'ingestion (protection mémoire / backpressure).
     max_ingest_batch: int = Field(default=10000, ge=1, le=100000)
 
+    # LLM local (Qwen2.5-Coder-7B) — endpoint OpenAI-compatible (Ollama / llama.cpp / vLLM).
+    # Zero-token : inférence locale, aucun coût d'API. Opt-in.
+    llm_enabled: bool = Field(default=False)
+    llm_base_url: str = Field(default="http://localhost:11434/v1")
+    llm_model: str = Field(default="qwen2.5-coder:7b")
+    llm_api_key: str = Field(default="not-needed")  # local → placeholder, jamais un secret
+    llm_timeout_s: float = Field(default=120.0, gt=0)
+    llm_temperature: float = Field(default=0.1, ge=0, le=2)
+    llm_max_tokens: int = Field(default=1024, ge=64, le=8192)
+    llm_max_retries: int = Field(default=2, ge=1, le=10)
+
     log_level: str = Field(default="INFO")
 
     @field_validator("api_keys", mode="before")

@@ -11,13 +11,13 @@
 |-------|--------|
 | Branche git | `main` (+ locale `claude/hopeful-swartz-913305`) |
 | Tests | **132 passed** (109 + 23 dossiers) |
-| Commit HEAD | Chantier 3 P0-C bus ZDL (à pousser) |
-| Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` (origin, URL propre sans token) |
-| CI GitHub | ✅ verte au dernier push ; backend passe à **19 tests** (bus inclus) |
-| Tests | JS **132** · backend **19** (13 + 6 bus) |
+| Commit HEAD | Chantier 4 P0-D LLM local (à pousser) |
+| Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` (token en keychain → push auto) |
+| CI GitHub | ✅ verte au dernier push (`c2b3107`) |
+| Tests | JS **132** · backend **34** (13 + 6 bus + 15 LLM) |
 | Déploiement | Render (API) + Neon (Postgres) ; bus opt-in `QX_BUS_ENABLED` + Redis gratuit (Upstash) |
 | ⚠️ Sécurité | Révoquer les 2 tokens GitHub partagés en chat (github.com/settings/tokens). |
-| Prochaine action | Chantier 4 : **P0-D LLM local Qwen2.5-Coder-7B** (endpoint prompt→stratégie JSON) OU P0-E pont MT5 — au choix user |
+| Prochaine action | Chantier 5 : **P0-E pont MT5 + RBAC/audit** OU brancher l'UI Prompt Mode (frontend) sur `/v1/strategy/from-prompt` — au choix user |
 | Prochaine action | Chantier 3 : **Bus ZDL Redis Streams (P0-C)** dans `backend/app/bus/` (publish bar-close, consumer ACK, retry backoff) |
 
 ---
@@ -57,7 +57,8 @@
 | 2026-07-24 | **Déploiement gratuit** : migration rendue portable (hypertables optionnelles), `render.yaml` + `docs/DEPLOIEMENT.md` (Render+Neon / Fly.io), job CI backend Python ajouté |
 | 2026-07-24 | **Vérif zéro-erreur P0-A/P0-B** : JS 132 tests + couverture seuils + build OK ; backend ruff ✅ + mypy strict 0 ✅ + pytest 13 ✅ + import app ✅. CI backend durcie (ruff+mypy). |
 | 2026-07-24 | **Dépôt GitHub créé + push** (`samelghorch-cmd/quantexpro`). CI d'abord rouge (npm ci lockfile esbuild 0.21 vs 0.28) → fix : CI alignée sur npm 11 → **CI verte** (`7a41ea7`). |
-| 2026-07-24 | **Chantier 3 — Bus ZDL P0-C livré** : `backend/app/bus/` Redis Streams (publish bar-close, consumer group ACK, retry backoff, DLQ, reclaim XAUTOCLAIM, reconnexion, backpressure), WS `/stream/bars`, worker `python -m app.bus.consumer`. Opt-in `QX_BUS_ENABLED`. Backend : ruff+mypy strict 0, **19 tests** verts. |
+| 2026-07-24 | **Chantier 3 — Bus ZDL P0-C livré** : `backend/app/bus/` Redis Streams (publish bar-close, consumer group ACK, retry backoff, DLQ, reclaim XAUTOCLAIM, reconnexion, backpressure), WS `/stream/bars`, worker `python -m app.bus.consumer`. Opt-in `QX_BUS_ENABLED`. Backend : ruff+mypy strict 0, **19 tests** verts. Poussé `c2b3107`, CI verte. |
+| 2026-07-24 | **Chantier 4 — LLM local P0-D livré** : `backend/app/llm/` endpoint `POST /v1/strategy/from-prompt` (client OpenAI-compatible local Ollama/llama.cpp, opt-in `QX_LLM_ENABLED`), schéma **miroir de `validateRules`** (parité Rule Builder), extraction JSON robuste. Backend : ruff+mypy strict 0, **34 tests** verts. |
 
 ---
 

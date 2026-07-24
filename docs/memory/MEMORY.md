@@ -55,7 +55,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 ## 5. Priorités actuelles (ordre strict)
 
 1. **Sprint 0** — ✅ VPIN causal (P0-T4) · ✅ tests dossiers (P0-T5) → reste : commit WIP + push CI  
-2. **P0** — ✅ backend TimescaleDB (P0-B) · ✅ bus ZDL Redis Streams (P0-C) · reste : LLM Qwen (P0-D) · pont MT5 (P0-E)  
+2. **P0** — ✅ backend TimescaleDB (P0-B) · ✅ bus ZDL (P0-C) · ✅ LLM local Qwen (P0-D, backend) · reste : pont MT5 (P0-E) + UI Prompt Mode  
 3. **P1** — DSR dans Usine · Anti-Library · Statistical Edge · stress portfolio  
 4. **P2** — L2 Binance · Dukascopy · export MQL5 · Labs UI  
 
