@@ -12,6 +12,12 @@ import { buildContext } from "../src/engine/context.js";
 import { runBacktestExt } from "../src/engine/backtestExtended.js";
 import { compileRules } from "../src/engine/ruleBuilder.js";
 import { validateRules } from "../src/engine/customStrategies.js";
+import {
+  ingestConfigFromEnv,
+  tickerToSymbol,
+  selectBarsForIngest,
+  pushBarsToBackend,
+} from "./barsIngest.js";
 
 const PORT = process.env.PORT || 8787;
 const POLL_MS = Number(process.env.POLL_MS || 60000);      // fréquence de collecte (défaut 60 s)
@@ -19,6 +25,7 @@ const DATA_DIR = process.env.DATA_DIR || ".";               // mettre un volume 
 const DATA_FILE = path.join(DATA_DIR, "collector-data.json");
 const MAX_BARS = 6000;                                       // borne la série par job
 const ALLOWED_INTERVALS = new Set(["5m", "15m", "1h", "4h", "1d"]);
+const INGEST = ingestConfigFromEnv(process.env);
 
 const lib = buildStrategyLibrary();
 let jobs = {}; // id -> { id, name, strategyId, ticker, interval, params, series, result, createdAt, updatedAt, polls, lastError }
@@ -71,6 +78,29 @@ function evalJob(job) {
   return runBacktestExt(job.series, ctx, strat.eval, params);
 }
 
+async function ingestJobBars(job) {
+  if (!INGEST.enabled) return;
+  try {
+    const symbol = tickerToSymbol(job.ticker);
+    const bars = selectBarsForIngest(job.series, job.lastIngestTs ?? null, INGEST.backfillMax);
+    if (!bars.length) return;
+    const res = await pushBarsToBackend({
+      baseUrl: INGEST.baseUrl,
+      apiKey: INGEST.apiKey,
+      timeframe: job.interval,
+      symbol,
+      bars,
+      chunkSize: INGEST.chunkSize,
+    });
+    if (res.lastTs != null) job.lastIngestTs = res.lastTs;
+    job.lastIngestAt = Date.now();
+    job.lastIngestWritten = res.written;
+    job.lastIngestError = null;
+  } catch (e) {
+    job.lastIngestError = String(e.message || e);
+  }
+}
+
 async function pollJob(job) {
   try {
     const incoming = await fetchKlines(job.ticker, job.interval, 200);
@@ -80,6 +110,7 @@ async function pollJob(job) {
     job.updatedAt = Date.now();
     job.polls = (job.polls || 0) + 1;
     job.lastError = null;
+    await ingestJobBars(job);
   } catch (e) { job.lastError = String(e.message || e); }
   persist();
 }
@@ -94,6 +125,7 @@ function summary(j) {
   const r = j.result || {};
   return { id: j.id, name: j.name, strategyId: j.strategyId, ticker: j.ticker, interval: j.interval,
     bars: (j.series || []).length, polls: j.polls || 0, updatedAt: j.updatedAt, createdAt: j.createdAt, lastError: j.lastError,
+    ingest: INGEST.enabled ? { lastIngestTs: j.lastIngestTs, lastIngestAt: j.lastIngestAt, lastIngestWritten: j.lastIngestWritten, lastIngestError: j.lastIngestError } : null,
     metrics: { nTrades: r.nTrades, winRate: r.winRate, profitFactor: r.profitFactor, expectancyR: r.expectancyR, sharpe: r.sharpe, totalPnL: r.totalPnL, maxDD: r.maxDD } };
 }
 
@@ -108,7 +140,16 @@ const server = http.createServer(async (req, res) => {
   const parts = url.pathname.split("/").filter(Boolean);
 
   try {
-    if (url.pathname === "/" || url.pathname === "/health") return send(res, 200, { ok: true, service: "quantexpro-collector", jobs: Object.keys(jobs).length, pollMs: POLL_MS });
+    if (url.pathname === "/" || url.pathname === "/health") {
+      return send(res, 200, {
+        ok: true,
+        service: "quantexpro-collector",
+        jobs: Object.keys(jobs).length,
+        pollMs: POLL_MS,
+        barsIngest: INGEST.enabled,
+        apiBase: INGEST.enabled ? INGEST.baseUrl : null,
+      });
+    }
 
     if (parts[0] === "jobs" && parts.length === 1) {
       if (req.method === "GET") return send(res, 200, { jobs: Object.values(jobs).map(summary) });
@@ -124,7 +165,12 @@ const server = http.createServer(async (req, res) => {
           return send(res, 400, { error: `stratégie #${b.strategyId} inconnue du collector — joindre 'rules' pour une stratégie custom` });
         }
         const job = { id: uid(), name: b.name || `${b.ticker} #${b.strategyId}`, strategyId: b.strategyId, rules, ticker: String(b.ticker).toUpperCase(), interval: b.interval, params: b.params || {}, series: [], result: null, createdAt: Date.now(), updatedAt: Date.now(), polls: 0, lastError: null };
-        try { job.series = await fetchKlines(job.ticker, job.interval, 1000); const r = evalJob(job); if (r) job.result = r; } catch (e) { job.lastError = String(e.message || e); }
+        try {
+          job.series = await fetchKlines(job.ticker, job.interval, 1000);
+          const r = evalJob(job);
+          if (r) job.result = r;
+          await ingestJobBars(job);
+        } catch (e) { job.lastError = String(e.message || e); }
         jobs[job.id] = job; persist();
         return send(res, 201, { job: summary(job) });
       }
@@ -142,5 +188,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 await load();
-server.listen(PORT, () => console.log(`[collector] écoute sur :${PORT} · ${Object.keys(jobs).length} jobs · poll ${POLL_MS}ms`));
+server.listen(PORT, () => console.log(
+  `[collector] écoute sur :${PORT} · ${Object.keys(jobs).length} jobs · poll ${POLL_MS}ms`
+  + (INGEST.enabled ? ` · ingest → ${INGEST.baseUrl}` : " · ingest OFF"),
+));
 loop();

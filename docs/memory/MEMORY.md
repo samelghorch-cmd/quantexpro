@@ -57,7 +57,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 1. **Sprint 0 / P0** — ✅ A–E clôturés  
 2. **P1** — ✅ clôturé + re-vérifié (DSR · ANT · PORT · TCA · Tearsheet · Statistical Edge)  
 3. **P2** — ✅ clôturé  
-4. **P3** — 🔄 ZDL-SYNC ✅ · reste collector→API auto / MT5 VPS  
+4. **P3** — ✅ ZDL-SYNC · ✅ COLLECTOR-INGEST (reste optionnel : MT5 VPS)  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 
