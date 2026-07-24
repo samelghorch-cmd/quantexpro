@@ -113,6 +113,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-AUDIT-UI** Journal serveur `/v1/audit` dans Risque → Audit (`auditLog.js` + vérif hash) ✅
 - [x] **P4-DESK** Desk PM unifié (equity flotte + réserve risque % capital) ✅
 - [x] **P4-SIGNAL-WS** Console Signal Engine (local + WS `/stream/bars`) ✅
+- [x] **P4-AF-SYNC** Validated Edges → Timescale (`/v1/edges` + Push/Pull Alpha Forge) ✅
 
 ---
 

@@ -280,3 +280,84 @@ class AuditOut(BaseModel):
     resource: str
     payload_hash: str
     details: dict[str, Any] | None = None
+
+
+class ValidatedEdgeIn(BaseModel):
+    """Edge Alpha Forge poussé depuis le dashboard (idempotent sur fingerprint)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    fingerprint: str = Field(min_length=3, max_length=256)
+    client_id: str | None = Field(default=None, max_length=64)
+    name: str = Field(min_length=1, max_length=256)
+    strategy_id: int | None = None
+    symbol: str | None = Field(default=None, max_length=32)
+    tf: str | None = Field(default=None, max_length=16)
+    dossier_id: str | None = Field(default=None, max_length=64)
+    verdict: str = Field(default="GO", max_length=16)
+    score: float | None = None
+    letter: str = Field(min_length=1, max_length=2)
+    status: str = Field(default="active", max_length=16)
+    metrics: dict[str, Any] | None = None
+    params: dict[str, Any] | None = None
+    tools_applied: list[Any] | None = None
+    notes: str | None = Field(default=None, max_length=512)
+    validated_at: dt.datetime | None = None
+
+    @field_validator("verdict")
+    @classmethod
+    def _verdict_go(cls, v: str) -> str:
+        u = str(v or "").upper()
+        if u != "GO":
+            raise ValueError("Seul verdict GO est accepté pour Validated Edges")
+        return u
+
+    @field_validator("letter")
+    @classmethod
+    def _letter_abc(cls, v: str) -> str:
+        u = str(v or "").upper()
+        if u not in {"A", "B", "C"}:
+            raise ValueError("Lettre A, B ou C requise")
+        return u
+
+    @field_validator("status")
+    @classmethod
+    def _status_ok(cls, v: str) -> str:
+        u = str(v or "active").lower()
+        if u not in {"active", "retired"}:
+            raise ValueError("status active|retired")
+        return u
+
+
+class ValidatedEdgeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    fingerprint: str
+    client_id: str | None = None
+    name: str
+    strategy_id: int | None = None
+    symbol: str | None = None
+    tf: str | None = None
+    dossier_id: str | None = None
+    verdict: str
+    score: float | None = None
+    letter: str
+    status: str
+    metrics: dict[str, Any] | None = None
+    params: dict[str, Any] | None = None
+    tools_applied: list[Any] | None = None
+    notes: str | None = None
+    validated_at: dt.datetime
+    updated_at: dt.datetime
+
+
+class EdgesUpsertResult(BaseModel):
+    received: int
+    written: int
+
+
+class RetireEdgeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    fingerprint: str = Field(min_length=3, max_length=256)
+

@@ -13,6 +13,7 @@ import {
   isEligibleDossier,
   edgesToCsv,
 } from "../../engine/validatedEdges.js";
+import { pushEdgesToApi, pullEdgesFromApi, isEdgesApiConfigured } from "../../engine/edgesSync.js";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 
@@ -97,6 +98,25 @@ export function AlphaForgePage() {
     }
     refresh();
     flash(`✓ ${n} edge(s) promu(s) / mis à jour`);
+  };
+
+  const onPushApi = async () => {
+    try {
+      const res = await pushEdgesToApi();
+      flash(`✓ Push API : ${res.written ?? 0} écrit(s)`);
+    } catch (e) {
+      flash(String(e.message || e), true);
+    }
+  };
+
+  const onPullApi = async () => {
+    try {
+      const { added, updated } = await pullEdgesFromApi();
+      refresh();
+      flash(`✓ Pull API : +${added} · ~${updated}`);
+    } catch (e) {
+      flash(String(e.message || e), true);
+    }
   };
 
   const edgeCols = [
@@ -206,8 +226,8 @@ export function AlphaForgePage() {
         <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Alpha Forge — Validated Edges</div>
         <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.55, maxWidth: 760 }}>
           Registre des edges validés (Reco Finale <b style={{ color: T.green }}>GO</b>, lettres{" "}
-          <b style={{ color: T.orange }}>A–C</b>). Complément de l’Anti-Library : ici on archive ce qui passe ;
-          là-bas on bloque les concepts involutifs. Pipeline typique : Usine → FAO → Validator → Reco → promote.
+          <b style={{ color: T.orange }}>A–C</b>). Sync ZDL optionnelle vers Timescale (
+          <code style={{ color: T.orange }}>/v1/edges</code>). Complément de l’Anti-Library.
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
           <Button onClick={() => navigate("factory")}>⚡ Usine</Button>
@@ -216,6 +236,11 @@ export function AlphaForgePage() {
           <Button onClick={() => navigate("recoFinale")}>Reco Finale</Button>
           <Button onClick={() => navigate("antiLibrary")}>🚫 Anti-Library</Button>
           <Button onClick={() => navigate("dossiers")}>📁 Dossiers</Button>
+          <Button onClick={() => navigate("dataManager")}>API</Button>
+          <Button primary onClick={onPushApi} title={!isEdgesApiConfigured() ? "Configure API d'abord" : ""}>
+            ↑ Push Timescale
+          </Button>
+          <Button primary onClick={onPullApi}>↓ Pull Timescale</Button>
         </div>
       </Panel>
 

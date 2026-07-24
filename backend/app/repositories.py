@@ -29,8 +29,9 @@ from .models import (
     MT5Order,
     OrderbookL2Snapshot,
     Tick,
+    ValidatedEdge,
 )
-from .schemas import BarIn, ExecutionIn, OrderbookL2In, SignalIn, TickIn, Timeframe
+from .schemas import BarIn, ExecutionIn, OrderbookL2In, SignalIn, TickIn, Timeframe, ValidatedEdgeIn
 
 _BAR_MODEL: dict[Timeframe, type] = {
     Timeframe.m1: Bar1m,
@@ -42,8 +43,8 @@ _BAR_MODEL: dict[Timeframe, type] = {
 }
 
 
-def bar_model(timeframe: Timeframe) -> type:
-    return _BAR_MODEL[timeframe]
+def bar_model(timeframe: Timeframe) -> type[Bar1m]:
+    return cast("type[Bar1m]", _BAR_MODEL[timeframe])
 
 
 # ---- Écritures idempotentes -------------------------------------------------------
@@ -229,3 +230,80 @@ async def list_audit(
     query = query.order_by(AuditEvent.id.asc()).limit(limit)
     result = await session.execute(query)
     return list(result.scalars().all())
+
+
+async def upsert_validated_edges(
+    session: AsyncSession, edges: Sequence[ValidatedEdgeIn]
+) -> int:
+    """Upsert idempotent sur ``fingerprint`` — ZDL Alpha Forge."""
+    if not edges:
+        return 0
+    now = dt.datetime.now(dt.UTC)
+    rows = []
+    for e in edges:
+        rows.append(
+            {
+                "fingerprint": e.fingerprint,
+                "client_id": e.client_id,
+                "name": e.name,
+                "strategy_id": e.strategy_id,
+                "symbol": e.symbol,
+                "tf": e.tf,
+                "dossier_id": e.dossier_id,
+                "verdict": e.verdict,
+                "score": e.score,
+                "letter": e.letter,
+                "status": e.status,
+                "metrics": e.metrics,
+                "params": e.params,
+                "tools_applied": e.tools_applied,
+                "notes": e.notes,
+                "validated_at": e.validated_at or now,
+                "updated_at": now,
+            }
+        )
+    stmt = pg_insert(ValidatedEdge).values(rows)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[ValidatedEdge.fingerprint],
+        set_={
+            "client_id": stmt.excluded.client_id,
+            "name": stmt.excluded.name,
+            "strategy_id": stmt.excluded.strategy_id,
+            "symbol": stmt.excluded.symbol,
+            "tf": stmt.excluded.tf,
+            "dossier_id": stmt.excluded.dossier_id,
+            "verdict": stmt.excluded.verdict,
+            "score": stmt.excluded.score,
+            "letter": stmt.excluded.letter,
+            "status": stmt.excluded.status,
+            "metrics": stmt.excluded.metrics,
+            "params": stmt.excluded.params,
+            "tools_applied": stmt.excluded.tools_applied,
+            "notes": stmt.excluded.notes,
+            "updated_at": now,
+        },
+    )
+    await session.execute(stmt)
+    return len(rows)
+
+
+async def list_validated_edges(
+    session: AsyncSession, *, status: str | None = None, limit: int = 500
+) -> list[ValidatedEdge]:
+    query = select(ValidatedEdge)
+    if status:
+        query = query.where(ValidatedEdge.status == status)
+    query = query.order_by(ValidatedEdge.updated_at.desc()).limit(limit)
+    result = await session.execute(query)
+    return list(result.scalars().all())
+
+
+async def retire_validated_edge(session: AsyncSession, fingerprint: str) -> bool:
+    stmt = (
+        update(ValidatedEdge)
+        .where(ValidatedEdge.fingerprint == fingerprint)
+        .where(ValidatedEdge.status == "active")
+        .values(status="retired", updated_at=dt.datetime.now(dt.UTC))
+    )
+    result = await session.execute(stmt)
+    return bool((getattr(result, "rowcount", 0) or 0) > 0)

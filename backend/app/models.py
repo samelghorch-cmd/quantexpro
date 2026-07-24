@@ -174,3 +174,36 @@ class MT5Order(Base):
     __table_args__ = (
         Index("ix_mt5_orders_status_mode", "status", "mode"),
     )
+
+
+class ValidatedEdge(Base):
+    """Registre Alpha Forge — edges validés (ZDL serveur, clé = fingerprint)."""
+
+    __tablename__ = "validated_edges"
+
+    fingerprint: Mapped[str] = mapped_column(String(256), primary_key=True)
+    client_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    strategy_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    symbol: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    tf: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    dossier_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    verdict: Mapped[str] = mapped_column(String(16), nullable=False, default="GO")
+    score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    letter: Mapped[str] = mapped_column(String(2), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="active")
+    metrics: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    params: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    tools_applied: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    validated_at: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+    updated_at: Mapped[dt.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+    )
+
+    __table_args__ = (
+        Index("ix_validated_edges_status", "status"),
+        Index("ix_validated_edges_updated", "updated_at"),
+    )

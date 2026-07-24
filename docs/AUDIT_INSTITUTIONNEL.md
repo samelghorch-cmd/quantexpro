@@ -82,7 +82,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 | Patterns Library 616 | ✅ `patternsLibrary.js` | Filtres TF M1–MN à aligner UI |
 | Prompt Mode Qwen local | 🔴 | P0 backend LLM |
 | Reverse Engineering signaux | 🟡 Strategy Importer JSON | Mode « historique signaux externes » 🔴 |
-| Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + page Optimisation `alphaForge` | Promote GO A–C depuis dossiers ; CSV |
+| Alpha Forge + Valid Edges | ✅ `validatedEdges.js` + `/v1/edges` ZDL | Promote GO A–C · Push/Pull Timescale |
 | Anti-Library (Z-Score MR, BB MR, TRIX, …) | ✅ `antiLibrary.js` + UI + filtre Usine/FAO | Persist Timescale plus tard |
 | Scraper Reddit/X/QC/SSRN | 🔴 | P2 — avec garde-fous légaux + rate limit |
 | Pass Rate Prop Firm + DSR | ✅ `propfirmConvex.js`, DSR dans Reco + Usine (`factoryDsr.js`, filtre &lt;50 %) | ✅ |
@@ -190,6 +190,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-AUDIT-UI | UI journal audit serveur | ✅ | `auditLog.js` · Risque → Audit · hash SHA-256 · CSV |
 | P4-DESK | Desk PM flotte / réserve risque | ✅ | `portfolioDesk.js` · Trading → Desk PM |
 | P4-SIGNAL-WS | Console Signal Engine + WS bars | ✅ | `signalConsole.js` · `/stream/bars` · journal local/WS |
+| P4-AF-SYNC | Edges ZDL Timescale | ✅ | `validated_edges` · `/v1/edges` · `edgesSync.js` · Alembic 0004 |
 
 ---
 
