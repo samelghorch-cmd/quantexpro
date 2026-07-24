@@ -194,7 +194,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-GEX | Options Gamma / GEX | ✅ | `gex.ts` · Deribit proxy · Max Pain · PCR · implied move |
 | P4-ANT-SYNC | Anti-Library ZDL Timescale | ✅ | `anti_library` · `/v1/anti-library` · `antiLibrarySync.ts` · Alembic 0005 |
 | P4-FEEDS | Statut multi-feeds TickerBar | ✅ | `feedStatus.ts` · probes · Databento/CBOE scoped_out |
-| P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.js` · sessions UTC · Deribit walls/MaxPain |
+| P4-VP | pPOC / pVAL / confluence OI | ✅ | `microstructure.ts` · sessions UTC · Deribit walls/MaxPain |
 | P4-SSO | Session JWT + OIDC PKCE | ✅ | `/v1/auth/session|oidc|me` · Bearer · `ssoAuth.ts` |
 | P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
 | P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` JS + `/v1/quant/hmm` Python |
@@ -213,21 +213,22 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P7-TS-PAT | patternsLibrary → TypeScript | ✅ | `Pattern` · TF M1–MN · filtres |
 | P7-TS-GEX | gex → TypeScript | ✅ | `OptionRow` · GEX / Max Pain / PCR |
 | P7-TS-MORE | auditLog + ssoAuth → TS | ✅ | `AuditEvent` · PKCE / JWT session |
+| P8-TS-MICRO | microstructure → TypeScript | ✅ | VP / pPOC / pVAL / confluence OI |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P7 clôturés** au 2026-07-24.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P7 clôturés** · P8 en cours.
 
-**Prochaine action recommandée :** suite produit / TS restants (`microstructure`, `signalReverse`, …).
+**Prochaine action recommandée :** P8-TS-REV (`signalReverse`) ou P8-TS-DESK.
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5/P6/P7 (PAT · GEX · audit · SSO) livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5–P8-TS-MICRO livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
