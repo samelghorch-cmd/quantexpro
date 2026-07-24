@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -32,7 +33,7 @@ class OidcCodeBody(BaseModel):
 
 
 @router.get("/config")
-async def auth_config(settings: Settings = Depends(get_settings)) -> dict:
+async def auth_config(settings: Settings = Depends(get_settings)) -> dict[str, Any]:
     """Config publique SSO (pas de secrets) — pour le dashboard SPA."""
     issuer = settings.oidc_issuer.rstrip("/") if settings.oidc_enabled else ""
     return {
@@ -52,7 +53,7 @@ async def auth_config(settings: Settings = Depends(get_settings)) -> dict:
 async def create_session(
     principal: Principal = Depends(get_principal),
     settings: Settings = Depends(get_settings),
-) -> dict:
+) -> dict[str, Any]:
     """Échange une identité valide (clé API ou Bearer) contre un JWT de session."""
     if settings.is_production and not settings.sso_secret.strip():
         raise HTTPException(
@@ -72,10 +73,12 @@ async def create_session(
 async def login_oidc_id_token(
     body: OidcIdTokenBody,
     settings: Settings = Depends(get_settings),
-) -> dict:
+) -> dict[str, Any]:
     """Valide un id_token OIDC et émet un JWT de session QuantEXPro."""
     if not settings.oidc_enabled:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="OIDC désactivé")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="OIDC désactivé"
+        )
     if settings.is_production and not settings.sso_secret.strip():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -105,10 +108,12 @@ async def login_oidc_id_token(
 async def login_oidc_code(
     body: OidcCodeBody,
     settings: Settings = Depends(get_settings),
-) -> dict:
+) -> dict[str, Any]:
     """Échange code PKCE → id_token (proxy serveur) → JWT session."""
     if not settings.oidc_enabled:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="OIDC désactivé")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="OIDC désactivé"
+        )
     try:
         tokens = await exchange_oidc_code(
             code=body.code,
@@ -131,7 +136,7 @@ async def login_oidc_code(
 
 
 @router.get("/me")
-async def auth_me(principal: Principal = Depends(get_principal)) -> dict:
+async def auth_me(principal: Principal = Depends(get_principal)) -> dict[str, Any]:
     """Identité courante (clé API ou Bearer SSO)."""
     return {
         "key_id": principal.key_id,

@@ -50,7 +50,11 @@ def test_map_oidc_role_email() -> None:
 
 @pytest.mark.asyncio
 async def test_get_principal_accepts_bearer_session() -> None:
-    s = Settings(sso_secret="unit-sso-secret", api_keys=("desk-key",), api_key_roles={"desk-key": "risk"})
+    s = Settings(
+        sso_secret="unit-sso-secret",
+        api_keys=("desk-key",),
+        api_key_roles={"desk-key": "risk"},
+    )
     issued = issue_session_token(sub="risk@desk", role=Role.risk, settings=s, auth_method="oidc")
     principal = await get_principal(
         x_api_key=None,
@@ -100,9 +104,18 @@ def test_verify_oidc_id_token_claims() -> None:
     def b64(o: dict) -> str:
         return base64.urlsafe_b64encode(json.dumps(o).encode()).rstrip(b"=").decode()
 
+    header = {"alg": "RS256"}
+    payload = {
+        "iss": "https://issuer.example",
+        "aud": "spa-client",
+        "sub": "u1",
+        "email": "a@b.c",
+        "exp": now + 3600,
+        "iat": now,
+    }
     token = (
-        f"{b64({'alg': 'RS256'})}."
-        f"{b64({'iss': 'https://issuer.example', 'aud': 'spa-client', 'sub': 'u1', 'email': 'a@b.c', 'exp': now + 3600, 'iat': now})}."
+        f"{b64(header)}."
+        f"{b64(payload)}."
         "sig"
     )
     claims = verify_oidc_id_token(token, s)

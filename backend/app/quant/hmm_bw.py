@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from .hmm import HMM_REGIME_IDS, HMM_REGIME_LABELS, map_clusters_to_regimes, Feature
+from .hmm import HMM_REGIME_IDS, HMM_REGIME_LABELS, Feature, map_clusters_to_regimes
 
 _SQRT_2PI = math.sqrt(2.0 * math.pi)
 
@@ -33,7 +33,9 @@ def _normalize(row: list[float]) -> float:
     return s
 
 
-def _init_params(obs: list[float], n_states: int) -> tuple[list[float], list[list[float]], list[float], list[float]]:
+def _init_params(
+    obs: list[float], n_states: int
+) -> tuple[list[float], list[list[float]], list[float], list[float]]:
     """Init π, A, μ, σ depuis quantiles (déterministe)."""
     sorted_o = sorted(obs)
     n = len(sorted_o)
