@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // VPIN — Volume-Synchronized Probability of Informed Trading
 // Easley, López de Prado & O'Hara (2012) — "Flow Toxicity and Liquidity in a High-Frequency World".
 //
@@ -16,6 +15,43 @@
 
 import { normCdf } from "./backtestMetrics.ts";
 
+// Classe de microstructure VPIN et méthode de classification du flux.
+export type VpinClass = "indices" | "crypto" | "forex" | "stocks" | "metals" | "energy" | "synthetic";
+export type VpinMethod = "auto" | "real" | "bvc" | "tick";
+
+// Barre OHLCV minimale consommée par le module (close + volume ; volume acheteur optionnel).
+export interface VpinBar {
+  c: number;       // close
+  v: number;       // volume total de la barre
+  t?: number;      // timestamp (optionnel)
+  vBuy?: number;   // volume acheteur RÉEL (optionnel — ex. taker-buy Binance)
+}
+
+// Options de computeVPIN (toutes optionnelles — voir la JSDoc de la fonction).
+export interface VpinOptions {
+  buckets?: number;
+  window?: number;
+  method?: VpinMethod;
+  sigmaWindow?: number;
+  cdfWindow?: number;
+  calibBars?: number;
+}
+
+// Niveau de toxicité dérivé de la CDF du VPIN.
+export interface ToxicityLevel {
+  level: string;
+  label: string;
+  color: string;
+}
+
+// Un bucket à volume constant, tel qu'exposé dans le résultat.
+export interface VpinBucket {
+  oi: number;      // order imbalance ∈ [0,1]
+  vpin: number;
+  cdf: number;
+  endBar: number;
+}
+
 // Presets VPIN par classe d'actif — la microstructure diffère, donc le réglage aussi.
 // Le papier original (Easley/LdP/O'Hara) portait sur les futures E-mini S&P → "indices" est la référence.
 export const VPIN_PRESETS = {
@@ -29,8 +65,8 @@ export const VPIN_PRESETS = {
 };
 
 // Résout la classe VPIN à partir du symbole (futures synthétiques ou catalogue réel).
-const _FUTURES_CLASS = { ES: "indices", MES: "indices", NQ: "indices", MNQ: "indices", YM: "indices", CL: "energy", GC: "metals", "6E": "forex" };
-const _REAL_CLASS = {
+const _FUTURES_CLASS: Record<string, VpinClass> = { ES: "indices", MES: "indices", NQ: "indices", MNQ: "indices", YM: "indices", CL: "energy", GC: "metals", "6E": "forex" };
+const _REAL_CLASS: Record<string, VpinClass> = {
   BTC: "crypto", ETH: "crypto", SOL: "crypto", BNB: "crypto", XRP: "crypto",
   SPX: "indices", NDX: "indices", DJI: "indices", RUT: "indices", DAX: "indices",
   EURUSD: "forex", GBPUSD: "forex", USDJPY: "forex", AUDUSD: "forex", USDCAD: "forex",
@@ -38,13 +74,13 @@ const _REAL_CLASS = {
   GOLD: "metals", SILVER: "metals", COPPER: "metals", PLATINUM: "metals",
   WTI: "energy", BRENT: "energy", NATGAS: "energy",
 };
-export function resolveVpinClass(symbol) {
+export function resolveVpinClass(symbol: string | null | undefined): VpinClass {
   if (!symbol) return "synthetic";
   return _FUTURES_CLASS[symbol] || _REAL_CLASS[symbol] || "synthetic";
 }
 
 // Écart-type glissant des variations close-to-close (sert à standardiser la BVC).
-function rollingStd(deltas, window) {
+function rollingStd(deltas: number[], window: number): number[] {
   const out = new Array(deltas.length).fill(NaN);
   let sum = 0, sum2 = 0;
   for (let i = 0; i < deltas.length; i++) {
@@ -64,7 +100,7 @@ function rollingStd(deltas, window) {
 // real : V_buy = vBuy / V   (volume acheteur agressif RÉEL — ex. taker-buy Binance, aucune estimation)
 // bvc  : V_buy = V · Φ(ΔP / σ_ΔP)   (Bulk Volume Classification, méthode du papier)
 // tick : V_buy = V si ΔP>0, 0 si ΔP<0, V/2 si nul  (tick-rule, grossier)
-export function classifyBuyFraction(bars, method = "bvc", sigmaWindow = 50) {
+export function classifyBuyFraction(bars: VpinBar[], method: VpinMethod = "bvc", sigmaWindow = 50): number[] {
   const n = bars.length;
   const frac = new Array(n).fill(0.5);
   if (method === "real") {
@@ -90,13 +126,13 @@ export function classifyBuyFraction(bars, method = "bvc", sigmaWindow = 50) {
 }
 
 // Vrai si les barres portent un volume acheteur réel exploitable (ex. crypto Binance).
-export function hasRealFlow(bars) {
+export function hasRealFlow(bars: VpinBar[]): boolean {
   return Array.isArray(bars) && bars.some((b) => b && b.vBuy !== undefined && b.v > 0);
 }
 
 // Percentile empirique glissant de `value` dans l'historique `hist` (buckets précédents).
 // = CDF du VPIN : proportion des valeurs passées ≤ valeur courante.
-function empiricalCdf(hist, value) {
+function empiricalCdf(hist: number[], value: number): number {
   if (hist.length === 0) return NaN;
   let le = 0;
   for (const h of hist) if (h <= value) le++;
@@ -104,7 +140,7 @@ function empiricalCdf(hist, value) {
 }
 
 // Niveau de toxicité dérivé de la CDF (signal de krach façon Easley/LdP/O'Hara).
-export function toxicityLevel(cdf) {
+export function toxicityLevel(cdf: number): ToxicityLevel {
   if (Number.isNaN(cdf)) return { level: "n/a", label: "—", color: "#6a7280" };
   if (cdf >= 0.99) return { level: "toxic", label: "TOXIQUE", color: "#ff4d4f" };
   if (cdf >= 0.90) return { level: "high", label: "ÉLEVÉ", color: "#ffb020" };
@@ -126,7 +162,7 @@ export function toxicityLevel(cdf) {
  *                  les frontières de buckets → backtest ≡ live (fix P0-T4).
  * @returns { vpinByBar, cdfByBar, buckets, lastVPIN, lastCDF, tox, method, bucketVolume, avgVPIN, maxVPIN }
  */
-export function computeVPIN(bars, opt = {}) {
+export function computeVPIN(bars: VpinBar[], opt: VpinOptions = {}) {
   const { buckets: nBucketsTarget = 200, window = 50, method = "auto", sigmaWindow = 50, cdfWindow = 250, calibBars: calibBarsOpt } = opt;
   const n = bars?.length || 0;
   // "auto" → classification réelle si les barres portent un volume acheteur, sinon BVC.
@@ -156,9 +192,9 @@ export function computeVPIN(bars, opt = {}) {
 
   const vpinByBar = new Array(n).fill(NaN);
   const cdfByBar = new Array(n).fill(NaN);
-  const bucketList = [];         // { oi, vpin, cdf, endBar }
-  const vpinHistory = [];        // valeurs VPIN passées (pour la CDF)
-  const imbalances = [];         // |Vb − Vs| / V par bucket
+  const bucketList: VpinBucket[] = [];   // { oi, vpin, cdf, endBar }
+  const vpinHistory: number[] = [];      // valeurs VPIN passées (pour la CDF)
+  const imbalances: number[] = [];       // |Vb − Vs| / V par bucket
 
   let curV = 0, curBuy = 0, curSell = 0;
 
