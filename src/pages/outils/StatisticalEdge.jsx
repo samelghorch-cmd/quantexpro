@@ -7,7 +7,7 @@ import {
   seriesToCSV,
   defaultIndicatorSeries,
 } from "../../engine/statisticalEdge.js";
-import { buildMarketOscillators, oscillatorsToCSV } from "../../engine/oscillators.js";
+import { buildMarketOscillators, oscillatorsToCSV } from "../../engine/oscillators.ts";
 import { downloadCSV } from "../../engine/exportUtils.js";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, fmt, fmtPct } from "../../components/shared/ui.jsx";

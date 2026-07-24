@@ -4,7 +4,7 @@ import {
   scaleHurstForOverlay,
   buildMarketOscillators,
   oscillatorsToCSV,
-} from "../../src/engine/oscillators.js";
+} from "../../src/engine/oscillators.ts";
 import { makeBars, DAY_MS } from "../helpers/fixtures.js";
 import { buildContext } from "../../src/engine/context.js";
 

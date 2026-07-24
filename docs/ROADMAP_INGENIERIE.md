@@ -121,7 +121,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-SSO** Session JWT + OIDC PKCE (`/v1/auth/*` · Bearer · Risque → Audit) ✅
 - [x] **P4-REV** Reverse engineering signaux historiques (`signalReverse.js` · Signal Reverse) ✅
 - [x] **P4-HMM** Régimes Trend/Range/Vol/Choppy (`hmmRegimes` · HMM Regime / Regime Clock) ✅
-- [x] **P4-OSC** Oscillateurs Z-Score / Hurst / régimes (`oscillators.js` · Statistical Edge) ✅
+- [x] **P4-OSC** Oscillateurs Z-Score / Hurst / régimes (`oscillators.ts` · Statistical Edge) ✅
 - [x] **P4-CORE** Catalogue Core Mode KAMA / LinReg / Ichimoku (`ruleBuilder` + overlays) ✅
 - [x] **P4-PAT** Patterns Library TF M1–MN + familles scalp/intra/swing ✅
 - [x] **P4-RESEARCH** RSS recherche légaux (arXiv q-fin · NBER · BIS) ✅
@@ -131,7 +131,8 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P5 — Qualité & ports (post-P4)
 
 - [x] **P5-TS-FEEDS** `feedStatus.js` → `feedStatus.ts` (types stricts + probes) ✅
-- [ ] **P5-TS-MORE** Suite incremental `src/engine` (oscillators, edgesSync, …)
+- [x] **P5-TS-MORE** `oscillators.js` → `oscillators.ts` (Z-Score / Hurst / régimes) ✅
+- [ ] **P5-TS-EDGES** Suite incremental (`edgesSync` / `validatedEdges` / …)
 - [ ] **P5-HMM-PY** Port HMM Python (cible audit · badge heuristique JS conservé)
 - [ ] **P5-OPS** Go-live ops (`alembic upgrade head` 0004/0005 · MT5 paper→demo)
 
