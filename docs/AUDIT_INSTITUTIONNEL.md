@@ -210,25 +210,27 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P6-THEME | Tokens long/short UI | ✅ | `T.long`/`T.short` · `sideColor` · Trades/Live/Sentiment |
 | P6-TS-MORE | antiLibrary + sync → TS | ✅ | `AntiEntry` · API payload · merge remote |
 | P6-HMM-BW | Baum-Welch Gaussian 1D | ✅ | `hmm_bw.py` · `engine=baum_welch` · heuristic=false |
+| P7-TS-PAT | patternsLibrary → TypeScript | ✅ | `Pattern` · TF M1–MN · filtres |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P6 clôturés** au 2026-07-24.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P6 clôturés** · P7 en cours.
 
-**Prochaine action recommandée :** suite TS (`gex`, `patternsLibrary`) ou produit.
+**Prochaine action recommandée :** P7-TS-GEX ou suite TS.
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** spec exige TS strict ; migration **incremental** : `src/engine` en `.ts` en priorité. **P5** + **P6-TS-MORE** (`antiLibrary`) livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5/P6 + **P7-TS-PAT** livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
 6. **Ops :** migrations head **0005** + preflight documentés (`docs/OPS_GO_LIVE.md`) — exécution prod = action ops humaine.
+
 ---
 
 ## 7. Checklist « Hedge-Fund Readiness » (scorecard)
