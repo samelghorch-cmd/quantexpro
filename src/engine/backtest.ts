@@ -1,9 +1,52 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — moteur de backtest (PnL réaliste) + batch.
 import { resolveSpec, roundTripCost } from "./contracts.ts";
 import { annualFactor } from "./annualize.ts";
 
-export function runBacktest(bars, ctx, strategyEval, options) {
+// Barre OHLCV minimale consommée ici (close/high/low + timestamp).
+export interface BacktestBar {
+  c: number;   // close
+  h: number;   // high
+  l: number;   // low
+  t: number;   // timestamp (ms)
+}
+
+// Contexte indicateurs minimal utilisé par le moteur (ATR pour le stop).
+export interface BacktestContext {
+  atr14: number[];
+}
+
+// Signal renvoyé par l'évaluation d'une stratégie à l'indice i.
+export interface StrategySignal {
+  long?: boolean;
+  short?: boolean;
+}
+
+export type StrategyEvalFn = (ctx: BacktestContext, i: number) => StrategySignal;
+
+// Options d'exécution du backtest.
+export interface BacktestOptions {
+  contract: string;                        // clé passée à resolveSpec
+  contracts: number;                       // quantité (nb de contrats)
+  capital: number;
+  direction: "both" | "long" | "short";
+  useAtrStop?: boolean;
+  atrMult: number;                         // multiple d'ATR pour le stop
+}
+
+// Une stratégie de la librairie (mode batch).
+export interface BacktestStrategy {
+  id: number | string;
+  name: string;
+  cat: string;
+  eval: StrategyEvalFn;
+}
+
+export function runBacktest(
+  bars: BacktestBar[],
+  ctx: BacktestContext,
+  strategyEval: StrategyEvalFn,
+  options: BacktestOptions,
+) {
   const { contract, contracts, useAtrStop, atrMult, direction, capital } = options;
   const spec = resolveSpec(contract);
   const trades = [];
@@ -71,7 +114,13 @@ export function runBacktest(bars, ctx, strategyEval, options) {
   return { trades, totalPnL, winRate, avgWin, avgLoss, profitFactor, sharpe, maxDD, equityCurve, finalEquity: equity };
 }
 
-export function runBatchBacktest(bars, ctx, library, options, onProgress) {
+export function runBatchBacktest(
+  bars: BacktestBar[],
+  ctx: BacktestContext,
+  library: BacktestStrategy[],
+  options: BacktestOptions,
+  onProgress?: (done: number, total: number) => void,
+) {
   const results = [];
   for (let k = 0; k < library.length; k++) {
     const s = library[k];
