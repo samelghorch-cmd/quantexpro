@@ -1,13 +1,53 @@
 // Kelly/EV, Robustesse, Audit, Historique — outils de risque sur le dernier backtest.
-import { useMemo, useState } from "react";
+// P4-AUDIT-UI : page Audit = checklist qualité locale + journal serveur append-only.
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { drawdownDistribution, varCvar } from "../../engine/quantToolbox/index.js";
 import { deflatedSharpe } from "../../engine/backtestMetrics.js";
-import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import {
+  fetchAuditLog,
+  filterAuditEvents,
+  auditEventsToCsv,
+  summarizeAudit,
+  verifyEventHash,
+  isAuditApiConfigured,
+} from "../../engine/auditLog.js";
+import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";
+import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { T } from "../../components/shared/theme.js";
 
 function NoBt() { return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest — ces outils l'analysent.</div></Panel>; }
+
+function downloadCsv(csv) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `quantexpro-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function roleColor(role) {
+  const r = String(role || "").toLowerCase();
+  if (r === "pm") return T.orange;
+  if (r === "risk") return T.red;
+  if (r === "ea") return T.blue;
+  if (r === "analyst") return T.green;
+  return T.textDim;
+}
+
+const inputStyle = {
+  width: "100%",
+  background: T.bg0,
+  border: `1px solid ${T.border}`,
+  color: T.text,
+  borderRadius: 6,
+  padding: "6px 8px",
+  fontSize: 12,
+};
+
 
 export function KellyEvPage() {
   const { pipeline } = usePipeline();
@@ -114,35 +154,209 @@ export function RobustessePage() {
 }
 
 export function AuditPage() {
-  const { pipeline } = usePipeline();
+  const { pipeline, navigate } = usePipeline();
   const bt = pipeline.lastBacktest;
-  if (!bt) return <NoBt />;
-  const r = bt.res;
-  const checks = [
-    { name: "Nombre de trades ≥ 30", pass: r.nTrades >= 30, val: r.nTrades },
-    { name: "Profit Factor ≥ 1.3", pass: r.profitFactor >= 1.3, val: fmt(r.profitFactor) },
-    { name: "Sharpe ≥ 1.0", pass: r.sharpe >= 1, val: fmt(r.sharpe) },
-    { name: "Max DD ≤ 20%", pass: r.maxDD <= 0.2, val: fmtPct(r.maxDD * 100) },
-    { name: "Win Rate ≥ 40%", pass: r.winRate >= 40, val: fmtPct(r.winRate) },
-    { name: "Expectancy R > 0", pass: r.expectancyR > 0, val: fmt(r.expectancyR) },
-    { name: "Sortino ≥ 1.2", pass: r.sortino >= 1.2, val: fmt(r.sortino) },
-    { name: "Calmar ≥ 1.5", pass: r.calmar >= 1.5, val: fmt(r.calmar) },
+
+  const [baseUrl, setBaseUrl] = useState(() => getApiBaseUrl());
+  const [apiKey, setKey] = useState(() => getApiKey());
+  const [events, setEvents] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const [q, setQ] = useState("");
+  const [actionFilter, setActionFilter] = useState("");
+  const [integrity, setIntegrity] = useState({ checked: 0, ok: 0, bad: 0 });
+
+  const saveCfg = () => {
+    setApiBaseUrl(baseUrl);
+    setApiKey(apiKey);
+  };
+
+  const load = useCallback(async () => {
+    saveCfg();
+    setBusy(true);
+    setErr(null);
+    try {
+      const rows = await fetchAuditLog({ limit: 200 });
+      setEvents(rows);
+      // Vérifie hash sur les 40 derniers ayant details
+      let checked = 0; let ok = 0; let bad = 0;
+      for (const e of rows.slice(-40)) {
+        if (!e.details) continue;
+        checked++;
+        if (await verifyEventHash(e)) ok++;
+        else bad++;
+      }
+      setIntegrity({ checked, ok, bad });
+    } catch (e) {
+      setErr(e.message || String(e));
+      setEvents([]);
+    } finally {
+      setBusy(false);
+    }
+  }, [baseUrl, apiKey]);
+
+  useEffect(() => {
+    if (isAuditApiConfigured()) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const actions = useMemo(() => {
+    const set = new Set(events.map((e) => e.action).filter(Boolean));
+    return ["", ...[...set].sort()];
+  }, [events]);
+
+  const filtered = useMemo(
+    () => filterAuditEvents(events, { q, action: actionFilter }),
+    [events, q, actionFilter],
+  );
+  const summary = useMemo(() => summarizeAudit(events), [events]);
+
+  const cols = [
+    { key: "id", label: "#", align: "right", render: (r) => r.id },
+    {
+      key: "ts",
+      label: "Horodatage",
+      render: (r) => {
+        const t = Date.parse(r.ts);
+        return Number.isFinite(t) ? new Date(t).toLocaleString("fr-FR") : r.ts || "—";
+      },
+    },
+    { key: "actor", label: "Actor", render: (r) => <span style={{ fontFamily: T.mono, fontSize: 11 }}>{r.actor}</span> },
+    {
+      key: "role",
+      label: "Rôle",
+      render: (r) => <Badge color={roleColor(r.role)}>{r.role}</Badge>,
+    },
+    { key: "action", label: "Action", render: (r) => <Badge color={T.blue}>{r.action}</Badge> },
+    { key: "resource", label: "Resource", render: (r) => <span style={{ fontSize: 11 }}>{r.resource}</span> },
+    {
+      key: "hash",
+      label: "Hash",
+      render: (r) => (
+        <span style={{ fontFamily: T.mono, fontSize: 10, color: T.textFaint }} title={r.payload_hash}>
+          {(r.payload_hash || "").slice(0, 12)}…
+        </span>
+      ),
+    },
   ];
+
+  const checks = bt
+    ? [
+        { name: "Nombre de trades ≥ 30", pass: bt.res.nTrades >= 30, val: bt.res.nTrades },
+        { name: "Profit Factor ≥ 1.3", pass: bt.res.profitFactor >= 1.3, val: fmt(bt.res.profitFactor) },
+        { name: "Sharpe ≥ 1.0", pass: bt.res.sharpe >= 1, val: fmt(bt.res.sharpe) },
+        { name: "Max DD ≤ 20%", pass: bt.res.maxDD <= 0.2, val: fmtPct(bt.res.maxDD * 100) },
+        { name: "Win Rate ≥ 40%", pass: bt.res.winRate >= 40, val: fmtPct(bt.res.winRate) },
+        { name: "Expectancy R > 0", pass: bt.res.expectancyR > 0, val: fmt(bt.res.expectancyR) },
+        { name: "Sortino ≥ 1.2", pass: bt.res.sortino >= 1.2, val: fmt(bt.res.sortino) },
+        { name: "Calmar ≥ 1.5", pass: bt.res.calmar >= 1.5, val: fmt(bt.res.calmar) },
+      ]
+    : [];
   const passed = checks.filter((c) => c.pass).length;
+
   return (
-    <Panel title={`Audit qualité · ${bt.strat.name}`} right={<Badge color={passed >= 6 ? T.green : passed >= 4 ? T.yellow : T.red}>{passed}/{checks.length} critères</Badge>}>
-      {checks.map((c) => (
-        <div key={c.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 4px", borderBottom: `1px solid ${T.borderSoft}` }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ color: c.pass ? T.green : T.red, fontSize: 16 }}>{c.pass ? "✓" : "✗"}</span>
-            <span style={{ fontSize: 13 }}>{c.name}</span>
-          </span>
-          <span style={{ fontFamily: T.mono, fontSize: 13, color: c.pass ? T.green : T.red }}>{c.val}</span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <Panel>
+        <div style={{ fontSize: 16, fontWeight: 800 }}>Audit — journal serveur + qualité backtest</div>
+        <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, lineHeight: 1.55, maxWidth: 720 }}>
+          Lecture de <code style={{ color: T.orange }}>/v1/audit</code> (append-only, hash SHA-256). Rôles API{" "}
+          <b>pm</b> / <b>risk</b>. La checklist locale reste disponible si un backtest est en mémoire.
         </div>
-      ))}
-    </Panel>
+      </Panel>
+
+      <Panel title="Connexion API">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end" }}>
+          <Field label="Base URL">
+            <input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="http://localhost:8000"
+              style={inputStyle}
+            />
+          </Field>
+          <Field label="API Key (pm / risk)">
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="clé X-API-Key"
+              style={inputStyle}
+            />
+          </Field>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button primary onClick={load} disabled={busy}>{busy ? "…" : "Charger"}</Button>
+            <Button onClick={() => navigate("dataManager")}>Data Manager</Button>
+          </div>
+        </div>
+        {err && <div style={{ marginTop: 8, fontSize: 12, color: T.red }}>{err}</div>}
+      </Panel>
+
+      <MetricGrid min={120}>
+        <MetricCard label="Événements" value={summary.n} color={T.orange} />
+        <MetricCard label="Dernier id" value={summary.lastId ?? "—"} />
+        <MetricCard
+          label="Intégrité hash"
+          value={integrity.checked ? `${integrity.ok}/${integrity.checked}` : "—"}
+          color={integrity.bad ? T.red : T.green}
+          hint="Vérif. SHA-256 sur events avec details"
+        />
+        <MetricCard label="Filtrés" value={filtered.length} />
+      </MetricGrid>
+
+      <Panel
+        title={`Journal d'audit (${filtered.length})`}
+        right={
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filtrer…"
+              style={{ ...inputStyle, width: 140 }}
+            />
+            <Select
+              value={actionFilter}
+              onChange={setActionFilter}
+              options={actions.map((a) => ({ value: a, label: a || "Toutes actions" }))}
+            />
+            <Button onClick={() => downloadCsv(auditEventsToCsv(filtered))} disabled={!filtered.length}>
+              CSV
+            </Button>
+          </div>
+        }
+      >
+        {filtered.length === 0 ? (
+          <div style={{ padding: 20, textAlign: "center", color: T.textDim, fontSize: 12 }}>
+            Aucun événement. Démarre l’API, utilise une clé <b>pm</b>/<b>risk</b>, puis « Charger ».
+            Les écritures (MT5 create, etc.) alimentent ce journal côté serveur.
+          </div>
+        ) : (
+          <DataTable columns={cols} rows={[...filtered].reverse()} maxHeight={360} />
+        )}
+      </Panel>
+
+      {bt ? (
+        <Panel title={`Checklist qualité · ${bt.strat.name}`} right={<Badge color={passed >= 6 ? T.green : passed >= 4 ? T.yellow : T.red}>{passed}/{checks.length} critères</Badge>}>
+          {checks.map((c) => (
+            <div key={c.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 4px", borderBottom: `1px solid ${T.borderSoft}` }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ color: c.pass ? T.green : T.red, fontSize: 16 }}>{c.pass ? "✓" : "✗"}</span>
+                <span style={{ fontSize: 13 }}>{c.name}</span>
+              </span>
+              <span style={{ fontFamily: T.mono, fontSize: 13, color: c.pass ? T.green : T.red }}>{c.val}</span>
+            </div>
+          ))}
+        </Panel>
+      ) : (
+        <Panel>
+          <div style={{ padding: 16, fontSize: 12, color: T.textDim }}>
+            Checklist qualité backtest : lance un Backtest pour afficher les critères locaux (indépendants du journal serveur).
+          </div>
+        </Panel>
+      )}
+    </div>
   );
 }
+
 
 export function HistoriquePage() {
   const { journal } = usePipeline();

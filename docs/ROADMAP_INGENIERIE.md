@@ -110,6 +110,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P4 — Alpha Forge & desk (post-P3)
 
 - [x] **P4-AF** Registre Validated Edges (`validatedEdges.js` + page Alpha Forge + promote Dossiers) ✅
+- [x] **P4-AUDIT-UI** Journal serveur `/v1/audit` dans Risque → Audit (`auditLog.js` + vérif hash) ✅
 
 ---
 

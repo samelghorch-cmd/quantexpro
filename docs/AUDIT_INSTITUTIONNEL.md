@@ -187,6 +187,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P3-COLLECTOR-INGEST | Collector → `/v1/bars` | ✅ | `collector/barsIngest.js` · opt-in env · delta + backfill |
 | P3-MT5-VPS | Pack go-live VPS | ✅ | `mt5/VPS_DEPLOY.md` · `smoke.mjs` · dry-run tests |
 | P4-AF | Alpha Forge Validated Edges | ✅ | `validatedEdges.js` · page Optimisation · promote Dossiers |
+| P4-AUDIT-UI | UI journal audit serveur | ✅ | `auditLog.js` · Risque → Audit · hash SHA-256 · CSV |
 
 ---
 
@@ -226,7 +227,7 @@ Interruption Claude ~2026-07-22 ; les changements locaux sont **cohérents** ave
 | Persistance & ZDL | 4 | Backend TimescaleDB + bus Redis Streams (ACK/DLQ) ; reste : brancher dashboard |
 | Exécution live | 3 | Paper Binance + pont MT5 (EA pull/ACK) prêt, à déployer VPS |
 | Données institutionnelles | 1 | Pas Databento/L2 options |
-| Gouvernance (RBAC, audit) | 3 | RBAC rôles + audit append-only (hash) ; reste UI/SSO |
+| Gouvernance (RBAC, audit) | 4 | RBAC + audit append-only + **UI** `GET /v1/audit` ; reste SSO |
 | Test automation | 4 | CI pas encore poussée GitHub |
 | **Total approximatif** | **18/35** | Cible 28+ pour « desk institutionnel soft » |
 
