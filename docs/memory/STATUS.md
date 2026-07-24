@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P5-HMM-PY)
+> Dernière maj : **2026-07-24** (P5-OPS)
 
 ---
 
@@ -11,23 +11,22 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **337** · backend **73** |
-| Commit HEAD | P5-HMM-PY |
-| P0–P4 | ✅ clôturés |
-| P5 | TS-FEEDS ✅ · TS-MORE ✅ · TS-EDGES ✅ · **HMM-PY** ✅ · OPS |
-| Prochaine action | Dire « go » |
+| Tests | JS **340** · backend **73** |
+| Commit HEAD | P5-OPS |
+| P0–P5 | ✅ clôturés |
+| Prochaine action | Dire « go » (suite produit / ports) |
 
 ---
 
-## P5-HMM-PY — livré
+## P5-OPS — livré
 
-- `backend/app/quant/hmm.py` — parité soft-clustering EM ↔ `hmmRegimes` JS  
-- `POST /v1/quant/hmm` · fixture golden `hmm_parity_seed9.json`  
-- Badge heuristique UI conservé (`engine: python`)
+- `docs/OPS_GO_LIVE.md` — alembic **0005** + SSO + MT5 paper→demo  
+- `backend/scripts/ops_migrate.sh` · `scripts/ops_preflight.mjs`  
+- Liens depuis `DEPLOIEMENT.md` / `mt5/VPS_DEPLOY.md`
 
 ---
 
 ## Notes session
 
-- Prod : `QX_SSO_SECRET` · `alembic upgrade head` (0004/0005).  
-- Dire **« go »** pour P5-OPS.
+- Prod réel : poser `QX_SSO_SECRET` + lancer `./scripts/ops_migrate.sh` sur la DB.  
+- Dire **« go »** pour la suite (autre chantier).

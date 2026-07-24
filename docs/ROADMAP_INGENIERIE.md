@@ -134,7 +134,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P5-TS-MORE** `oscillators.js` → `oscillators.ts` (Z-Score / Hurst / régimes) ✅
 - [x] **P5-TS-EDGES** `validatedEdges` + `edgesSync` → TypeScript ✅
 - [x] **P5-HMM-PY** Port HMM Python paritaire (`/v1/quant/hmm` · golden seed9) ✅
-- [ ] **P5-OPS** Go-live ops (`alembic upgrade head` 0004/0005 · MT5 paper→demo)
+- [x] **P5-OPS** Go-live ops (`OPS_GO_LIVE.md` · migrate 0005 · preflight · MT5 paper→demo) ✅
 
 ---
 

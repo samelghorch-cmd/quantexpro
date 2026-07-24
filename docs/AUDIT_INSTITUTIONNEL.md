@@ -206,14 +206,15 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P5-TS-MORE | oscillators → TypeScript | ✅ | `oscillators.ts` · Z-Score / Hurst / régimes |
 | P5-TS-EDGES | validatedEdges + edgesSync → TS | ✅ | `ValidatedEdge` · API payload · merge remote |
 | P5-HMM-PY | HMM Python paritaire | ✅ | `app/quant/hmm.py` · `/v1/quant/hmm` · golden seed9 |
+| P5-OPS | Go-live alembic + MT5 | ✅ | `OPS_GO_LIVE.md` · `ops_migrate.sh` · `ops_preflight.mjs` |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. Aucun WIP bloquant au 2026-07-24.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5 clôturé** au 2026-07-24.
 
-**Prochaine action recommandée :** P5-OPS (alembic 0004/0005 · MT5 paper→demo).
+**Prochaine action recommandée :** ports TS restants / Baum-Welch réel / Databento (payant hors scope).
 
 ---
 
@@ -224,7 +225,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 3. **Charte couleurs :** conserver orange TradoBot en **accent marque** ; ajouter tokens `#00e676` / `#ff1744` pour sémantique long/short dans `theme.js` (non-breaking).
 4. **Zero pseudo-code :** les modules « heuristique JS » (XGBoost, Autoencoder, HMM réduit) restent **étiquetés** jusqu’au port Python ; interdiction de les présenter comme production hedge fund sans badge. **HMM :** port Python livré (même algo soft-clustering — pas Baum-Welch).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
-
+6. **Ops :** migrations head **0005** + preflight documentés (`docs/OPS_GO_LIVE.md`) — exécution prod = action ops humaine.
 ---
 
 ## 7. Checklist « Hedge-Fund Readiness » (scorecard)

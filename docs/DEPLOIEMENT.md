@@ -107,9 +107,16 @@ Détail : `tools/dukascopy/README.md`. Failover optionnel : `TWELVE_DATA_API_KEY
 Checklist + smoke : `mt5/VPS_DEPLOY.md` · `node mt5/smoke.mjs --dry-run`.  
 EA : `mt5/QuantEXProBridge.mq5` (pull/ACK, rôle `ea` uniquement).
 
+**Go-live unifié (migrations 0004/0005 + preflight + paper→demo) :** `docs/OPS_GO_LIVE.md` (P5-OPS).
+
+```bash
+cd backend && ./scripts/ops_migrate.sh --check   # QX_DATABASE_URL requis
+node scripts/ops_preflight.mjs --dry-run
+```
+
 ---
 
 ## 5. Variables d'environnement (rappel)
 
 Voir `backend/.env.example`. En **production**, si `QX_API_KEYS` est vide, l'API se
-verrouille (503) — c'est volontaire (fail-safe).
+verrouille (503) — c'est volontaire (fail-safe). Configurer aussi `QX_SSO_SECRET` en prod.

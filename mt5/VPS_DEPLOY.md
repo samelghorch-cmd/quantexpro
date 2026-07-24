@@ -4,6 +4,8 @@ Checklist opérationnelle pour faire tourner l'EA sur un **VPS Windows** (ou mac
 contre le backend QuantEXPro. Le code pont (API + EA) est déjà livré ; ce document couvre
 le **go-live paper → demo**.
 
+> Runbook unifié migrations + preflight : **`docs/OPS_GO_LIVE.md`** (P5-OPS).
+
 ## Prérequis
 
 | Composant | État |
