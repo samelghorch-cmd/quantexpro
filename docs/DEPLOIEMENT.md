@@ -102,7 +102,14 @@ Détail : `tools/dukascopy/README.md`. Failover optionnel : `TWELVE_DATA_API_KEY
 
 ---
 
-## 4. Variables d'environnement (rappel)
+## 4. Pont MT5 VPS (P3-MT5-VPS)
+
+Checklist + smoke : `mt5/VPS_DEPLOY.md` · `node mt5/smoke.mjs --dry-run`.  
+EA : `mt5/QuantEXProBridge.mq5` (pull/ACK, rôle `ea` uniquement).
+
+---
+
+## 5. Variables d'environnement (rappel)
 
 Voir `backend/.env.example`. En **production**, si `QX_API_KEYS` est vide, l'API se
 verrouille (503) — c'est volontaire (fail-safe).

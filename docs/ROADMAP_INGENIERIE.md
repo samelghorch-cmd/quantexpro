@@ -103,6 +103,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 - [x] **P3-ZDL-SYNC** Dashboard ↔ TimescaleDB (`barsSync.ts` · TF 15m/1h/4h/1d · Data Manager Push/Pull) ✅
 - [x] **P3-COLLECTOR-INGEST** Collector → `/v1/bars` (opt-in `QX_BARS_INGEST=1`) ✅
+- [x] **P3-MT5-VPS** Pack déploiement VPS + smoke API (`mt5/VPS_DEPLOY.md`, `smoke.mjs`) ✅
 
 ---
 

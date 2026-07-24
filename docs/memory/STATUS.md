@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P3-COLLECTOR-INGEST)
+> Dernière maj : **2026-07-24** (P3-MT5-VPS)
 
 ---
 
@@ -11,24 +11,24 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **238** · backend **53** · `typecheck` OK |
-| Commit HEAD | P3-COLLECTOR-INGEST |
+| Tests | JS **243** · backend **53** · `typecheck` OK |
+| Commit HEAD | P3-MT5-VPS |
 | P0–P2 | ✅ clôturés |
-| P3 | ✅ ZDL-SYNC · ✅ COLLECTOR-INGEST |
-| Prochaine action | MT5 VPS / autre — dire « go » |
+| P3 | ✅ ZDL-SYNC · COLLECTOR-INGEST · **MT5-VPS pack** |
+| Prochaine action | Pause / priorité libre — dire « go » |
 
 ---
 
-## P3-COLLECTOR-INGEST — livré
+## P3-MT5-VPS — livré
 
-- `collector/barsIngest.js` — ticker→symbol, delta ingest, POST chunked  
-- Opt-in : `QX_BARS_INGEST=1` + `QX_API_BASE_URL` + `QX_API_KEY`  
-- Poll + création job → `/v1/bars/{interval}`  
-- `/health` expose `barsIngest`  
+- `mt5/VPS_DEPLOY.md` — checklist VPS Windows paper→demo→live  
+- `mt5/smoke.mjs` — dry-run + cycle API create→pending→ACK  
+- Tests : `mt5Smoke.test.js` (5)  
+- Go-live physique VPS/broker = action ops (hors repo)
 
 ---
 
 ## Notes session
 
-- Après moteur / collector → `npm test`.  
-- Backend : `cd backend && pytest`.
+- Smoke local : `node mt5/smoke.mjs --dry-run`  
+- Après moteur → `npm test`.
