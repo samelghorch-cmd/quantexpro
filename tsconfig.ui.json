@@ -1,0 +1,20 @@
+// Typecheck UI NON-BLOQUANT — mesure la dette de typage de la couche React (.jsx/.js).
+// Le gate bloquant reste `tsconfig.json` (moteur .ts strict). Ce fichier existe pour
+// rendre la dette visible et la faire décroître au fil des migrations .jsx -> .tsx.
+// Voir docs/ROADMAP_INGENIERIE.md (chantier typage UI).
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.jsx",
+    "src/**/*.js",
+    "tests/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist", "coverage", "backend", "collector"]
+}

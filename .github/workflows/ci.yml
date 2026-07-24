@@ -34,6 +34,9 @@ jobs:
       - name: Install (repro stricte)
         run: npm ci --ignore-scripts
 
+      - name: Lint — règles des Hooks React (bloquant sur erreurs, warnings tolérés)
+        run: npm run lint
+
       - name: Tests unitaires — invariants backtester + goldens métriques (<30 s)
         run: npm run test:unit
 
@@ -45,6 +48,12 @@ jobs:
 
       - name: Typecheck — engine TS (P2-TS incremental)
         run: npm run typecheck
+
+      # Non-bloquant : mesure la dette de typage de la couche React (.jsx/.js).
+      # Doit décroître au fil des migrations .jsx -> .tsx ; ne bloque jamais le merge.
+      - name: Typecheck UI (non-bloquant — dette .jsx suivie)
+        run: npm run typecheck:ui
+        continue-on-error: true
 
       - name: Build production
         run: npm run build

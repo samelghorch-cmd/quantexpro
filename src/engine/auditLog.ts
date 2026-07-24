@@ -51,15 +51,17 @@ export function canonicalPayloadJson(details: unknown): string {
   return JSON.stringify(sortKeysDeep(details ?? {}));
 }
 
-/** SHA-256 hex (Web Crypto ou node:crypto en tests). */
+/** SHA-256 hex via Web Crypto (dispo navigateurs contexte sécurisé + Node ≥ 20). */
 export async function sha256Hex(text: string): Promise<string> {
-  const data = new TextEncoder().encode(String(text));
-  if (typeof globalThis.crypto?.subtle?.digest === "function") {
-    const buf = await globalThis.crypto.subtle.digest("SHA-256", data);
-    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const subtle = globalThis.crypto?.subtle;
+  if (typeof subtle?.digest !== "function") {
+    throw new Error(
+      "SubtleCrypto indisponible (contexte non sécurisé ?). Servir en HTTPS ou localhost.",
+    );
   }
-  const { createHash } = await import("node:crypto");
-  return createHash("sha256").update(String(text)).digest("hex");
+  const data = new TextEncoder().encode(String(text));
+  const buf = await subtle.digest("SHA-256", data);
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /** Vérifie `payload_hash` contre `details` (true si match). */

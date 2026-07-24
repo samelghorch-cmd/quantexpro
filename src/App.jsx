@@ -1,4 +1,4 @@
-import { useState, useEffect, Component } from "react";
+import { useState, useEffect, Component, Suspense } from "react";
 import { PipelineProvider, usePipeline } from "./state/PipelineContext.jsx";
 import { Sidebar } from "./components/layout/Sidebar.jsx";
 import { TickerBar } from "./components/layout/TickerBar.jsx";
@@ -62,7 +62,9 @@ function Shell() {
           </div>
           <div style={{ flex: 1, overflow: "auto", padding: 18 }}>
             <ModuleErrorBoundary key={activeModule}>
-              {Page ? <Page /> : <div style={{ color: T.textDim }}>Module introuvable.</div>}
+              <Suspense fallback={<div style={{ color: T.textDim, fontSize: 12.5 }}>Chargement du module…</div>}>
+                {Page ? <Page /> : <div style={{ color: T.textDim }}>Module introuvable.</div>}
+              </Suspense>
             </ModuleErrorBoundary>
           </div>
         </div>
