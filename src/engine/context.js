@@ -71,6 +71,12 @@ export function buildContext(bars) {
     ctx.ich[`${t}_${k}`] = IND.ichimoku(high, low, close, t, k, s);
   });
 
+  // P4-CORE — KAMA / LinReg pour Rule Builder + Core Mode
+  ctx.kama = {};
+  [10, 21].forEach((p) => { ctx.kama[p] = IND.kama(close, p); });
+  ctx.linreg = {};
+  [14, 20, 50].forEach((p) => { ctx.linreg[p] = IND.linreg(close, p); });
+
   ctx.atr10 = IND.atr(high, low, close, 10);
   ctx.atr14 = IND.atr(high, low, close, 14);
   ctx.atr20 = IND.atr(high, low, close, 20);

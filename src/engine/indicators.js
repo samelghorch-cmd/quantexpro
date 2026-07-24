@@ -302,6 +302,58 @@ export const IND = {
     const sd = IND.stdev(arr, n);
     return arr.map((v, i) => (v - mean[i]) / (sd[i] || 1e-10));
   },
+  /** Kaufman Adaptive Moving Average — causal. */
+  kama(arr, n = 10, fast = 2, slow = 30) {
+    const out = new Array(arr.length).fill(NaN);
+    if (!arr?.length || n < 1) return out;
+    const fastSC = 2 / (fast + 1);
+    const slowSC = 2 / (slow + 1);
+    let seed = n - 1;
+    while (seed < arr.length && !Number.isFinite(arr[seed])) seed++;
+    if (seed >= arr.length) return out;
+    out[seed] = arr[seed];
+    for (let i = seed + 1; i < arr.length; i++) {
+      if (!Number.isFinite(arr[i]) || !Number.isFinite(out[i - 1])) {
+        out[i] = out[i - 1];
+        continue;
+      }
+      if (i < n) {
+        out[i] = out[i - 1] + (2 / (n + 1)) * (arr[i] - out[i - 1]);
+        continue;
+      }
+      const change = Math.abs(arr[i] - arr[i - n]);
+      let volatility = 0;
+      for (let j = 0; j < n; j++) {
+        const a = arr[i - j];
+        const b = arr[i - j - 1];
+        if (Number.isFinite(a) && Number.isFinite(b)) volatility += Math.abs(a - b);
+      }
+      const er = volatility > 0 ? change / volatility : 0;
+      const sc = (er * (fastSC - slowSC) + slowSC) ** 2;
+      out[i] = out[i - 1] + sc * (arr[i] - out[i - 1]);
+    }
+    return out;
+  },
+  /** Endpoint de régression linéaire (fenêtre n) — causal. */
+  linreg(arr, n = 20) {
+    const out = new Array(arr.length).fill(NaN);
+    if (!(n > 1)) return out;
+    for (let i = n - 1; i < arr.length; i++) {
+      let sx = 0, sy = 0, sxy = 0, sx2 = 0, cnt = 0;
+      for (let j = 0; j < n; j++) {
+        const y = arr[i - n + 1 + j];
+        if (!Number.isFinite(y)) continue;
+        const x = j;
+        sx += x; sy += y; sxy += x * y; sx2 += x * x; cnt++;
+      }
+      if (cnt < n * 0.8) continue;
+      const den = cnt * sx2 - sx * sx;
+      const slope = den ? (cnt * sxy - sx * sy) / den : 0;
+      const intercept = (sy - slope * sx) / cnt;
+      out[i] = intercept + slope * (n - 1);
+    }
+    return out;
+  },
   psar(highs, lows, closes, step = 0.02, max = 0.2) {
     const len = closes.length;
     const sar = new Array(len).fill(NaN);

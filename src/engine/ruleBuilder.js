@@ -18,6 +18,14 @@ export const RULE_SOURCES = [
   { id: "macdSig", label: "MACD signal", get: (ctx, i) => ctx.macd["12_26_9"]?.sig?.[i] },
   { id: "bbUp", label: "BB Upper", get: (ctx, i) => ctx.bb["20_2"]?.up?.[i] },
   { id: "bbLo", label: "BB Lower", get: (ctx, i) => ctx.bb["20_2"]?.lo?.[i] },
+  { id: "kama10", label: "KAMA 10", get: (ctx, i) => ctx.kama?.[10]?.[i] },
+  { id: "kama21", label: "KAMA 21", get: (ctx, i) => ctx.kama?.[21]?.[i] },
+  { id: "linreg20", label: "LinReg 20", get: (ctx, i) => ctx.linreg?.[20]?.[i] },
+  { id: "linreg50", label: "LinReg 50", get: (ctx, i) => ctx.linreg?.[50]?.[i] },
+  { id: "ichTenkan", label: "Ichimoku Tenkan", get: (ctx, i) => ctx.ich?.["9_26"]?.tk?.[i] },
+  { id: "ichKijun", label: "Ichimoku Kijun", get: (ctx, i) => ctx.ich?.["9_26"]?.kj?.[i] },
+  { id: "ichSpanA", label: "Ichimoku Span A", get: (ctx, i) => ctx.ich?.["9_26"]?.spanA?.[i] },
+  { id: "ichSpanB", label: "Ichimoku Span B", get: (ctx, i) => ctx.ich?.["9_26"]?.spanB?.[i] },
   { id: "const", label: "Valeur constante", get: (ctx, i, v) => v },
 ];
 

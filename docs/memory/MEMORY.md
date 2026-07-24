@@ -58,7 +58,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 2. **P1** — ✅ clôturé + re-vérifié (DSR · ANT · PORT · TCA · Tearsheet · Statistical Edge)  
 3. **P2** — ✅ clôturé  
 4. **P3** — ✅ ZDL-SYNC · COLLECTOR-INGEST · MT5-VPS pack  
-5. **P4** — 🔄 AF ✅ · Audit ✅ · Desk ✅ · Signal ✅ · AF-SYNC ✅ · GEX ✅ · ANT-SYNC ✅ · FEEDS ✅ · VP ✅ · SSO ✅ · REV ✅ · HMM ✅ · OSC ✅  
+5. **P4** — 🔄 AF ✅ · Audit ✅ · Desk ✅ · Signal ✅ · AF-SYNC ✅ · GEX ✅ · ANT-SYNC ✅ · FEEDS ✅ · VP ✅ · SSO ✅ · REV ✅ · HMM ✅ · OSC ✅ · CORE ✅  
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 

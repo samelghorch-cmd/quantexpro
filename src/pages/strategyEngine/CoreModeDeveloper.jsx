@@ -10,7 +10,7 @@ import { Panel, Tabs, Button, Badge, MetricCard, MetricGrid, DataTable, Select, 
 import { T } from "../../components/shared/theme.js";
 
 const IND_CATALOG = {
-  TREND: ["SMA", "EMA", "WMA", "DEMA", "TEMA", "HMA", "SuperTrend", "ParabolicSAR", "Ichimoku"],
+  TREND: ["SMA", "EMA", "WMA", "DEMA", "TEMA", "HMA", "KAMA", "LinReg", "SuperTrend", "ParabolicSAR", "Ichimoku"],
   MOMENTUM: ["RSI", "Stoch", "StochRSI", "MACD", "CCI", "Williams%R", "ROC", "Momentum", "TSI", "TRIX"],
   VOLATILITÉ: ["ATR", "Bollinger", "Keltner", "Donchian", "StdDev"],
   VOLUME: ["OBV", "MFI", "CMF", "VWAP", "VPIN"],
@@ -49,6 +49,14 @@ function IndicateursTab() {
     if (selected.includes("VWAP")) list.push({ name: "VWAP", data: ctx.vwap, color: T.yellow, width: 1.5 });
     if (selected.includes("Bollinger")) { list.push({ name: "BB up", data: ctx.bb["20_2"].up, color: T.green, width: 1, dash: [4, 4] }); list.push({ name: "BB lo", data: ctx.bb["20_2"].lo, color: T.green, width: 1, dash: [4, 4] }); }
     if (selected.includes("SuperTrend")) list.push({ name: "ST", data: ctx.st["10_3"].st, color: T.pink, width: 1.5 });
+    if (selected.includes("KAMA")) list.push({ name: "KAMA 21", data: ctx.kama?.[21], color: T.orange, width: 1.5 });
+    if (selected.includes("LinReg")) list.push({ name: "LinReg 20", data: ctx.linreg?.[20], color: "#7dd3fc", width: 1.5 });
+    if (selected.includes("Ichimoku") && ctx.ich?.["9_26"]) {
+      list.push({ name: "Tenkan", data: ctx.ich["9_26"].tk, color: T.red, width: 1 });
+      list.push({ name: "Kijun", data: ctx.ich["9_26"].kj, color: T.blue, width: 1 });
+      list.push({ name: "Span A", data: ctx.ich["9_26"].spanA, color: T.green, width: 1, dash: [3, 3] });
+      list.push({ name: "Span B", data: ctx.ich["9_26"].spanB, color: T.yellow, width: 1, dash: [3, 3] });
+    }
     return list;
   }, [selected, ctx]);
 

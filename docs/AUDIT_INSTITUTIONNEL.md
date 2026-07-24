@@ -78,7 +78,7 @@ Légende : ✅ opérationnel (niveau actuel) · 🟡 partiel / heuristique / moc
 
 | Spec | Implémentation actuelle | Gap |
 |------|-------------------------|-----|
-| Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (AST, pas d’eval) | Renforcer catalogue indicateurs spec (KAMA, LinReg, Ichimoku drag-drop) |
+| Core Mode Developer (no-code) | ✅ `CoreModeDeveloper.jsx` + `ruleBuilder.js` (KAMA, LinReg, Ichimoku) | 🟢 |
 | Patterns Library 616 | ✅ `patternsLibrary.js` | Filtres TF M1–MN à aligner UI |
 | Prompt Mode Qwen local | ✅ `PromptMode.jsx` + `POST /v1/strategy/from-prompt` | Ollama / Qwen local opt-in |
 | Reverse Engineering signaux | ✅ `signalReverse.js` + Strategy Engine → Signal Reverse | CSV/JSON · alignement causal · lift → Rule Builder |
@@ -199,6 +199,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P4-REV | Reverse engineering signaux | ✅ | `signalReverse.js` · page Signal Reverse · rules proposées |
 | P4-HMM | Régimes Trend/Range/Vol/Choppy | ✅ | `hmmRegimes` 4 états · pages HMM / Regime Clock / Toolbox |
 | P4-OSC | Oscillateurs Z-Score / Hurst / régimes | ✅ | `oscillators.js` · Statistical Edge multi-courbes + CSV |
+| P4-CORE | Core Mode KAMA / LinReg / Ichimoku | ✅ | `IND.kama/linreg` · RULE_SOURCES · overlays Core Mode |
 
 ---
 

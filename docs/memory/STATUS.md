@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P4-OSC)
+> Dernière maj : **2026-07-24** (P4-CORE)
 
 ---
 
@@ -11,19 +11,19 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **331** · backend **68** |
-| Commit HEAD | P4-OSC |
+| Tests | JS **336** · backend **68** |
+| Commit HEAD | P4-CORE |
 | P0–P3 | ✅ clôturés |
-| P4 | … · HMM · **OSC** ✅ |
+| P4 | … · OSC · **CORE** ✅ |
 | Prochaine action | Dire « go » (suite / ops) |
 
 ---
 
-## P4-OSC — livré
+## P4-CORE — livré
 
-- `oscillators.js` — Z-Score / Hurst overlay / régimes HMM  
-- Statistical Edge : panneau multi-courbes + CSV OSC  
-- Tests causalité Z-Score
+- `IND.kama` + `IND.linreg` · `ctx.kama` / `ctx.linreg`  
+- Rule Builder : KAMA / LinReg / Ichimoku (Tenkan·Kijun·Span)  
+- Core Mode : catalogue + overlays chart
 
 ---
 
