@@ -169,6 +169,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P9-TS-RULE** `ruleBuilder.js` → `ruleBuilder.ts` (+ collector strip-types) ✅
 - [x] **P9-TS-COST** `costModel.js` → `costModel.ts` (classes · factory backtest) ✅
 - [x] **P9-TS-DSR** `factoryDsr.js` → `factoryDsr.ts` (filtre DSR Usine) ✅
+- [x] **P9-TS-API** `apiClient.js` → `apiClient.ts` (Bearer / X-API-Key) ✅
 
 ---
 

@@ -1,6 +1,6 @@
 // P4-SIGNAL-WS — hook console (mode local pipeline + WS /stream/bars).
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getApiBaseUrl, getApiKey } from "../engine/apiClient.js";
+import { getApiBaseUrl, getApiKey } from "../engine/apiClient.ts";
 import {
   DEFAULT_SIGNAL_SLOTS,
   barsWebSocketUrl,

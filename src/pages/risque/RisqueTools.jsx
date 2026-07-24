@@ -12,7 +12,7 @@ import {
   verifyEventHash,
   isAuditApiConfigured,
 } from "../../engine/auditLog.ts";
-import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";
+import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.ts";
 import {
   clearSession,
   createSessionFromApiKey,

@@ -6,7 +6,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.js";
 import { runBacktestExt } from "../../engine/backtestExtended.js";
-import { apiFetch, getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.js";
+import { apiFetch, getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.ts";
 import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";
 

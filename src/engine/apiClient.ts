@@ -1,11 +1,19 @@
 // Client HTTP minimal vers le backend QuantEXPro (Timescale / LLM / MT5 / SSO).
 // Config locale (navigateur) — jamais de secret en repo. Fail-soft si l'API est absente.
+// P9-TS-API
 
 const LS_BASE = "quantexpro:apiBaseUrl";
 const LS_KEY = "quantexpro:apiKey";
 const LS_TOKEN = "quantexpro:accessToken";
 
-export function getApiBaseUrl() {
+export interface ApiFetchOpts extends RequestInit {
+  /** Force X-API-Key même si un Bearer SSO est présent. */
+  preferApiKey?: boolean;
+  /** Pas d'auth (endpoints publics). */
+  skipAuth?: boolean;
+}
+
+export function getApiBaseUrl(): string {
   try {
     return (localStorage.getItem(LS_BASE) || "http://localhost:8000").replace(/\/$/, "");
   } catch {
@@ -13,7 +21,7 @@ export function getApiBaseUrl() {
   }
 }
 
-export function setApiBaseUrl(url) {
+export function setApiBaseUrl(url: string | null | undefined): void {
   try {
     localStorage.setItem(LS_BASE, String(url || "").replace(/\/$/, ""));
   } catch {
@@ -21,7 +29,7 @@ export function setApiBaseUrl(url) {
   }
 }
 
-export function getApiKey() {
+export function getApiKey(): string {
   try {
     return localStorage.getItem(LS_KEY) || "";
   } catch {
@@ -29,7 +37,7 @@ export function getApiKey() {
   }
 }
 
-export function setApiKey(key) {
+export function setApiKey(key: string | null | undefined): void {
   try {
     localStorage.setItem(LS_KEY, String(key || ""));
   } catch {
@@ -37,7 +45,7 @@ export function setApiKey(key) {
   }
 }
 
-function getBearer() {
+function getBearer(): string {
   try {
     return localStorage.getItem(LS_TOKEN) || "";
   } catch {
@@ -47,40 +55,43 @@ function getBearer() {
 
 /**
  * Appel JSON authentifié (Bearer SSO prioritaire, sinon X-API-Key).
- * @param {string} path  ex. "/v1/strategy/from-prompt"
- * @param {RequestInit & { preferApiKey?: boolean, skipAuth?: boolean }} [opts]
- * @returns {Promise<object>}
+ * @param path  ex. "/v1/strategy/from-prompt"
  */
-export async function apiFetch(path, opts = {}) {
+export async function apiFetch(path: string, opts: ApiFetchOpts = {}): Promise<unknown> {
   const base = getApiBaseUrl();
   const key = getApiKey();
   const bearer = getBearer();
-  const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(opts.headers as Record<string, string> | undefined),
+  };
   if (!opts.skipAuth) {
     if (opts.preferApiKey && key) headers["X-API-Key"] = key;
     else if (bearer) headers.Authorization = `Bearer ${bearer}`;
     else if (key) headers["X-API-Key"] = key;
   }
   const { preferApiKey: _p, skipAuth: _s, ...fetchOpts } = opts;
-  let res;
+  let res: Response;
   try {
     res = await fetch(`${base}${path}`, { ...fetchOpts, headers });
   } catch (e) {
-    throw new Error(`Backend injoignable (${base}) : ${e.message}. Démarre l'API ou vérifie l'URL.`);
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(`Backend injoignable (${base}) : ${msg}. Démarre l'API ou vérifie l'URL.`);
   }
   const text = await res.text();
-  let body = null;
+  let body: unknown = null;
   try {
     body = text ? JSON.parse(text) : null;
   } catch {
     body = { detail: text };
   }
   if (!res.ok) {
+    const detailObj = body && typeof body === "object" ? (body as { detail?: unknown }).detail : undefined;
     const detail =
-      typeof body?.detail === "string"
-        ? body.detail
-        : Array.isArray(body?.detail)
-          ? JSON.stringify(body.detail)
+      typeof detailObj === "string"
+        ? detailObj
+        : Array.isArray(detailObj)
+          ? JSON.stringify(detailObj)
           : `HTTP ${res.status}`;
     throw new Error(detail);
   }
