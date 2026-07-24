@@ -13,7 +13,7 @@ import {
   clearTcaFills,
   TCA_WORSE_RATIO,
   TCA_BETTER_RATIO,
-} from "../../engine/tca.js";
+} from "../../engine/tca.ts";
 import { COST_MODELS } from "../../engine/costModel.js";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { T } from "../../components/shared/theme.js";

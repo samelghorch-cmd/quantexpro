@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P9-TS-SIGNAL)
+> Dernière maj : **2026-07-24** (P9-TS-TCA)
 
 ---
 
@@ -12,21 +12,21 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **343** · backend **78** |
-| Commit HEAD | P9-TS-SIGNAL |
+| Commit HEAD | P9-TS-TCA |
 | P0–P8 | ✅ clôturés |
-| P9 | **TS-SIGNAL** ✅ |
+| P9 | **TS-SIGNAL** ✅ · **TS-TCA** ✅ |
 | Prochaine action | Dire « go » |
 
 ---
 
-## P9-TS-SIGNAL — livré
+## P9-TS-TCA — livré
 
-- `signalConsole.ts` — slots · consensus · ring · WS `/stream/bars`  
-- Hook + Trading Tools + tests mis à jour
+- `tca.ts` — TcaFill · slipBps · runTCA · verdicts vs costModel  
+- Page Trading TCA + tests mis à jour
 
 ---
 
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh`.  
-- Dire **« go »** pour la suite TS (ex. `tca` / `ruleBuilder`).
+- Dire **« go »** pour la suite TS (ex. `ruleBuilder`).

@@ -168,7 +168,7 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 |----|--------|
 | P1-DSR | DSR dans boucle **Usine à Stratégies** | ✅ | `factoryDsr.js` + worker : nTrials, filtre DSR &lt; 50 %, colonne UI ; 6 tests |
 | P1-PORT | Stress 2008 / 2010 / 2020 sur équité portefeuille Usine | ✅ | `portfolioStress.js` + panneau Usine ; limite DD 40 % |
-| P1-TCA | Slippage réel vs `costModel.js` | ✅ | `tca.js` + page Trading TCA (backtest next-open / démo / manuel) |
+| P1-TCA | Slippage réel vs `costModel.js` | ✅ | `tca.ts` + page Trading TCA (backtest next-open / démo / manuel) |
 | P1-PDF | Tearsheet PDF par dossier | ✅ | `tearsheet.js` + `pdfLite.js` (zéro dep) · bouton Dossiers |
 | P1-ANT | Anti-Library localStorage + filtre Usine/FAO + UI ✅ (TS plus tard) |
 | P1-EDGE | Statistical Edge Module 1 (10 métriques + CSV) | ✅ | `statisticalEdge.js` + page Outils |
@@ -217,21 +217,22 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P8-TS-REV | signalReverse → TypeScript | ✅ | NormalizedSignal · lift · Rule Builder |
 | P8-TS-DESK | portfolioDesk → TypeScript | ✅ | DeskConfig · sleeves · equity / réserve |
 | P9-TS-SIGNAL | signalConsole → TypeScript | ✅ | slots · consensus · ring · WS bars |
+| P9-TS-TCA | tca → TypeScript | ✅ | TcaFill · slipBps · runTCA · verdicts |
 
 ---
 
 ## 5. Travaux en cours (WIP — non commités, normal)
 
-> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P9-TS-SIGNAL** livrés.
+> Historique Sprint 0 / P0 (2026-07-22) — **commité**. **P5–P9-TS-TCA** livrés.
 
-**Prochaine action recommandée :** suite migration TS (`tca` / `ruleBuilder` / modules engine restants).
+**Prochaine action recommandée :** suite migration TS (`ruleBuilder` / modules engine restants).
 
 ---
 
 ## 6. Écarts stack & décisions d’architecture
 
 1. **Vite vs Next.js :** rester sur Vite jusqu’à P0-T stable ; migrer Next.js en **P1** si SSR/API routes requis pour WS terminal — sinon Vite + API Python suffit pour 6 mois.
-2. **TypeScript :** migration **incremental** `src/engine` — P5–P9-TS-SIGNAL livrés.
+2. **TypeScript :** migration **incremental** `src/engine` — P5–P9-TS-TCA livrés.
 3. **Charte couleurs :** orange marque conservé ; tokens long/short `#00e676` / `#ff1744` + `T.card` `#161920` livrés (**P6-THEME**).
 4. **Zero pseudo-code :** XGBoost / Autoencoder restent étiquetés. **HMM :** soft-clustering JS (badge) + Python parity + **Baum-Welch** (`engine=baum_welch`).
 5. **Parité moteur :** toute duplication Python doit passer par **tests de parité** reprenant les goldens Vitest (export JSON fixtures).
