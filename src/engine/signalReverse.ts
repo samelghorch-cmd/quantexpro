@@ -202,9 +202,13 @@ export function signalsToEvalMap(
   return map;
 }
 
-export function makeExternalSignalEval(aligned: AlignedSignal[] | null | undefined) {
+// Retour typé comme l'eval attendu par le moteur étendu (StrategyEvalFn) : les params
+// du lambda sont ainsi contextualisés (ctx ignoré, seul l'index de barre est utilisé).
+export function makeExternalSignalEval(
+  aligned: AlignedSignal[] | null | undefined,
+): Parameters<typeof runBacktestExt>[2] {
   const map = signalsToEvalMap(aligned);
-  return (_ctx: CtxLike, i: number) => map.get(i) || { long: false, short: false };
+  return (_ctx, i) => map.get(i) || { long: false, short: false };
 }
 
 export interface ReplayParams {
@@ -223,7 +227,11 @@ export function replayExternalSignals(
   params: ReplayParams = {},
 ): Record<string, unknown> & { nSignals: number; nLong: number; nShort: number } {
   const evalFn = makeExternalSignalEval(aligned);
-  const res = runBacktestExt(bars, ctx, evalFn, {
+  // bars/ctx sont des barres OHLC + contexte indicateurs réels, typés lâches ici (BarLike/CtxLike) ;
+  // le moteur étendu exige les shapes strictes — adaptation via unknown au passage.
+  const extBars = bars as unknown as Parameters<typeof runBacktestExt>[0];
+  const extCtx = ctx as unknown as Parameters<typeof runBacktestExt>[1];
+  const res = runBacktestExt(extBars, extCtx, evalFn, {
     contract: params.contract || "MES",
     capital: params.capital ?? 100000,
     slAtr: params.slAtr ?? 2,
