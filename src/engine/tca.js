@@ -2,7 +2,7 @@
 // Compare le slippage / coût d'exécution OBSERVÉ (fills démo, backtest next-open, saisie manuelle)
 // au modèle théorique (`costModel.js` / `contracts.js`).
 import { COST_MODELS, roundTripCost as modelRtFrac } from "./costModel.js";
-import { resolveSpec, roundTripCost as absRtCost, REAL_ASSET_CLASS } from "./contracts.js";
+import { resolveSpec, roundTripCost as absRtCost, REAL_ASSET_CLASS } from "./contracts.ts";
 
 const LS_KEY = "quantexpro:tcaFills:v1";
 const hasLS = () => typeof localStorage !== "undefined";

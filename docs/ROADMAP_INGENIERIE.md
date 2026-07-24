@@ -93,7 +93,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P2-DUKA** Dukascopy batch historique (15–20 ans, validate + Data Manager) ✅
 - [x] **P2-MQL5** Export EA familles simples (maCross, rsiRev, macd, donchian, bbBounce) ✅
 - [x] **P2-UI** Labs + fusion nav (Ship Tracker, Live TV · Toolbox/Performance) ✅
-- [ ] Migration **Next.js + TS strict** (si SSR/WS justifié)
+- [x] **P2-TS** TypeScript incremental (`annualize` · `contracts` · `binanceOrderBook` + `tsc`) ✅ — **Next.js reporté** (Vite OK, audit §6)
 - [ ] Scrapers sentiment (Module 6) — légal + rate limits
 
 ---

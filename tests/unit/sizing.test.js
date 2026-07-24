@@ -3,7 +3,7 @@
 // (bug historique : inputs Lot Mode / Risk % affichés mais jamais branchés).
 import { describe, it, expect } from "vitest";
 import { runBacktestExt } from "../../src/engine/backtestExtended.js";
-import { CONTRACTS, resolveSpec, roundTripCost } from "../../src/engine/contracts.js";
+import { CONTRACTS, resolveSpec, roundTripCost } from "../../src/engine/contracts.ts";
 import { makeBars, minimalCtx, singleRoundTrip, REGIMES, alternating, DAY_MS, T0 } from "../helpers/fixtures.js";
 
 // Barres plates à prix P, avec un plongeon à la barre `dipAt` pour toucher le SL.

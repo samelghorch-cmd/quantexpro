@@ -8,7 +8,7 @@ import {
   parseDepthSnapshot,
   parseBookTicker,
   mergeBookState,
-} from "../engine/binanceOrderBook.js";
+} from "../engine/binanceOrderBook.ts";
 
 const empty = () => ({
   connected: false,

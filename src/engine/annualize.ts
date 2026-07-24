@@ -8,21 +8,25 @@
 
 const YEAR_MS = 365.25 * 24 * 3600 * 1000;
 
-export function periodsPerYear(bars) {
+export interface BarTime {
+  t: number;
+}
+
+export function periodsPerYear(bars: BarTime[] | null | undefined): number {
   if (!Array.isArray(bars) || bars.length < 3) return 252;
-  const deltas = [];
+  const deltas: number[] = [];
   for (let i = 1; i < bars.length; i++) {
     const d = bars[i].t - bars[i - 1].t;
     if (d > 0) deltas.push(d);
   }
   if (!deltas.length) return 252;
   deltas.sort((a, b) => a - b);
-  const med = deltas[Math.floor(deltas.length / 2)]; // espacement dominant (médiane)
+  const med = deltas[Math.floor(deltas.length / 2)];
   const ppy = YEAR_MS / med;
   return Number.isFinite(ppy) && ppy > 0 ? ppy : 252;
 }
 
-// √(périodes par an) — facteur direct pour annualiser un Sharpe/Sortino calculé par barre.
-export function annualFactor(bars) {
+/** √(périodes par an) — facteur direct pour annualiser un Sharpe/Sortino calculé par barre. */
+export function annualFactor(bars: BarTime[] | null | undefined): number {
   return Math.sqrt(periodsPerYear(bars));
 }

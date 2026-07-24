@@ -9,7 +9,7 @@ import {
   isDepthPayload,
   isBookTickerPayload,
   binanceDepthStreamUrl,
-} from "../../src/engine/binanceOrderBook.js";
+} from "../../src/engine/binanceOrderBook.ts";
 
 const depthRaw = {
   lastUpdateId: 160,

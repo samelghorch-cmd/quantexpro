@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-24** (P2-UI)
+> Dernière maj : **2026-07-24** (P2-TS)
 
 ---
 
@@ -11,12 +11,12 @@
 |-------|--------|
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
-| Tests | JS **218** · backend **51** |
-| Commit HEAD | P2-UI |
+| Tests | JS **218** · backend **51** · `typecheck` OK |
+| Commit HEAD | P2-TS |
 | P0 | ✅ clôturé |
 | P1 | ✅ clôturé + re-vérifié |
-| P2 | ✅ L2 · DUKA · MQL5 · UI (Labs + fusion nav) |
-| Prochaine action | Optionnel P2 : Next.js/TS · scrapers — ou pause / autre priorité |
+| P2 | ✅ L2 · DUKA · MQL5 · UI · **TS incremental** |
+| Prochaine action | Optionnel : scrapers sentiment — ou pause |
 
 ---
 
@@ -26,18 +26,19 @@
 2. ~~Dukascopy batch historique~~ ✅  
 3. ~~Export MQL5 EA~~ ✅  
 4. ~~UI Labs + fusion nav~~ ✅  
-5. (optionnel) Next.js/TS · scrapers  
+5. ~~TS incremental~~ ✅ (Next.js **reporté** — Vite + API Python suffisent)  
+6. (optionnel) Scrapers sentiment Module 6  
 
-### P2-UI — livré
+### P2-TS — livré
 
-- Section **Labs** : Hub · Ship Tracker · Live TV (empty state externe inchangé)
-- Fusion doublons : `performanceTool` / `quantToolboxTool` retirés de la sidebar ; aliases `navigate()` OK
-- Canonical : Performance → Trading · Quant Toolbox → Optimisation
-- Tests : `registryNav.test.js` (5)
+- `typescript` + `tsconfig.json` (strict) · `npm run typecheck` · CI step
+- Migrés : `annualize.ts` · `contracts.ts` · `binanceOrderBook.ts`
+- `dukascopyImport.js` reste JS (CLI Node `tools/dukascopy` sans loader TS)
+- Imports consommateurs → `.ts` (Vite/worker)
 
 ---
 
 ## Notes session
 
-- Un chantier à la fois ; dire **« go »** pour le suivant (optionnels).  
-- Après `src/engine/*` → `npm test` obligatoire.
+- Un chantier à la fois ; dire **« go »** pour scrapers (ou autre).  
+- Après `src/engine/*` → `npm test` + `npm run typecheck`.

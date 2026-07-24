@@ -1,7 +1,7 @@
 // Contexte global : données de marché, navigation, résultats du pipeline ET magasin de
 // résultats persistant par module (survit aux changements de page).
 import { createContext, useContext, useMemo, useState, useCallback, useEffect, useRef } from "react";
-import { CONTRACTS } from "../engine/contracts.js";
+import { CONTRACTS } from "../engine/contracts.ts";
 import { generateSyntheticCandles, aggregateBars } from "../engine/syntheticData.js";
 import { buildContext } from "../engine/context.js";
 import { buildFullLibrary } from "../engine/customStrategies.js";

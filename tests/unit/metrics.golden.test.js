@@ -8,7 +8,7 @@
 //   transcendantes → toBeCloseTo(x, 3)  (±0.0005) : sqrt/pow/log (stables sur V8)
 import { describe, it, expect } from "vitest";
 import { computeMetrics } from "../../src/engine/backtestExtended.js";
-import { annualFactor, periodsPerYear } from "../../src/engine/annualize.js";
+import { annualFactor, periodsPerYear } from "../../src/engine/annualize.ts";
 import { makeBars, DAY_MS, HOUR_MS, T0 } from "../helpers/fixtures.js";
 
 const dailyBars = (n) => makeBars({ n, dtMs: DAY_MS });

@@ -181,6 +181,8 @@ Les priorités de la spec sont **fusionnées** avec la campagne de tests déjà 
 | P2-DUKA | `tools/dukascopy` production 15–20 ans | ✅ | `dukascopyImport.js` + `fetch:deep` / `validate` · Data Manager |
 | P2-MQL5 | Export EA familles simples | ✅ | `mql5Export.js` · 5 familles · Strategy Builder / Mes Stratégies |
 | P2-UI | Labs (Ship Tracker, Live TV), fusion doublons Quant Toolbox / Performance | ✅ | section `labs` + aliases `performanceTool`/`quantToolboxTool` |
+| P2-TS | TS incremental engine (pas Next.js) | ✅ | `annualize.ts` · `contracts.ts` · `binanceOrderBook.ts` · `npm run typecheck` |
+| P2-SCRAPE | Scrapers sentiment Module 6 | | légal + rate limits |
 
 ---
 

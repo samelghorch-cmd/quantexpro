@@ -1,8 +1,8 @@
 // Backtest étendu : ajoute Stop Loss / Take Profit / Break-Even paramétrables
 // à la logique de runBacktest (qui ne gère que stop ATR + signal inverse).
 // Utilisé par le pipeline d'optimisation (FAO, Quant Optimizer).
-import { resolveSpec, roundTripCost } from "./contracts.js";
-import { annualFactor, periodsPerYear } from "./annualize.js";
+import { resolveSpec, roundTripCost } from "./contracts.ts";
+import { annualFactor, periodsPerYear } from "./annualize.ts";
 
 // params : { slAtr, tpAtr, beAtr, direction, contracts, capital, lotMode, riskPct, warmup }
 //  slAtr   : multiple d'ATR pour le stop (0 = pas de SL)

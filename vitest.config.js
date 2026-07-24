@@ -15,12 +15,12 @@ export default defineConfig({
       include: [
         "src/engine/backtest.js",
         "src/engine/backtestExtended.js",
-        "src/engine/annualize.js",
-        "src/engine/contracts.js",
+        "src/engine/annualize.ts",
+        "src/engine/contracts.ts",
         "src/engine/random.js",
       ],
       thresholds: {
-        "src/engine/annualize.js":        { lines: 100, functions: 100, branches: 90 },
+        "src/engine/annualize.ts":        { lines: 100, functions: 100, branches: 90 },
         "src/engine/backtestExtended.js": { lines: 100, functions: 100, branches: 90 },
         "src/engine/backtest.js":         { lines: 100, functions: 100, branches: 80 },
         "src/engine/random.js":           { lines: 100 },

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { IND } from "../../engine/indicators.js";
 import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.js";
-import { annualFactor } from "../../engine/annualize.js";
+import { annualFactor } from "../../engine/annualize.ts";
 import { findSymbol } from "../../engine/marketData.js";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";

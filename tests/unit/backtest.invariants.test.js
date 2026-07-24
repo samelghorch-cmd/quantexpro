@@ -9,7 +9,7 @@
 import { describe, it, expect } from "vitest";
 import { runBacktest, runBatchBacktest } from "../../src/engine/backtest.js";
 import { runBacktestExt, computeMetrics } from "../../src/engine/backtestExtended.js";
-import { CONTRACTS } from "../../src/engine/contracts.js";
+import { CONTRACTS } from "../../src/engine/contracts.ts";
 import {
   makeBars, REGIMES, minimalCtx, DAY_MS, T0,
   neverTrade, alwaysLong, smaCross, alternating, singleRoundTrip,

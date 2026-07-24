@@ -1,6 +1,6 @@
 // Extrait de v4core.js — moteur de backtest (PnL réaliste) + batch.
-import { resolveSpec, roundTripCost } from "./contracts.js";
-import { annualFactor } from "./annualize.js";
+import { resolveSpec, roundTripCost } from "./contracts.ts";
+import { annualFactor } from "./annualize.ts";
 
 export function runBacktest(bars, ctx, strategyEval, options) {
   const { contract, contracts, useAtrStop, atrMult, direction, capital } = options;
