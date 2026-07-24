@@ -123,6 +123,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P4-HMM** Régimes Trend/Range/Vol/Choppy (`hmmRegimes` · HMM Regime / Regime Clock) ✅
 - [x] **P4-OSC** Oscillateurs Z-Score / Hurst / régimes (`oscillators.js` · Statistical Edge) ✅
 - [x] **P4-CORE** Catalogue Core Mode KAMA / LinReg / Ichimoku (`ruleBuilder` + overlays) ✅
+- [x] **P4-PAT** Patterns Library TF M1–MN + familles scalp/intra/swing ✅
 
 ---
 

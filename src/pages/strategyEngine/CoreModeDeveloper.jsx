@@ -174,7 +174,14 @@ function ConfluenceTab() {
 
 function PatternsTab() {
   const patterns = useMemo(() => buildPatternsLibrary(616), []);
-  const [f, setF] = useState({ timeframe: "all", asset: "all", difficulty: "all", indicators: "all", search: "" });
+  const [f, setF] = useState({
+    timeframe: "all",
+    tfFamily: "all",
+    asset: "all",
+    difficulty: "all",
+    indicators: "all",
+    search: "",
+  });
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
   const filtered = useMemo(() => filterPatterns(patterns, f), [patterns, f]);
   const columns = [
@@ -188,13 +195,52 @@ function PatternsTab() {
   ];
   return (
     <div>
-      <Panel title="Filtres" right={<span style={{ fontSize: 11, color: T.orange }}>{filtered.length} / {patterns.length} patterns</span>}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
-          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>TIMEFRAME</div><Select value={f.timeframe} onChange={(v) => set("timeframe", v)} options={["all", ...PATTERN_FILTERS.TIMEFRAMES]} /></div>
-          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>ACTIFS</div><Select value={f.asset} onChange={(v) => set("asset", v)} options={["all", ...PATTERN_FILTERS.ASSETS]} /></div>
-          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>DIFFICULTÉ</div><Select value={f.difficulty} onChange={(v) => set("difficulty", v)} options={["all", ...PATTERN_FILTERS.DIFFICULTY]} /></div>
-          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>INDICATEURS</div><Select value={f.indicators} onChange={(v) => set("indicators", v)} options={["all", "1", "2", "3", "4+"]} /></div>
-          <div><div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>RECHERCHE</div><input value={f.search} onChange={(e) => set("search", e.target.value)} placeholder="nom…" style={{ width: "100%", background: T.bg0, color: T.text, border: `1px solid ${T.border}`, borderRadius: 6, padding: "7px 9px", boxSizing: "border-box" }} /></div>
+      <Panel
+        title="Filtres · TF M1–MN"
+        right={<span style={{ fontSize: 11, color: T.orange }}>{filtered.length} / {patterns.length} patterns</span>}
+      >
+        <div style={{ fontSize: 11, color: T.textDim, marginBottom: 10 }}>
+          Grille timeframes : {PATTERN_FILTERS.TIMEFRAMES.join(" · ")}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>FAMILLE TF</div>
+            <Select
+              value={f.tfFamily}
+              onChange={(v) => set("tfFamily", v)}
+              options={[
+                { value: "all", label: "all" },
+                { value: "scalp", label: "scalp (M1–M15)" },
+                { value: "intraday", label: "intraday (M30–H4)" },
+                { value: "swing", label: "swing (D1–MN)" },
+              ]}
+            />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>TIMEFRAME</div>
+            <Select value={f.timeframe} onChange={(v) => set("timeframe", v)} options={["all", ...PATTERN_FILTERS.TIMEFRAMES]} />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>ACTIFS</div>
+            <Select value={f.asset} onChange={(v) => set("asset", v)} options={["all", ...PATTERN_FILTERS.ASSETS]} />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>DIFFICULTÉ</div>
+            <Select value={f.difficulty} onChange={(v) => set("difficulty", v)} options={["all", ...PATTERN_FILTERS.DIFFICULTY]} />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>INDICATEURS</div>
+            <Select value={f.indicators} onChange={(v) => set("indicators", v)} options={["all", "1", "2", "3", "4+"]} />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: T.textDim, marginBottom: 4 }}>RECHERCHE</div>
+            <input
+              value={f.search}
+              onChange={(e) => set("search", e.target.value)}
+              placeholder="nom…"
+              style={{ width: "100%", background: T.bg0, color: T.text, border: `1px solid ${T.border}`, borderRadius: 6, padding: "7px 9px", boxSizing: "border-box" }}
+            />
+          </div>
         </div>
       </Panel>
       <div style={{ marginTop: 14 }}>
