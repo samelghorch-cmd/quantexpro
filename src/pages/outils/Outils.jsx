@@ -1,4 +1,5 @@
-// OUTILS : VPIN, Analyse Quant, Logs. (Quant Toolbox et Performance réutilisent les pages existantes.)
+// OUTILS : VPIN, Analyse Quant, Logs, Statistical Edge, Data Manager.
+// Quant Toolbox / Performance : canonical sous Optimisation / Trading (aliases P2-UI).
 import { useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { IND } from "../../engine/indicators.js";

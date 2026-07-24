@@ -1,5 +1,5 @@
-// Registre des 8 sections / modules PROTOS — source de vérité de la navigation.
-// Chaque module : { id, label, comp } où comp = clé du composant dans pages/index.
+// Registre des sections / modules — source de vérité de la navigation.
+// P2-UI : section Labs + fusion doublons Quant Toolbox / Performance (aliases hors sidebar).
 export const SECTIONS = [
   {
     id: "strategy", label: "Strategy Engine", icon: "◆",
@@ -35,7 +35,6 @@ export const SECTIONS = [
     modules: [
       { id: "chartLive", label: "Chart Live" },
       { id: "performance", label: "Performance" },
-      { id: "liveTv", label: "Live TV" },
       { id: "cockpit", label: "Cockpit" },
       { id: "masterCockpit", label: "Master Cockpit" },
       { id: "vpFootprint", label: "VP Footprint" },
@@ -89,7 +88,6 @@ export const SECTIONS = [
       { id: "macroCalendar", label: "Macro Calendar" },
       { id: "events", label: "Events" },
       { id: "cryptoWhales", label: "Crypto Whales" },
-      { id: "shipTracker", label: "Ship Tracker" },
       { id: "optionsGamma", label: "Options Gamma" },
       { id: "cot", label: "COT" },
       { id: "yieldCurve", label: "Yield Curve" },
@@ -100,17 +98,23 @@ export const SECTIONS = [
     ],
   },
   {
+    id: "labs", label: "Labs", icon: "◎",
+    modules: [
+      { id: "labsHub", label: "Labs Hub" },
+      { id: "shipTracker", label: "Ship Tracker" },
+      { id: "liveTv", label: "Live TV" },
+    ],
+  },
+  {
     id: "outils", label: "Outils", icon: "⛭",
     modules: [
       { id: "dataManager", label: "🗄️ Data Manager" },
-      { id: "quantToolboxTool", label: "Quant Toolbox" },
       { id: "vpin", label: "VPIN" },
       { id: "vpinLive", label: "🔴 VPIN Live Cockpit" },
       { id: "analyseQuant", label: "Analyse Quant" },
       { id: "statisticalEdge", label: "Statistical Edge" },
       { id: "onchain", label: "Onchain" },
       { id: "logs", label: "Logs" },
-      { id: "performanceTool", label: "Performance" },
     ],
   },
   {
@@ -122,6 +126,12 @@ export const SECTIONS = [
     ],
   },
 ];
+
+/** Aliases retirés de la sidebar (P2-UI) — navigate() reste valide. */
+export const MODULE_ALIASES = {
+  performanceTool: "performance",
+  quantToolboxTool: "quantToolbox",
+};
 
 export const ALL_MODULES = SECTIONS.flatMap((s) => s.modules.map((m) => ({ ...m, section: s.id })));
 export const MODULE_COUNT = ALL_MODULES.length;

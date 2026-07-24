@@ -1,6 +1,6 @@
 // Mapping module id → composant page. Source unique consommée par App.jsx.
 import { Building } from "./Building.jsx";
-import { ALL_MODULES } from "../registry.js";
+import { ALL_MODULES, MODULE_ALIASES } from "../registry.js";
 
 // STRATEGY ENGINE
 import { CoreModeDeveloperPage } from "./strategyEngine/CoreModeDeveloper.jsx";
@@ -35,6 +35,8 @@ import { CPCVPage, DonneesSynthPage, FeatureMiningPage, SymbolicGPPage, TailRisk
 import { makeExternalPage } from "./macro/ExternalModules.jsx";
 import { YieldCurvePage, InflationPage, UsdLiquidityPage } from "./macro/MacroFred.jsx";
 import { CotPage } from "./macro/CotPage.jsx";
+// LABS
+import { LabsHubPage } from "./labs/LabsHub.jsx";
 // OUTILS
 import { VPINPage, AnalyseQuantPage, LogsPage } from "./outils/Outils.jsx";
 import { StatisticalEdgePage } from "./outils/StatisticalEdge.jsx";
@@ -66,7 +68,6 @@ const REAL = {
   // Trading
   chartLive: ChartLivePage,
   performance: PerformancePage,
-  liveTv: makeExternalPage("liveTv"),
   cockpit: CockpitPage,
   masterCockpit: MasterCockpitPage,
   vpFootprint: VPFootprintPage,
@@ -112,7 +113,6 @@ const REAL = {
   macroCalendar: makeExternalPage("macroCalendar"),
   events: makeExternalPage("events"),
   cryptoWhales: makeExternalPage("cryptoWhales"),
-  shipTracker: makeExternalPage("shipTracker"),
   optionsGamma: makeExternalPage("optionsGamma"),
   cot: CotPage,
   yieldCurve: YieldCurvePage,
@@ -120,22 +120,35 @@ const REAL = {
   riskOnOff: makeExternalPage("riskOnOff"),
   inflation: InflationPage,
   surpriseIndex: makeExternalPage("surpriseIndex"),
+  // Labs
+  labsHub: LabsHubPage,
+  shipTracker: makeExternalPage("shipTracker"),
+  liveTv: makeExternalPage("liveTv"),
   // Outils
   dataManager: DataManagerPage,
-  quantToolboxTool: QuantToolboxPage,
   vpin: VPINPage,
   vpinLive: VpinCockpitPage,
   analyseQuant: AnalyseQuantPage,
   statisticalEdge: StatisticalEdgePage,
   onchain: makeExternalPage("onchain"),
   logs: LogsPage,
-  performanceTool: PerformancePage,
   // Export
   strategyBuilder: StrategyBuilderPage,
   dossiers: DossiersPage,
   savedStrategies: SavedStrategiesPage,
 };
 
-export const PAGES = Object.fromEntries(
+const basePages = Object.fromEntries(
   ALL_MODULES.map((m) => [m.id, REAL[m.id] || (() => <Building name={m.label} />)])
 );
+
+/** Aliases sidebar retirés (P2-UI) — même page que le canonical. */
+export const PAGES = {
+  ...basePages,
+  ...Object.fromEntries(
+    Object.entries(MODULE_ALIASES).map(([alias, canon]) => [
+      alias,
+      basePages[canon] || REAL[alias] || (() => <Building name={alias} />),
+    ])
+  ),
+};
