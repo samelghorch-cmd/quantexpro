@@ -12,8 +12,8 @@
 | Branche git | `main` |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **175** · backend **51** |
-| Commit HEAD | P1-PDF tearsheet (en cours) |
-| CI GitHub | après push |
+| Commit HEAD | `1a43dd9` — P1-PDF tearsheet |
+| CI GitHub | push `1a43dd9` — à confirmer Actions |
 | P0 | ✅ A–E clôturés |
 | P1 | 🔄 DSR+ANT+PORT+TCA+**PDF** · reste Statistical Edge |
 | Prochaine action | **Statistical Edge Module 1** — dire « go » |
