@@ -95,10 +95,10 @@ export function runQuantOptimizer(
   const { nTrials = 60, contract = "MES", capital = 100000, seed = 11, baseline = null } = options;
   const rnd = seededRandom(seed);
   const space: Record<SpaceKey, readonly (number | string)[]> = {
-    slAtr: FAO_SPACE.slAtr as number[],
-    tpAtr: FAO_SPACE.tpAtr as number[],
-    beAtr: FAO_SPACE.beAtr as number[],
-    direction: FAO_SPACE.direction as OptDirection[],
+    slAtr: FAO_SPACE.slAtr,
+    tpAtr: FAO_SPACE.tpAtr,
+    beAtr: FAO_SPACE.beAtr,
+    direction: FAO_SPACE.direction,
   };
   const keys = Object.keys(space) as SpaceKey[];
   const pickRandom = (): OptParams => {

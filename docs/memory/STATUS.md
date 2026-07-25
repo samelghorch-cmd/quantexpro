@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-25** (P11-TS-LEAVES-6 WIP)
+> Dernière maj : **2026-07-25** (P11-TS-LEAVES-7 prêt / PR #17)
 
 ---
 
@@ -9,33 +9,38 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Branche git | `main` @ `bb01571` |
+| Branche git | `p11-ts-leaves-7` (base `main` @ `a785293` + merge `origin/main`) |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **347** · typecheck ✅ |
-| Commit HEAD | `bb01571` (merge PR #14 leaves-4) |
+| Commit HEAD main | `a785293` (merge PR #16 leaves-6) — déjà dans main |
 | P0–P10 | ✅ clôturés |
 | Scorecard HF | **28/35** (desk institutionnel soft) |
-| Prochaine action | Commit/PR **P11-TS-LEAVES-6** · merger **leaves-5** (#15) · suite feuilles (`fao`, `geneticOptimizer`…) |
+| Prochaine action | Merger **PR #17** (leaves-7) · suite feuilles (`syntheticValidator`, `strategyFactory`, `marketData`…) |
+
+---
+
+## Session 2026-07-25 — P11-TS-LEAVES-7 (lot #7)
+
+**Livré / PR #17** — retrait `@ts-nocheck` + typage strict de 2 feuilles :
+
+1. `src/engine/fao.ts` — `FaoContext` / `FaoStrategy` / `FaoComboParams` ; `FAO_SPACE` en `as const` ; aligné `runBacktestExt` + `BacktestExtParams` ; filtre régime typé (`StrategyEvalFn`)
+2. `src/engine/geneticOptimizer.ts` — `Genome` / `EvaluatedGenome` / `CreateGAOptions` ; `scoreOf` + `createGA` alignés `runBacktestExt` / `BacktestStrategy`
+
+- Engine `@ts-nocheck` : **8 → 6** (base main post leaves-6)
+- `tsc --noEmit` : **0 erreur**
+- `npm test` : **347 verts**
+- 0 collateral runtime (annotation / casts uniquement)
+
+**Base** : merge de `origin/main` (leaves-6 **déjà mergé** via PR #16 @ `a785293`). Compteur recalibré vs lot historique 12→10 (base pre-leaves-6).
+
+**Restant `@ts-nocheck` engine** (6) :
+- `syntheticValidator`, `strategyFactory`, `marketData`, `analyticsAdvanced`, `statisticalEdge`, `mql5Export`
 
 ---
 
 ## Session 2026-07-25 — P11-TS-LEAVES-6 (lot #6)
 
-**Livré (non commité)** — retrait `@ts-nocheck` + typage strict de 4 feuilles :
-
-1. `src/engine/quantOptimizer.ts` — aligné sur `runBacktestExt` / `BacktestExtParams` + `FAO_SPACE` ; `quantScore` accepte shape minimale (compat `recoFinale`)
-2. `src/engine/strategyStore.ts` — casts `idbAll` / `idbGet` → `StrategyRecord[]` / `BacktestLogRecord`
-3. `src/engine/dossierStore.ts` — idem → `DossierRecord` ; `serialized<T>` typé
-4. `src/engine/postFaoSynth.ts` — `FaoContext` (ATR + ADX) + `BacktestExtParams` pour les perturbs
-
-- Engine `@ts-nocheck` : **16 → 12**
-- `tsc --noEmit` : **0 erreur**
-- `npm test` : **347 verts**
-- 0 collateral runtime (annotation / casts uniquement)
-
-**Contexte reprise** : session Claude coupée après mesure des candidats ; observation clé confirmée — `idbAll` → `Promise<unknown>` (même pattern que `cotData`/`macroData` + `idbGet`).
-
-**Branche leaves-5** (`p11-ts-leaves-5` / PR #15) : safe, **pas encore mergée** dans `main` (dukascopyImport, tearsheet, portfolioStress, propfirmConvex encore `@ts-nocheck` sur main).
+**Livré / PR #16 mergé** — `p11-ts-leaves-6` @ `65cdd69` → `main` @ `a785293` : quantOptimizer · strategyStore · dossierStore · postFaoSynth.
 
 ---
 
@@ -50,4 +55,4 @@
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh` + `docs/OPS_GO_LIVE.md`.  
-- Dev : typer feuilles restantes → `fao` → `geneticOptimizer` → cœur backtest déjà partiellement typé sur branches dédiées.
+- Dev : typer feuilles restantes → `syntheticValidator` / `strategyFactory` / `marketData` → gros modules (`analyticsAdvanced`, `statisticalEdge`, `mql5Export`) · merger leaves-7 (#17).

@@ -1,15 +1,61 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Optimiseur évolutionnaire (algorithme génétique) — « variantes à l'infini ».
 // Contrairement au refine à grille figée (54 combos), il explore un espace continu de paramètres
 // {stratégie, SL, TP, BE, direction} par sélection / croisement / mutation, sur l'actif × TF courant.
 // Fitness = même score composite que la page Backtest. Cache par génome pour éviter les recalculs.
-import { runBacktestExt } from "./backtestExtended.ts";
+import { runBacktestExt, type BacktestExtParams } from "./backtestExtended.ts";
+import type { BacktestBar, BacktestContext, BacktestStrategy, StrategyEvalFn } from "./backtest.ts";
 import { seededRandom } from "./random.ts";
 
-const DIRS = ["both", "long", "short"];
+const DIRS = ["both", "long", "short"] as const;
+type GaDirection = (typeof DIRS)[number];
 const MIN_TRADES = 8; // en-dessous, résultat non fiable → rejeté
 
-export function scoreOf(res) {
+type ExtResult = ReturnType<typeof runBacktestExt>;
+
+export interface GaScoreInput {
+  nTrades: number;
+  sharpe?: number;
+  winRate: number;
+  profitFactor: number;
+  maxDD: number;
+  expectancyR: number;
+}
+
+export interface Genome {
+  stratId: number | string;
+  slAtr: number;
+  tpAtr: number;
+  beAtr: number;
+  direction: GaDirection;
+}
+
+export interface EvaluatedGenome extends Genome {
+  name?: string;
+  cat?: string;
+  score: number;
+  res: ExtResult | null;
+}
+
+export interface GaStrategy {
+  id: number | string;
+  name?: string;
+  cat?: string;
+  eval: StrategyEvalFn;
+}
+
+export interface CreateGAOptions {
+  bars: BacktestBar[];
+  ctx: BacktestContext;
+  library: GaStrategy[] | BacktestStrategy[];
+  symbol: string;
+  capital?: number;
+  popSize?: number;
+  lockStratId?: number | string | null;
+  seed?: number;
+  mutationRate?: number;
+}
+
+export function scoreOf(res: GaScoreInput | null | undefined): number {
   if (!res || res.nTrades < MIN_TRADES) return -1;
   const parts = [
     Math.min(1, (res.sharpe || 0) / 2.5),
@@ -21,10 +67,10 @@ export function scoreOf(res) {
   return (parts.reduce((a, b) => a + b, 0) / parts.length) * 100;
 }
 
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const r2 = (v) => Math.round(v * 100) / 100;
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const r2 = (v: number) => Math.round(v * 100) / 100;
 
-function randGenome(rng, stratIds) {
+function randGenome(rng: () => number, stratIds: Array<number | string>): Genome {
   return {
     stratId: stratIds[Math.floor(rng() * stratIds.length)],
     slAtr: r2(0.5 + rng() * 4.5),
@@ -34,8 +80,14 @@ function randGenome(rng, stratIds) {
   };
 }
 
-function mutate(g, rng, stratIds, rate, lockStrat) {
-  const n = { ...g };
+function mutate(
+  g: Genome,
+  rng: () => number,
+  stratIds: Array<number | string>,
+  rate: number,
+  lockStrat: boolean,
+): Genome {
+  const n: Genome = { ...g };
   if (!lockStrat && rng() < rate) n.stratId = stratIds[Math.floor(rng() * stratIds.length)];
   if (rng() < rate) n.slAtr = r2(clamp(n.slAtr + (rng() - 0.5) * 2, 0.3, 6));
   if (rng() < rate) n.tpAtr = rng() < 0.15 ? 0 : r2(clamp((n.tpAtr || 2) + (rng() - 0.5) * 3, 0, 10));
@@ -44,7 +96,7 @@ function mutate(g, rng, stratIds, rate, lockStrat) {
   return n;
 }
 
-function crossover(a, b, rng) {
+function crossover(a: Genome, b: Genome, rng: () => number): Genome {
   return {
     stratId: rng() < 0.5 ? a.stratId : b.stratId,
     slAtr: rng() < 0.5 ? a.slAtr : b.slAtr,
@@ -55,23 +107,32 @@ function crossover(a, b, rng) {
 }
 
 // Crée un optimiseur pas-à-pas (la page appelle step() par génération pour garder l'UI fluide).
-export function createGA({ bars, ctx, library, symbol, capital = 100000, popSize = 40, lockStratId = null, seed = 42, mutationRate = 0.3 }) {
+export function createGA({
+  bars, ctx, library, symbol, capital = 100000, popSize = 40,
+  lockStratId = null, seed = 42, mutationRate = 0.3,
+}: CreateGAOptions) {
   const rng = seededRandom(seed);
-  const stratIds = lockStratId != null ? [lockStratId] : library.map((s) => s.id);
+  const stratIds: Array<number | string> = lockStratId != null ? [lockStratId] : library.map((s) => s.id);
   const stratById = new Map(library.map((s) => [s.id, s]));
-  const cache = new Map();
-  const key = (g) => `${g.stratId}|${g.slAtr}|${g.tpAtr}|${g.beAtr}|${g.direction}`;
+  const cache = new Map<string, EvaluatedGenome>();
+  const key = (g: Genome) => `${g.stratId}|${g.slAtr}|${g.tpAtr}|${g.beAtr}|${g.direction}`;
 
-  function evaluate(g) {
+  function evaluate(g: Genome): EvaluatedGenome {
     const k = key(g);
-    if (cache.has(k)) return cache.get(k);
+    const cached = cache.get(k);
+    if (cached) return cached;
     const strat = stratById.get(g.stratId);
-    let res = null, score = -1;
+    let res: ExtResult | null = null;
+    let score = -1;
     if (strat) {
-      res = runBacktestExt(bars, ctx, strat.eval, { contract: symbol, capital, direction: g.direction, slAtr: g.slAtr, tpAtr: g.tpAtr, beAtr: g.beAtr, contracts: 1 });
+      const extParams: BacktestExtParams = {
+        contract: symbol, capital, direction: g.direction,
+        slAtr: g.slAtr, tpAtr: g.tpAtr, beAtr: g.beAtr, contracts: 1,
+      };
+      res = runBacktestExt(bars, ctx, strat.eval, extParams);
       score = scoreOf(res);
     }
-    const out = { ...g, name: strat?.name, cat: strat?.cat, score, res };
+    const out: EvaluatedGenome = { ...g, name: strat?.name, cat: strat?.cat, score, res };
     cache.set(k, out);
     return out;
   }
