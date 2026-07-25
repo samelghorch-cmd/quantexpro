@@ -17,8 +17,8 @@ import { eventsToCsv, filterEvents } from "../../engine/signalConsole.ts";
 import { useSignalConsole } from "../../hooks/useSignalConsole.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
-import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.jsx";
-import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, Field, NumberInput, Select, Button, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
+import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.tsx";
+import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, Field, NumberInput, Select, Button, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 function downloadText(text, filename) {

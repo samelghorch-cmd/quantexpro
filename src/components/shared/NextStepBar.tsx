@@ -1,7 +1,6 @@
-// Barre de progression guidée du pipeline : montre où on en est et enchaîne vers l'étape suivante.
-// Le fil : Usine → Backtest → Validation → Prop firm → Reco finale.
+// Barre de progression guidée du pipeline.
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { Button } from "./ui.jsx";
+import { Button } from "./ui.tsx";
 import { T } from "./theme.ts";
 
 export const GUIDED_FLOW = [
@@ -10,10 +9,10 @@ export const GUIDED_FLOW = [
   { id: "validator", label: "Validation", short: "3" },
   { id: "propfirm", label: "Prop firm", short: "4" },
   { id: "recoFinale", label: "Reco finale", short: "5" },
-];
+] as const;
 
-export function NextStepBar({ current }) {
-  const { navigate } = usePipeline();
+export function NextStepBar({ current }: { current: string }) {
+  const { navigate } = usePipeline() as { navigate: (id: string) => void };
   const idx = GUIDED_FLOW.findIndex((s) => s.id === current);
   if (idx < 0) return null;
   const next = GUIDED_FLOW[idx + 1];
@@ -25,7 +24,6 @@ export function NextStepBar({ current }) {
       padding: "10px 14px", marginBottom: 14, borderRadius: 10,
       background: T.bg1, border: `1px solid ${T.orange}33`,
     }}>
-      {/* Stepper */}
       <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
         {GUIDED_FLOW.map((s, i) => {
           const done = i < idx, cur = i === idx;
@@ -46,7 +44,6 @@ export function NextStepBar({ current }) {
         })}
       </div>
 
-      {/* Actions */}
       <div style={{ display: "flex", gap: 8 }}>
         {prev && <Button onClick={() => navigate(prev.id)}>← {prev.label}</Button>}
         {next

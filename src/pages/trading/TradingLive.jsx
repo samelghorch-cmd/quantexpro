@@ -5,7 +5,7 @@ import { useSyntheticLiveFeed } from "../../hooks/useSyntheticLiveFeed.ts";
 import { buildContext } from "../../engine/context.ts";
 import { runFAO } from "../../engine/fao.ts";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
-import { Panel, Button, Badge, SimBadge, MetricCard, MetricGrid, DataTable, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, SimBadge, MetricCard, MetricGrid, DataTable, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T, sideColor } from "../../components/shared/theme.ts";
 
 function LiveControls({ feed }) {

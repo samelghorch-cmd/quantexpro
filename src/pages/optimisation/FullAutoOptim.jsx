@@ -3,9 +3,9 @@ import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runFAO } from "../../engine/fao.ts";
 import { findBlockingEntry } from "../../engine/antiLibrary.ts";
-import { Panel, Button, Field, NumberInput, DataTable, MetricCard, MetricGrid, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
+import { Panel, Button, Field, NumberInput, DataTable, MetricCard, MetricGrid, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
+import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function FullAutoOptimPage() {

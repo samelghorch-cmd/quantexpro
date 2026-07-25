@@ -1,7 +1,6 @@
 // Fil du pipeline scientifique, partagé par les pages OPTIMISATION.
-// Cliquable (navigue vers l'étape) + bouton « Étape suivante » qui enchaîne sans rien perdre.
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { Button } from "./ui.jsx";
+import { Button } from "./ui.tsx";
 import { T } from "./theme.ts";
 
 const STEPS = [
@@ -11,10 +10,13 @@ const STEPS = [
   { key: "quantOptimizerBest", label: "Quant Optim", id: "quantOptimizer" },
   { key: "validatorVerdict", label: "Validator", id: "validator" },
   { key: "recoFinale", label: "Reco Finale", id: "recoFinale" },
-];
+] as const;
 
-export function PipelineStepper({ current }) {
-  const { pipeline, navigate } = usePipeline();
+export function PipelineStepper({ current }: { current: string }) {
+  const { pipeline, navigate } = usePipeline() as {
+    pipeline: Record<string, unknown>;
+    navigate: (id: string) => void;
+  };
   const idx = STEPS.findIndex((s) => s.id === current);
   const next = idx >= 0 ? STEPS[idx + 1] : null;
   const prev = idx > 0 ? STEPS[idx - 1] : null;

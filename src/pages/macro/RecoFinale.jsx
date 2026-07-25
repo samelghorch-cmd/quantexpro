@@ -2,8 +2,8 @@
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { computeRecoFinale } from "../../engine/recoFinale.ts";
-import { Panel, Button, ScoreGauge, SimBadge, ProgressBar, fmt } from "../../components/shared/ui.jsx";
-import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
+import { Panel, Button, ScoreGauge, SimBadge, ProgressBar, fmt } from "../../components/shared/ui.tsx";
+import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
 import { T, verdictColor } from "../../components/shared/theme.ts";
 
 export function RecoFinalePage() {

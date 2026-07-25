@@ -6,8 +6,8 @@ import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx
 import { evalForwardTest } from "../../engine/forwardTest.ts";
 import { logBacktest } from "../../engine/strategyStore.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
-import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, NumberInput, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, NumberInput, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const stateColor = (s) => (s === "LONG" ? T.green : s === "SHORT" ? T.red : T.textFaint);

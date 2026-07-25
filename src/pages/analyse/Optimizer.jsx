@@ -3,8 +3,8 @@ import { useState, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
 import { runFAO } from "../../engine/fao.ts";
 import { downloadCSV } from "../../engine/exportUtils.ts";
-import { Panel, Button, Field, Select, NumberInput, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
+import { Panel, Button, Field, Select, NumberInput, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const CATEGORIES = ["SL", "TP", "Break-Even", "Signal", "Regime", "Direction", "Risk", "ATR", "HTF", "Session", "Order Blocks", "Reverse-Range", "Signal Decay", "Adaptive", "PropFirm Guard", "ATR Regime"];

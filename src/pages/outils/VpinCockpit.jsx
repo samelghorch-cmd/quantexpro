@@ -2,7 +2,7 @@
 // Une toxicité qui monte simultanément sur BTC/ETH/SOL = stress de marché généralisé.
 import { useState } from "react";
 import { useBinanceVpinFeed } from "../../hooks/useBinanceVpinFeed.ts";
-import { Panel, Button, Badge, ScoreGauge, fmt } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, ScoreGauge, fmt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const ASSETS = [

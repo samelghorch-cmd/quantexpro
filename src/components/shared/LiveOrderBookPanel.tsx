@@ -1,10 +1,18 @@
 // Carnet L2 Binance live (@depth + @bookTicker) — remplace le mock quand crypto.
 import { useState } from "react";
 import { useBinanceOrderBook } from "../../hooks/useBinanceOrderBook.ts";
-import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtPct } from "./ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtPct } from "./ui.tsx";
 import { T } from "./theme.ts";
+import type { BookLevel } from "../../engine/binanceOrderBook.ts";
 
-function BookSide({ rows, side, maxSize }) {
+interface MockBookData {
+  bids: BookLevel[];
+  asks: BookLevel[];
+  mid: number;
+  spreadBps?: number;
+}
+
+function BookSide({ rows, side, maxSize }: { rows: BookLevel[]; side: "ask" | "bid"; maxSize: number }) {
   const color = side === "ask" ? T.red : T.green;
   const ordered = side === "ask" ? [...rows].reverse() : rows;
   return ordered.map((r, i) => {
@@ -19,11 +27,17 @@ function BookSide({ rows, side, maxSize }) {
   });
 }
 
-/**
- * @param {{ ticker: string|null, label?: string, levels?: number, mockBook?: object|null }} props
- * mockBook = fallback synthétique si pas de ticker Binance
- */
-export function LiveOrderBookPanel({ ticker, label, levels = 20, mockBook = null }) {
+export function LiveOrderBookPanel({
+  ticker,
+  label,
+  levels = 20,
+  mockBook = null,
+}: {
+  ticker: string | null;
+  label?: string;
+  levels?: number;
+  mockBook?: MockBookData | null;
+}) {
   const [on, setOn] = useState(false);
   const feed = useBinanceOrderBook(ticker, { enabled: on && !!ticker, levels });
 
@@ -39,7 +53,7 @@ export function LiveOrderBookPanel({ ticker, label, levels = 20, mockBook = null
     );
   }
 
-  const book = feed.connected && feed.bids?.length
+  const book: MockBookData | typeof feed | null = feed.connected && feed.bids?.length
     ? feed
     : mockBook;
   const maxSize = book
@@ -73,7 +87,7 @@ export function LiveOrderBookPanel({ ticker, label, levels = 20, mockBook = null
             <div style={{ padding: "6px 8px", textAlign: "center", color: T.orange, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
               mid {Number.isFinite(book.mid) ? book.mid.toFixed(book.mid >= 100 ? 2 : 4) : "—"}
               {Number.isFinite(book.spreadBps) && (
-                <span style={{ color: T.textDim, marginLeft: 10 }}>spread {fmt(book.spreadBps, 2)} bps</span>
+                <span style={{ color: T.textDim, marginLeft: 10 }}>spread {fmt(book.spreadBps as number, 2)} bps</span>
               )}
             </div>
             <BookSide rows={(book.bids || []).slice(0, levels)} side="bid" maxSize={maxSize} />
@@ -102,7 +116,7 @@ export function LiveOrderBookPanel({ ticker, label, levels = 20, mockBook = null
   );
 }
 
-function MockBook({ book }) {
+function MockBook({ book }: { book: MockBookData }) {
   const maxSize = Math.max(...[...book.bids, ...book.asks].map((x) => x.size), 1);
   return (
     <div style={{ fontFamily: T.mono, fontSize: 12 }}>

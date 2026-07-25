@@ -4,8 +4,8 @@ import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx
 import { monteCarlo } from "../../engine/montecarlo.ts";
 import { walkForward } from "../../engine/walkforward.ts";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
-import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
+import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 function NoBt() { return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest (onglet Backtest) — ce module s'appuie dessus.</div></Panel>; }

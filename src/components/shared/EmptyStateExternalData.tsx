@@ -1,16 +1,26 @@
 // Pattern unique pour les modules qui nécessitent une vraie source de données externe.
-// AUCUN chiffre inventé n'est affiché comme réel : tant qu'aucune clé n'est branchée,
-// on montre un état vide + un formulaire de connexion (stocké en localStorage, zéro requête réseau).
 import { useState } from "react";
 import { T, S } from "./theme.ts";
-import { Badge } from "./ui.jsx";
+import { Badge } from "./ui.tsx";
 
-export function EmptyStateExternalData({ moduleKey, title, description, providers = [], fields = ["Clé API"] }) {
+export function EmptyStateExternalData({
+  moduleKey,
+  title,
+  description,
+  providers = [],
+  fields = ["Clé API"],
+}: {
+  moduleKey: string;
+  title: string;
+  description: string;
+  providers?: string[];
+  fields?: string[];
+}) {
   const storeKey = `tradobot.datasource.${moduleKey}`;
   const [connected, setConnected] = useState(() => {
     try { return !!JSON.parse(localStorage.getItem(storeKey) || "null"); } catch { return false; }
   });
-  const [vals, setVals] = useState(() => {
+  const [vals, setVals] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem(storeKey) || "null")?.fields || {}; } catch { return {}; }
   });
 

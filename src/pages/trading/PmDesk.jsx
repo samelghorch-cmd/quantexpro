@@ -10,7 +10,7 @@ import {
   buildPmDesk,
   deskToCsv,
 } from "../../engine/portfolioDesk.ts";
-import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const inputStyle = {

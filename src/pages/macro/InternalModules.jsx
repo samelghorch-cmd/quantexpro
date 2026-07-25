@@ -9,13 +9,13 @@ import { hmmRegimes } from "../../engine/quantToolbox/index.ts";
 import { generateOrderBook } from "../../engine/microstructure.ts";
 import { computeVPIN } from "../../engine/vpin.ts";
 import { findSymbol } from "../../engine/marketData.ts";
-import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
-import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.jsx";
+import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.tsx";
+import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.tsx";
 import { CorrelationMatrix } from "../../components/charts/CorrelationMatrix.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
-import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
+import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function CPCVPage() {
