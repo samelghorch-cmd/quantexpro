@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // COT (Commitments of Traders) réel — CFTC, dataset public Socrata, sans clé et CORS ouvert (fetch direct).
 // Positionnement net des gros spéculateurs (non-commercial) vs hedgers (commercial) par marché.
 import { idbGet, idbPut } from "./dataStore.ts";
@@ -17,12 +16,28 @@ export const COT_MARKETS = [
   { key: "ust10", term: "10-YEAR U.S. TREASURY NOTES", label: "10Y Treasury" },
 ];
 
-const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+// Ligne brute renvoyée par l'API Socrata de la CFTC (tous les champs en string).
+interface CotRow {
+  market_and_exchange_names: string;
+  report_date_as_yyyy_mm_dd: string;
+  open_interest_all: string;
+  noncomm_positions_long_all: string;
+  noncomm_positions_short_all: string;
+  comm_positions_long_all: string;
+  comm_positions_short_all: string;
+}
 
-export async function fetchCot(market, { force = false } = {}) {
+interface CotPoint { t: number; oi: number; ncNet: number; cNet: number; pctLongNC: number; }
+
+const num = (v: string) => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+
+export async function fetchCot(market: (typeof COT_MARKETS)[number], { force = false } = {}) {
   const cacheId = `macro:cot:${market.key}`;
   if (!force) {
-    try { const rec = await idbGet(cacheId); if (rec && Date.now() - rec.ts < TTL) return rec.series; } catch { /* noop */ }
+    try {
+      const rec = await idbGet(cacheId) as { ts: number; series: CotPoint[] } | undefined;
+      if (rec && Date.now() - rec.ts < TTL) return rec.series;
+    } catch { /* noop */ }
   }
   const where = encodeURIComponent(`market_and_exchange_names like '%${market.term}%'`);
   const select = encodeURIComponent("market_and_exchange_names,report_date_as_yyyy_mm_dd,open_interest_all,noncomm_positions_long_all,noncomm_positions_short_all,comm_positions_long_all,comm_positions_short_all");
@@ -30,11 +45,11 @@ export async function fetchCot(market, { force = false } = {}) {
   const url = `${BASE}?$where=${where}&$select=${select}&$order=${order}&$limit=520`;
   const r = await fetch(url);
   if (!r.ok) throw new Error(`CFTC ${r.status}`);
-  const rows = await r.json();
+  const rows = await r.json() as CotRow[];
   if (!rows.length) throw new Error("Aucune donnée COT");
 
   // Regroupe par nom de marché exact et garde le contrat principal (plus gros open interest récent)
-  const byName = {};
+  const byName: Record<string, CotRow[]> = {};
   rows.forEach((row) => { (byName[row.market_and_exchange_names] ||= []).push(row); });
   const primary = Object.entries(byName).sort((a, b) => num(b[1][0].open_interest_all) - num(a[1][0].open_interest_all))[0][1];
 

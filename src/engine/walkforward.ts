@@ -1,9 +1,15 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — walk-forward IS/OOS glissant.
-import { buildContext } from "./context.ts";
-import { runBacktest } from "./backtest.ts";
+import { buildContext, type OHLCVBar } from "./context.ts";
+import { runBacktest, type StrategyEvalFn, type BacktestOptions } from "./backtest.ts";
 
-export function walkForward(bars, ctx, evalFn, options, nWindows = 5, isRatio = 0.7) {
+export function walkForward(
+  bars: OHLCVBar[],
+  _ctx: unknown,
+  evalFn: StrategyEvalFn,
+  options: BacktestOptions,
+  nWindows = 5,
+  isRatio = 0.7,
+) {
   const windows = [];
   const win = Math.floor(bars.length / nWindows);
   for (let w = 0; w < nWindows; w++) {
