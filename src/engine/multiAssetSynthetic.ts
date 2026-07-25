@@ -1,7 +1,8 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Panier synthétique multi-marché — génère plusieurs séries corrélées à partir de facteurs communs,
 // pour alimenter Correlations, Macro Map, Regime Clock, Pairs Trading (données SIMULÉES, jamais réelles).
 import { seededRandom } from "./random.ts";
+
+interface BasketBar { t: number; o: number; h: number; l: number; c: number; v: number; }
 
 export const SYNTH_ASSETS = [
   { sym: "SYN-EQ1", name: "Actions large cap", startPrice: 4500, beta: 1.0 },
@@ -18,10 +19,10 @@ export const SYNTH_ASSETS = [
 // Génère nBars pour chaque actif : rendement = beta·facteur_marché + idiosyncratique.
 export function generateBasket(nBars = 500, seed = 42) {
   const rndM = seededRandom(seed);
-  const market = [];
+  const market: number[] = [];
   for (let i = 0; i < nBars; i++) market.push((rndM() - 0.5) * 0.02);
 
-  const series = {};
+  const series: Record<string, BasketBar[]> = {};
   SYNTH_ASSETS.forEach((a, ai) => {
     const rnd = seededRandom(seed + ai * 101 + 1);
     const bars = [];
@@ -41,7 +42,7 @@ export function generateBasket(nBars = 500, seed = 42) {
 }
 
 // Matrice de corrélation des rendements entre actifs du panier.
-export function basketCorrelation(basket) {
+export function basketCorrelation(basket: { series: Record<string, BasketBar[]> }) {
   const syms = Object.keys(basket.series);
   const rets = syms.map((s) => {
     const b = basket.series[s];
@@ -49,7 +50,7 @@ export function basketCorrelation(basket) {
     for (let i = 1; i < b.length; i++) r.push((b[i].c - b[i - 1].c) / b[i - 1].c);
     return r;
   });
-  const corr = (a, b) => {
+  const corr = (a: number[], b: number[]) => {
     const n = Math.min(a.length, b.length);
     let ma = 0, mb = 0;
     for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }

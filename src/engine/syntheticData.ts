@@ -1,8 +1,9 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — génération OHLCV synthétique + agrégation multi-timeframe.
 import { seededRandom } from "./random.ts";
 
-export function generateSyntheticCandles(nBars, seed = 42, startPrice = 4500) {
+interface SynthBar { t: number; o: number; h: number; l: number; c: number; v: number; vBuy?: number; }
+
+export function generateSyntheticCandles(nBars: number, seed = 42, startPrice = 4500) {
   const rnd = seededRandom(seed);
   const bars = [];
   let price = startPrice;
@@ -37,7 +38,7 @@ export function generateSyntheticCandles(nBars, seed = 42, startPrice = 4500) {
   return bars;
 }
 
-export function aggregateBars(bars, factor) {
+export function aggregateBars(bars: SynthBar[], factor: number) {
   if (factor <= 1) return bars;
   const out = [];
   for (let i = 0; i < bars.length; i += factor) {
