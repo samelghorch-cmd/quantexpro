@@ -8,7 +8,7 @@ import { CATS } from "../../engine/strategyLibrary.ts";
 import { downloadJSON } from "../../engine/exportUtils.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, ScoreGauge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 import { STRESS_MAX_DD_LIMIT } from "../../engine/portfolioStress.ts";
 
 const TF_OPTS = [{ v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }, { v: 3, l: "15m" }];

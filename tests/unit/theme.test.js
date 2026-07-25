@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { T, sideColor, pnlColor, verdictColor } from "../../src/components/shared/theme.js";
+import { T, sideColor, pnlColor, verdictColor } from "../../src/components/shared/theme.ts";
 
 describe("P6-THEME tokens", () => {
   it("expose long/short audit + card", () => {

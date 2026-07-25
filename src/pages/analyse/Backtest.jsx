@@ -10,7 +10,7 @@ import { Histogram } from "../../components/charts/Histogram.jsx";
 import { Panel, MetricCard, MetricGrid, Button, Field, Select, NumberInput, SimBadge, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { NextStepBar } from "../../components/shared/NextStepBar.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function BacktestPage() {
   const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, addJournal, attachToActive } = usePipeline();

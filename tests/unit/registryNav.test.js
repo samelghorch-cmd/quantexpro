@@ -1,6 +1,6 @@
 // P2-UI — registry Labs + fusion doublons nav
 import { describe, it, expect } from "vitest";
-import { SECTIONS, ALL_MODULES, MODULE_ALIASES, MODULE_COUNT } from "../../src/registry.js";
+import { SECTIONS, ALL_MODULES, MODULE_ALIASES, MODULE_COUNT } from "../../src/registry.ts";
 import { PAGES } from "../../src/pages/index.jsx";
 
 describe("registry P2-UI", () => {

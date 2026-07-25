@@ -4,7 +4,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { computeRecoFinale } from "../../engine/recoFinale.ts";
 import { Panel, Button, ScoreGauge, SimBadge, ProgressBar, fmt } from "../../components/shared/ui.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
-import { T, verdictColor } from "../../components/shared/theme.js";
+import { T, verdictColor } from "../../components/shared/theme.ts";
 
 export function RecoFinalePage() {
   const { pipeline, setPipe, log, attachToActive, gradeActive } = usePipeline();

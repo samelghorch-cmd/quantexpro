@@ -1,5 +1,5 @@
 // Composants UI partagés v5.
-import { T, S } from "./theme.js";
+import { T, S } from "./theme.ts";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 
 export function Panel({ title, right, children, style, bodyStyle }) {

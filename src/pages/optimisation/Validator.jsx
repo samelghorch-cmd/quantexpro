@@ -6,7 +6,7 @@ import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, Field, NumberInput, SimBadge, fmt, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
-import { T, verdictColor } from "../../components/shared/theme.js";
+import { T, verdictColor } from "../../components/shared/theme.ts";
 
 export function ValidatorPage() {
   const { bars, ctx, pipeline, setPipe, log, attachToActive } = usePipeline();

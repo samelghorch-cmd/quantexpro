@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { CATS } from "../../engine/strategyLibrary.ts";
-import { T, S } from "./theme.js";
+import { T, S } from "./theme.ts";
 
 export function StrategyPicker({ value, onChange, compact }) {
   const { library } = usePipeline();

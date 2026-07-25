@@ -6,7 +6,7 @@ import { findBlockingEntry } from "../../engine/antiLibrary.ts";
 import { Panel, Button, Field, NumberInput, DataTable, MetricCard, MetricGrid, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function FullAutoOptimPage() {
   const { bars, ctx, library, symbol, tf, dataMode, pipeline, setPipe, log, attachToActive, navigate } = usePipeline();

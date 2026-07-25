@@ -9,7 +9,7 @@ import { findSymbol } from "../../engine/marketData.ts";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, ScoreGauge, Select, fmt, fmtPct } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function VPINPage() {
   const { bars, symbol, assetKey } = usePipeline();

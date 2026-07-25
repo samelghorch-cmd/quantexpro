@@ -7,7 +7,7 @@ import { saveCustomDef } from "../../engine/customStrategies.ts";
 import { buildPatternsLibrary, filterPatterns, PATTERN_FILTERS } from "../../engine/patternsLibrary.ts";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Tabs, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const IND_CATALOG = {
   TREND: ["SMA", "EMA", "WMA", "DEMA", "TEMA", "HMA", "KAMA", "LinReg", "SuperTrend", "ParabolicSAR", "Ichimoku"],

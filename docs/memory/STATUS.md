@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-26** (P11-TS-WORKER)
+> Dernière maj : **2026-07-26** (P12-TS-UI-1)
 
 ---
 
@@ -9,38 +9,35 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Branche git | `p11-ts-worker` (base `main` @ `4f49e40`) |
+| Branche git | `p12-ts-ui-1` (base `main` @ `54c102e`) |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **347** · typecheck ✅ |
-| Commit HEAD main | `4f49e40` (merge PR #21 leaves-11) |
-| P0–P10 | ✅ clôturés |
-| P11-TS-LEAVES | ✅ lots #1–#11 · engine **0** `@ts-nocheck` |
+| Commit HEAD main | `54c102e` (merge PR #22 worker) |
+| P0–P11 | ✅ clôturés (leaves + worker) |
 | Scorecard HF | **28/35** (desk institutionnel soft) |
-| Prochaine action | Merger **P11-TS-WORKER** · puis typage UI (`tsconfig.ui.json`) / ops prod |
+| Prochaine action | Merger **P12-TS-UI-1** · suite pages/components `.jsx` → `.tsx` |
 
 ---
 
-## Session 2026-07-26 — P11-TS-WORKER
+## Session 2026-07-26 — P12-TS-UI-1
 
-**Livré / PR** — dernier module JS du moteur → TypeScript :
+**Livré / PR** — premier lot typage UI (feuilles JS + entry) :
 
-1. `src/engine/factory.worker.js` → `factory.worker.ts` (retrait du `.js`)
-2. `src/engine/strategyFactory.ts` — URL worker → `./factory.worker.ts`
-3. Fix latent : refine compare `best.trainScore` (JS utilisait `best.score` inexistant → 1er candidat seulement)
+1. `theme.js` → `theme.ts`
+2. `registry.js` → `registry.ts`
+3. hooks : `useBinanceOrderBook` · `useBinanceVpinFeed` · `useSignalConsole` · `useSyntheticLiveFeed` → `.ts`
+4. `engine/quantToolbox/index.js` → `.ts`
+5. `main.jsx` → `main.tsx` (+ `index.html`)
+6. Imports `.js` → `.ts` mis à jour · règle frontend `theme.ts` / `registry.ts`
 
-- Engine : **0** `.js` restant sous `src/engine/` (worker inclus)
+- `src/**/*.js` : **0** restant
+- JSX : **62 → 61** · TSX : **0 → 1**
 - `tsc --noEmit` : **0 erreur**
 - `npm test` : **347 verts**
-
----
-
-## Session 2026-07-26 — P11-TS-LEAVES-11 (lot #11)
-
-**Livré / PR #21 mergé** — `6345b24` → `main` @ `4f49e40` : mql5Export · série leaves **clôturée**.
 
 ---
 
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh` + `docs/OPS_GO_LIVE.md`.  
-- Dev : leaves engine ✅ · worker TS PR · suite = typage UI progressive / ops humaine.
+- Dev : engine TS complet ✅ · lot UI #1 PR · reste ~61 `.jsx`.

@@ -3,7 +3,7 @@
 import { seededRandom } from "./random.ts";
 import { runBacktestExt, type BacktestExtParams } from "./backtestExtended.ts";
 import type { BacktestBar, BacktestContext, StrategyEvalFn } from "./backtest.ts";
-import { drawdownDistribution, tradeClustering, varCvar } from "./quantToolbox/index.js";
+import { drawdownDistribution, tradeClustering, varCvar } from "./quantToolbox/index.ts";
 import { FAO_SPACE } from "./fao.ts";
 
 type OptDirection = "both" | "long" | "short";

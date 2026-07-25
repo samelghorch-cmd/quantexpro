@@ -4,7 +4,7 @@ import { usePersistentState } from "../../state/PipelineContext.jsx";
 import { fetchCot, COT_MARKETS } from "../../engine/cotData.ts";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtInt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const last = (s) => (s && s.length ? s[s.length - 1] : null);
 const fmtDate = (t) => t ? new Date(t).toISOString().slice(0, 10) : "—";

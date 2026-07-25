@@ -1,7 +1,7 @@
 // Sidebar sectorielle : 8 sections repliables, tous les modules cliquables.
 import { useState } from "react";
-import { T } from "../shared/theme.js";
-import { SECTIONS, MODULE_COUNT } from "../../registry.js";
+import { T } from "../shared/theme.ts";
+import { SECTIONS, MODULE_COUNT } from "../../registry.ts";
 
 export function Sidebar({ active, onSelect, collapsed, onToggle }) {
   const [open, setOpen] = useState(() => Object.fromEntries(SECTIONS.map((s) => [s.id, true])));

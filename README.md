@@ -21,7 +21,7 @@ npm run build    # build de production
 - `src/components/` — `charts/` (SVG/Canvas), `shared/` (thème, UI kit, EmptyStateExternalData, StrategyPicker, PipelineStepper), `layout/` (Sidebar, TickerBar, GlobalControls).
 - `src/state/PipelineContext.jsx` — marché synthétique partagé + résultats du pipeline circulant entre modules.
 - `src/pages/<section>/` — un composant par module.
-- `src/registry.js` — source de vérité de la navigation (8 sections / 69 modules).
+- `src/registry.ts` — source de vérité de la navigation (8 sections / 69 modules).
 
 ## ⚡ Usine à Stratégies (découverte automatique)
 

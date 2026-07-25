@@ -1,6 +1,23 @@
 // Registre des sections / modules — source de vérité de la navigation.
 // P2-UI : section Labs + fusion doublons Quant Toolbox / Performance (aliases hors sidebar).
-export const SECTIONS = [
+
+export interface NavModule {
+  id: string;
+  label: string;
+}
+
+export interface NavSection {
+  id: string;
+  label: string;
+  icon: string;
+  modules: NavModule[];
+}
+
+export interface NavModuleRef extends NavModule {
+  section: string;
+}
+
+export const SECTIONS: NavSection[] = [
   {
     id: "strategy", label: "Strategy Engine", icon: "◆",
     modules: [
@@ -132,10 +149,10 @@ export const SECTIONS = [
 ];
 
 /** Aliases retirés de la sidebar (P2-UI) — navigate() reste valide. */
-export const MODULE_ALIASES = {
+export const MODULE_ALIASES: Record<string, string> = {
   performanceTool: "performance",
   quantToolboxTool: "quantToolbox",
 };
 
-export const ALL_MODULES = SECTIONS.flatMap((s) => s.modules.map((m) => ({ ...m, section: s.id })));
+export const ALL_MODULES: NavModuleRef[] = SECTIONS.flatMap((s) => s.modules.map((m) => ({ ...m, section: s.id })));
 export const MODULE_COUNT = ALL_MODULES.length;

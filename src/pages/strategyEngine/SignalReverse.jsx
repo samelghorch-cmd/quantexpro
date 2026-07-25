@@ -10,7 +10,7 @@ import {
 import { describeRule } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
 import { Panel, Button, MetricCard, MetricGrid, DataTable, Badge, Field, NumberInput, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const SAMPLE = `date,side
 2024-01-15,long

@@ -2,7 +2,7 @@
 // Le fil : Usine → Backtest → Validation → Prop firm → Reco finale.
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { Button } from "./ui.jsx";
-import { T } from "./theme.js";
+import { T } from "./theme.ts";
 
 export const GUIDED_FLOW = [
   { id: "factory", label: "Usine", short: "1" },

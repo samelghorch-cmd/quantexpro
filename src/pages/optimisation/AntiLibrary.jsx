@@ -16,7 +16,7 @@ import {
 import { buildStrategyLibrary } from "../../engine/strategyLibrary.ts";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function AntiLibraryPage() {
   const { navigate } = usePipeline();

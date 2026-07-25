@@ -11,7 +11,7 @@ import { buildMarketOscillators, oscillatorsToCSV } from "../../engine/oscillato
 import { downloadCSV } from "../../engine/exportUtils.ts";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, fmt, fmtPct } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const scoreColor = (s) => (s >= 60 ? T.green : s >= 40 ? T.yellow : T.red);
 const regimeColors = [T.green, T.blue, T.red, T.yellow];

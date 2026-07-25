@@ -2,9 +2,9 @@
 // Crypto uniquement : pour les autres actifs, il n'existe pas de flux tick gratuit fiable.
 // Détecteur ACTIF : alerte sonore + visuelle quand la CDF franchit le niveau toxique (krach imminent).
 import { useState, useRef, useEffect } from "react";
-import { useBinanceVpinFeed } from "../../hooks/useBinanceVpinFeed.js";
+import { useBinanceVpinFeed } from "../../hooks/useBinanceVpinFeed.ts";
 import { Panel, MetricCard, MetricGrid, ScoreGauge, Badge, Button, fmt } from "./ui.jsx";
-import { T } from "./theme.js";
+import { T } from "./theme.ts";
 
 export function LiveVpinPanel({ ticker, label, window = 50 }) {
   const [on, setOn] = useState(false);

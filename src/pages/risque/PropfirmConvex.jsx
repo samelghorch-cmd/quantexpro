@@ -6,7 +6,7 @@ import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { NextStepBar } from "../../components/shared/NextStepBar.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function PropfirmConvexPage() {
   const { bars, ctx, library, symbol, pipeline } = usePipeline();

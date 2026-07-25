@@ -11,18 +11,23 @@ import {
   pushRing,
   makeSignalSnapshotEvent,
   makeBarClosedEvent,
+  type ConsoleEvent,
+  type StrategySlot,
+  type SlotSignal,
 } from "../engine/signalConsole.ts";
 
-/**
- * @param {{
- *   library: object[],
- *   ctx: object|null,
- *   bars: object[],
- *   symbol?: string,
- *   tfFactor?: number,
- *   slots?: number[],
- * }} opts
- */
+export type SignalConsoleMode = "local" | "ws";
+export type WsStatus = "idle" | "connecting" | "live" | "error" | "closed";
+
+export interface UseSignalConsoleOpts {
+  library?: StrategySlot[] | Record<string, unknown>[] | null;
+  ctx?: Record<string, unknown> | null;
+  bars?: Array<Record<string, unknown>> | null;
+  symbol?: string;
+  tfFactor?: number;
+  slots?: number[];
+}
+
 export function useSignalConsole({
   library,
   ctx,
@@ -30,26 +35,26 @@ export function useSignalConsole({
   symbol,
   tfFactor = 3,
   slots = DEFAULT_SIGNAL_SLOTS,
-} = {}) {
-  const [mode, setMode] = useState("local"); // local | ws
-  const [wsStatus, setWsStatus] = useState("idle"); // idle | connecting | live | error | closed
-  const [wsError, setWsError] = useState(null);
-  const [events, setEvents] = useState([]);
+}: UseSignalConsoleOpts = {}) {
+  const [mode, setMode] = useState<SignalConsoleMode>("local");
+  const [wsStatus, setWsStatus] = useState<WsStatus>("idle");
+  const [wsError, setWsError] = useState<string | null>(null);
+  const [events, setEvents] = useState<ConsoleEvent[]>([]);
   const [barTicks, setBarTicks] = useState(0);
-  const wsRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const lastSigKey = useRef("");
 
   const i = bars?.length ? bars.length - 1 : -1;
 
   const signals = useMemo(
-    () => evaluateSlots(library, ctx, i, slots),
+    () => evaluateSlots(library as StrategySlot[] | null | undefined, ctx, i, slots),
     [library, ctx, i, slots, barTicks],
   );
   const consensus = useMemo(() => consensusFromSignals(signals), [signals]);
 
   const pushSnapshot = useCallback(
-    (source) => {
-      const key = `${source}:${i}:${signals.map((s) => `${s.id}:${s.long}:${s.short}`).join("|")}`;
+    (source: string) => {
+      const key = `${source}:${i}:${signals.map((s: SlotSignal) => `${s.id}:${s.long}:${s.short}`).join("|")}`;
       if (key === lastSigKey.current && source === "local") return;
       lastSigKey.current = key;
       const ev = makeSignalSnapshotEvent(signals, { source, symbol, ts: Date.now() });
@@ -58,7 +63,6 @@ export function useSignalConsole({
     [signals, symbol, i],
   );
 
-  // Mode local : snapshot à chaque changement de barre / signaux
   useEffect(() => {
     if (mode !== "local") return;
     if (i < 1 || !ctx) return;
@@ -89,11 +93,11 @@ export function useSignalConsole({
       return;
     }
     const tf = resolveStreamTf(tfFactor);
-    let url;
+    let url: string;
     try {
       url = barsWebSocketUrl(base, tf, key);
     } catch (e) {
-      setWsError(e.message || String(e));
+      setWsError(e instanceof Error ? e.message : String(e));
       setWsStatus("error");
       return;
     }
@@ -107,8 +111,12 @@ export function useSignalConsole({
       if (!parsed || parsed.type !== "bar.closed") return;
       setEvents((ring) => pushRing(ring, makeBarClosedEvent(parsed, { source: "ws" })));
       setBarTicks((n) => n + 1);
-      // Ré-évalue slots sur ctx pipeline courant (journal unifié)
-      const sigs = evaluateSlots(library, ctx, bars?.length ? bars.length - 1 : -1, slots);
+      const sigs = evaluateSlots(
+        library as StrategySlot[] | null | undefined,
+        ctx,
+        bars?.length ? bars.length - 1 : -1,
+        slots,
+      );
       setEvents((ring) =>
         pushRing(ring, makeSignalSnapshotEvent(sigs, { source: "ws", symbol: parsed.symbol || symbol })),
       );
