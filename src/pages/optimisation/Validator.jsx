@@ -6,6 +6,7 @@ import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, Field, NumberInput, SimBadge, fmt, fmtUsd } from "../../components/shared/ui.tsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
+import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
 import { T, verdictColor } from "../../components/shared/theme.ts";
 
 export function ValidatorPage() {
@@ -42,6 +43,7 @@ export function ValidatorPage() {
   return (
     <div>
       <PipelineStepper current="validator" />
+      <NextStepBar current="validator" />
       {!source ? (
         <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance au moins <b style={{ color: T.orange }}>FAO</b> (idéalement jusqu'à Quant Optim) — le Validator teste le meilleur setup.</div></Panel>
       ) : (
