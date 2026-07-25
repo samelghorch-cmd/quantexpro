@@ -1,24 +1,78 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Full Auto Optim (FAO) — sweep automatique des paramètres SL/TP/BE par random sampling,
 // filtre régime (ADX/Hurst), filtres qualité (WR min, DD max).
 import { seededRandom } from "./random.ts";
-import { runBacktestExt } from "./backtestExtended.ts";
+import { runBacktestExt, type BacktestExtParams } from "./backtestExtended.ts";
+import type { BacktestBar, BacktestContext, StrategyEvalFn, StrategySignal } from "./backtest.ts";
+
+export type FaoDirection = "both" | "long" | "short";
+export type FaoRegime = "all" | "trend" | "range";
 
 export const FAO_SPACE = {
-  slAtr: [1, 1.5, 2, 2.5, 3, 4],
-  tpAtr: [0, 1.5, 2, 3, 4, 6],
-  beAtr: [0, 1, 1.5, 2],
-  direction: ["both", "long", "short"],
-  regime: ["all", "trend", "range"], // filtre ADX
+  slAtr: [1, 1.5, 2, 2.5, 3, 4] as const,
+  tpAtr: [0, 1.5, 2, 3, 4, 6] as const,
+  beAtr: [0, 1, 1.5, 2] as const,
+  direction: ["both", "long", "short"] as const satisfies readonly FaoDirection[],
+  regime: ["all", "trend", "range"] as const satisfies readonly FaoRegime[],
 };
 
+/** Contexte FAO : ATR + ADX optionnel pour le filtre de régime. */
+export type FaoContext = BacktestContext & { adx14?: { adx?: number[] } };
+
+export interface FaoStrategy {
+  eval: StrategyEvalFn;
+}
+
+export interface FaoOptions {
+  nSamples?: number;
+  minWR?: number;
+  maxDD?: number;
+  contract?: string;
+  capital?: number;
+  seed?: number;
+}
+
+export interface FaoComboParams {
+  slAtr: number;
+  tpAtr: number;
+  beAtr: number;
+  direction: FaoDirection;
+  regime: FaoRegime;
+  contract: string;
+  capital: number;
+}
+
+type ExtResult = ReturnType<typeof runBacktestExt>;
+
+export interface FaoComboScore {
+  params: {
+    slAtr: number;
+    tpAtr: number;
+    beAtr: number;
+    direction: FaoDirection;
+    regime: FaoRegime;
+  };
+  nTrades: number;
+  winRate: number;
+  profitFactor: number;
+  sharpe: number;
+  sortino: number;
+  maxDD: number;
+  totalPnL: number;
+  totalPnLPct: number;
+  expectancyR: number;
+  calmar: number;
+  kellyHalf: number;
+  result: ExtResult;
+}
+
 // Applique un filtre de régime au signal d'une stratégie
-function withRegime(evalFn, regime) {
+function withRegime(evalFn: StrategyEvalFn, regime: FaoRegime): StrategyEvalFn {
   if (regime === "all") return evalFn;
-  return (ctx, i) => {
+  return (ctx: BacktestContext, i: number): StrategySignal => {
     const sig = evalFn(ctx, i);
-    const adx = ctx.adx14?.adx?.[i];
-    if (isNaN(adx)) return sig;
+    const faoCtx = ctx as FaoContext;
+    const adx = faoCtx.adx14?.adx?.[i];
+    if (adx == null || isNaN(adx)) return sig;
     const trending = adx > 25;
     const pass = regime === "trend" ? trending : !trending;
     return pass ? sig : { long: false, short: false };
@@ -26,21 +80,28 @@ function withRegime(evalFn, regime) {
 }
 
 // Exécution complète (synchrone) — pour petits échantillons
-export function runFAO(bars, ctx, strategy, options = {}) {
+export function runFAO(
+  bars: BacktestBar[],
+  ctx: FaoContext,
+  strategy: FaoStrategy,
+  options: FaoOptions = {},
+) {
   const { nSamples = 120, minWR = 35, maxDD = 40, contract = "MES", capital = 100000, seed = 7 } = options;
   const rnd = seededRandom(seed);
-  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rnd() * arr.length)];
 
   // Baseline : SL=2 ATR, pas de TP/BE, both
-  const baseParams = { slAtr: 2, tpAtr: 0, beAtr: 0, direction: "both", regime: "all", contract, capital };
+  const baseParams: FaoComboParams = {
+    slAtr: 2, tpAtr: 0, beAtr: 0, direction: "both", regime: "all", contract, capital,
+  };
   const baseline = scoreCombo(bars, ctx, strategy, baseParams);
 
-  const combos = [];
-  const seen = new Set();
+  const combos: FaoComboScore[] = [];
+  const seen = new Set<string>();
   let attempts = 0;
   while (combos.length < nSamples && attempts < nSamples * 6) {
     attempts++;
-    const p = {
+    const p: FaoComboParams = {
       slAtr: pick(FAO_SPACE.slAtr), tpAtr: pick(FAO_SPACE.tpAtr), beAtr: pick(FAO_SPACE.beAtr),
       direction: pick(FAO_SPACE.direction), regime: pick(FAO_SPACE.regime), contract, capital,
     };
@@ -59,9 +120,19 @@ export function runFAO(bars, ctx, strategy, options = {}) {
   return { combos, best, baseline, params: { nSamples, minWR, maxDD }, attempts };
 }
 
-function scoreCombo(bars, ctx, strategy, p) {
+function scoreCombo(
+  bars: BacktestBar[],
+  ctx: FaoContext,
+  strategy: FaoStrategy,
+  p: FaoComboParams,
+): FaoComboScore {
   const evalFn = withRegime(strategy.eval, p.regime);
-  const res = runBacktestExt(bars, ctx, evalFn, p);
+  const extParams: BacktestExtParams = {
+    slAtr: p.slAtr, tpAtr: p.tpAtr, beAtr: p.beAtr,
+    direction: p.direction, contract: p.contract, capital: p.capital,
+    regime: p.regime,
+  };
+  const res = runBacktestExt(bars, ctx, evalFn, extParams);
   return {
     params: { slAtr: p.slAtr, tpAtr: p.tpAtr, beAtr: p.beAtr, direction: p.direction, regime: p.regime },
     nTrades: res.nTrades, winRate: res.winRate, profitFactor: res.profitFactor,
@@ -72,21 +143,28 @@ function scoreCombo(bars, ctx, strategy, p) {
 }
 
 // Génère un itérateur chunké pour exécution non bloquante côté UI.
-export function makeFAOChunks(bars, ctx, strategy, options = {}) {
+export function makeFAOChunks(
+  bars: BacktestBar[],
+  ctx: FaoContext,
+  strategy: FaoStrategy,
+  options: FaoOptions = {},
+) {
   const { nSamples = 120, seed = 7, contract = "MES", capital = 100000 } = options;
   const rnd = seededRandom(seed);
-  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
-  const seen = new Set();
-  const queue = [];
+  const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rnd() * arr.length)];
+  const seen = new Set<string>();
+  const queue: FaoComboParams[] = [];
   let guard = 0;
   while (queue.length < nSamples && guard < nSamples * 6) {
     guard++;
-    const p = { slAtr: pick(FAO_SPACE.slAtr), tpAtr: pick(FAO_SPACE.tpAtr), beAtr: pick(FAO_SPACE.beAtr),
-      direction: pick(FAO_SPACE.direction), regime: pick(FAO_SPACE.regime), contract, capital };
+    const p: FaoComboParams = {
+      slAtr: pick(FAO_SPACE.slAtr), tpAtr: pick(FAO_SPACE.tpAtr), beAtr: pick(FAO_SPACE.beAtr),
+      direction: pick(FAO_SPACE.direction), regime: pick(FAO_SPACE.regime), contract, capital,
+    };
     const key = `${p.slAtr}|${p.tpAtr}|${p.beAtr}|${p.direction}|${p.regime}`;
     if (seen.has(key)) continue;
     seen.add(key);
     queue.push(p);
   }
-  return { queue, scoreCombo: (p) => scoreCombo(bars, ctx, strategy, p) };
+  return { queue, scoreCombo: (p: FaoComboParams) => scoreCombo(bars, ctx, strategy, p) };
 }
