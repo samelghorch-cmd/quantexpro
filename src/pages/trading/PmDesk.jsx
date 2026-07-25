@@ -1,6 +1,6 @@
 // P4-DESK — Desk PM unifié (flotte equity / réserve risque).
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { listDossiers } from "../../engine/dossierStore.ts";
 import { loadValidatedEdges, listActiveEdges } from "../../engine/validatedEdges.ts";
 import { getCollectorUrl, listJobs } from "../../engine/collectorClient.ts";

@@ -1,6 +1,6 @@
 // Sensitivity 2D, Pareto Front, Cross-TF, Cross-Symbol, Pairs Trading.
 import { useState, useCallback, useMemo } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { runSensitivity2D, paretoFront, runCrossTF, runCrossSymbol, runPairsTrading } from "../../engine/analyticsAdvanced.ts";
 import { generateBasket, SYNTH_ASSETS } from "../../engine/multiAssetSynthetic.ts";
 import { runFAO } from "../../engine/fao.ts";

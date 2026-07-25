@@ -2,7 +2,7 @@
 // Appelle POST /v1/strategy/from-prompt, revalide côté JS (validateRules), teste et
 // sauvegarde comme custom #9001+ — même parcours que Strategy Importer.
 import { useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";

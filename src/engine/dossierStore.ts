@@ -25,7 +25,7 @@ export interface DossierRecord {
   name: string;
   strategyId: number | string | null;
   symbol: string | null;
-  tf: string | null;
+  tf: number | string | null;
   dataMode: string | null;
   params: Record<string, unknown>;
   stages: Record<string, unknown>;
@@ -40,7 +40,7 @@ export interface CreateDossierInput {
   name?: string;
   strategyId?: number | string | null;
   symbol?: string | null;
-  tf?: string | null;
+  tf?: number | string | null;
   dataMode?: string | null;
   params?: Record<string, unknown>;
 }

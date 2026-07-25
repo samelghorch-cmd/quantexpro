@@ -2,7 +2,7 @@
 // strictement (échec explicite, jamais silencieux), la teste, et permet de la
 // sauvegarder comme stratégie custom réutilisable dans tout le pipeline.
 import { useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";

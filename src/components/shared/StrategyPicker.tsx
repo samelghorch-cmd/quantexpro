@@ -1,6 +1,6 @@
 // Sélecteur de stratégie réutilisable (recherche + catégories).
 import { useState, useMemo } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { CATS } from "../../engine/strategyLibrary.ts";
 import { T, S } from "./theme.ts";
 

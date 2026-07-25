@@ -1,7 +1,7 @@
 // Mes Stratégies — gestionnaire des stratégies sauvegardées (persistées IndexedDB).
 // Rejouer un backtest sur les données courantes, comparer, exporter en MQL5/JSON, supprimer.
 import { useState, useEffect, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { listStrategies, deleteStrategy, clearStrategies, logBacktest } from "../../engine/strategyStore.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { downloadJSON } from "../../engine/exportUtils.ts";

@@ -1,5 +1,5 @@
 // Contrôles globaux : bascule Synthétique/Réel, sélecteur d'actif réel, timeframe, seed.
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { ASSET_CLASSES } from "../../engine/marketData.ts";
 import { T, S } from "../shared/theme.ts";
 

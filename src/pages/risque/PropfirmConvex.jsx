@@ -1,6 +1,6 @@
 // Propfirm Convex — Monte-Carlo d'un challenge prop firm, sensibilité au risk scale.
 import { useState, useCallback } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { runPropfirmConvex, tradesToDailyPnL } from "../../engine/propfirmConvex.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";

@@ -1,5 +1,5 @@
 // Barre de progression guidée du pipeline.
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { Button } from "./ui.tsx";
 import { T } from "./theme.ts";
 

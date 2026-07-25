@@ -1,7 +1,7 @@
 // Usine à Stratégies — orchestrateur « 1 bouton » : screening → refine → portefeuille corrélé,
 // résultats PERSISTANTS (survivent au changement de page) + enchaînement vers l'étape suivante.
 import { useState, useCallback, useMemo } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { runFactory, coveredSpace, FACTORY_DEFAULT_ASSETS, FACTORY_DEFAULT_TFS } from "../../engine/strategyFactory.ts";
 import { ASSET_CLASSES } from "../../engine/marketData.ts";
 import { CATS } from "../../engine/strategyLibrary.ts";

@@ -1,6 +1,6 @@
 // Reco Finale — décision finale scorée agrégeant tout le pipeline. Verdict GO/REWORK/NO-GO.
 import { useState, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { computeRecoFinale } from "../../engine/recoFinale.ts";
 import { Panel, Button, ScoreGauge, SimBadge, ProgressBar, fmt } from "../../components/shared/ui.tsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";

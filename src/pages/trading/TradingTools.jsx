@@ -1,7 +1,7 @@
 // Modules TRADING purs (internes) : Performance, VP Footprint, Behavior Tracker, Spread Compare,
 // HMM Regime, Stratégies, Signaux, Signal Engine, Exec Quality, Risk Calc.
 import { useState, useMemo, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import {
   volumeProfileSessions,
   vpLevelsFromSession,

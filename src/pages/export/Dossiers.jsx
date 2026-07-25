@@ -3,7 +3,7 @@
 // (backtest/FAO/Validator/Reco…), la note figée (Reco Finale + lettre A-F), et les sessions de démo.
 // Le dossier « actif » reçoit automatiquement le résultat de chaque outil lancé.
 import { useState, useEffect, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { listDossiers, getDossier, deleteDossier, clearDossiers, createDossier, updateDossier, upsertDemoSession } from "../../engine/dossierStore.ts";
 import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob, getJob, deleteJob } from "../../engine/collectorClient.ts";
 import { downloadJSON, downloadPDF } from "../../engine/exportUtils.ts";

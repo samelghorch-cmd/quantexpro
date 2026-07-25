@@ -1,7 +1,7 @@
 // Alpha Forge — hub Validated Edges (P4-AF).
 // Registre des edges GO (lettres A–C) promus depuis les dossiers Reco Finale.
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { listDossiers } from "../../engine/dossierStore.ts";
 import {
   loadValidatedEdges,

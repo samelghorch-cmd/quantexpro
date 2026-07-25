@@ -1,5 +1,5 @@
-import { useState, useEffect, Component, Suspense } from "react";
-import { PipelineProvider, usePipeline } from "./state/PipelineContext.jsx";
+import { useState, useEffect, Component, Suspense, type ReactNode } from "react";
+import { PipelineProvider, usePipeline } from "./state/PipelineContext.tsx";
 import { Sidebar } from "./components/layout/Sidebar.tsx";
 import { TickerBar } from "./components/layout/TickerBar.tsx";
 import { T } from "./components/shared/theme.ts";
@@ -9,9 +9,9 @@ import { GlobalControls } from "./components/layout/GlobalControls.tsx";
 import { completeOidcCallbackFromUrl } from "./engine/ssoAuth.ts";
 
 // Garde-fou : isole les erreurs d'UN module pour que le reste de la plateforme ne plante jamais.
-class ModuleErrorBoundary extends Component {
-  constructor(p) { super(p); this.state = { error: null }; }
-  static getDerivedStateFromError(error) { return { error }; }
+class ModuleErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(p: { children: ReactNode }) { super(p); this.state = { error: null }; }
+  static getDerivedStateFromError(error: Error) { return { error }; }
   render() {
     if (this.state.error) {
       return (

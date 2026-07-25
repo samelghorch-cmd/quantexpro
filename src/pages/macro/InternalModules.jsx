@@ -1,6 +1,6 @@
 // Modules MACRO internes (techniques appliquées aux données synthétiques internes).
 import { useState, useMemo, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { runCPCV, runFeatureMining, runSymbolicGP } from "../../engine/analyticsAdvanced.ts";
 import { dataSynthPreview } from "../../engine/dataSynth.ts";
 import { varCvar } from "../../engine/quantToolbox/index.ts";

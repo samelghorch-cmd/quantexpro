@@ -1,6 +1,6 @@
 // P4-REV — historique de signaux externes → replay + règles proposées.
 import { useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import {
   parseSignalHistory,
   alignSignalsToBars,

@@ -1,5 +1,5 @@
 // Labs — hub des modules expérimentaux / connecteurs externes (P2-UI).
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { Panel, Button, Badge } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 

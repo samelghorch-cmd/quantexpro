@@ -1,6 +1,6 @@
 // Quant Toolbox — GARCH, HMM, VaR/CVaR, XGBoost heuristique, Autoencoder, Drawdown Dist, Trade Clustering.
 import { useState, useMemo } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { garchVol, hmmRegimes, varCvar, boostedStumps, pcaAnomaly, drawdownDistribution, tradeClustering } from "../../engine/quantToolbox/index.ts";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Tabs, MetricCard, MetricGrid, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
