@@ -1,7 +1,8 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — bibliothèque d'indicateurs techniques (IND).
+// Toutes les méthodes prennent des séries `number[]` (o/h/l/c/v) et des paramètres numériques,
+// et renvoient une série `number[]` (ou un objet de séries pour les indicateurs composites).
 export const IND = {
-  sma(arr, n) {
+  sma(arr: number[], n: number) {
     const out = new Array(arr.length).fill(NaN);
     if (n <= 0) return out;
     let sum = 0;
@@ -12,7 +13,7 @@ export const IND = {
     }
     return out;
   },
-  ema(arr, n) {
+  ema(arr: number[], n: number) {
     const out = new Array(arr.length).fill(NaN);
     if (n <= 0 || arr.length === 0) return out;
     const k = 2 / (n + 1);
@@ -20,7 +21,7 @@ export const IND = {
     for (let i = 1; i < arr.length; i++) out[i] = arr[i] * k + out[i - 1] * (1 - k);
     return out;
   },
-  wma(arr, n) {
+  wma(arr: number[], n: number) {
     const out = new Array(arr.length).fill(NaN);
     if (n <= 0) return out;
     for (let i = n - 1; i < arr.length; i++) {
@@ -30,25 +31,25 @@ export const IND = {
     }
     return out;
   },
-  dema(arr, n) {
+  dema(arr: number[], n: number) {
     const e1 = IND.ema(arr, n);
     const e2 = IND.ema(e1, n);
     return arr.map((_, i) => 2 * e1[i] - e2[i]);
   },
-  tema(arr, n) {
+  tema(arr: number[], n: number) {
     const e1 = IND.ema(arr, n);
     const e2 = IND.ema(e1, n);
     const e3 = IND.ema(e2, n);
     return arr.map((_, i) => 3 * (e1[i] - e2[i]) + e3[i]);
   },
-  hma(arr, n) {
+  hma(arr: number[], n: number) {
     const half = Math.max(1, Math.floor(n / 2));
     const w1 = IND.wma(arr, half);
     const w2 = IND.wma(arr, n);
     const diff = arr.map((_, i) => 2 * w1[i] - w2[i]);
     return IND.wma(diff, Math.max(1, Math.floor(Math.sqrt(n))));
   },
-  stdev(arr, n) {
+  stdev(arr: number[], n: number) {
     const out = new Array(arr.length).fill(NaN);
     for (let i = n - 1; i < arr.length; i++) {
       let mean = 0;
@@ -60,7 +61,7 @@ export const IND = {
     }
     return out;
   },
-  rsi(arr, n = 14) {
+  rsi(arr: number[], n = 14) {
     const out = new Array(arr.length).fill(NaN);
     if (arr.length < n + 1) return out;
     let gain = 0, loss = 0;
@@ -80,7 +81,7 @@ export const IND = {
     }
     return out;
   },
-  atr(highs, lows, closes, n = 14) {
+  atr(highs: number[], lows: number[], closes: number[], n = 14) {
     const tr = new Array(closes.length).fill(0);
     tr[0] = highs[0] - lows[0];
     for (let i = 1; i < closes.length; i++) {
@@ -99,7 +100,7 @@ export const IND = {
     for (let i = n; i < tr.length; i++) out[i] = (out[i - 1] * (n - 1) + tr[i]) / n;
     return out;
   },
-  adx(highs, lows, closes, n = 14) {
+  adx(highs: number[], lows: number[], closes: number[], n = 14) {
     const len = closes.length;
     const plusDM = new Array(len).fill(0);
     const minusDM = new Array(len).fill(0);
@@ -115,7 +116,7 @@ export const IND = {
         Math.abs(lows[i] - closes[i - 1])
       );
     }
-    const smooth = (arr) => {
+    const smooth = (arr: number[]) => {
       const o = new Array(len).fill(NaN);
       let s = 0;
       for (let i = 1; i <= n; i++) s += arr[i];
@@ -144,21 +145,21 @@ export const IND = {
     for (let i = 2 * n; i < len; i++) adx[i] = (adx[i - 1] * (n - 1) + dx[i]) / n;
     return { plusDI, minusDI, adx };
   },
-  bollinger(arr, n = 20, mult = 2) {
+  bollinger(arr: number[], n = 20, mult = 2) {
     const mid = IND.sma(arr, n);
     const sd = IND.stdev(arr, n);
     const up = arr.map((_, i) => mid[i] + mult * sd[i]);
     const lo = arr.map((_, i) => mid[i] - mult * sd[i]);
     return { mid, up, lo };
   },
-  keltner(highs, lows, closes, n = 20, mult = 2) {
+  keltner(highs: number[], lows: number[], closes: number[], n = 20, mult = 2) {
     const mid = IND.ema(closes, n);
     const atr = IND.atr(highs, lows, closes, n);
     const up = closes.map((_, i) => mid[i] + mult * atr[i]);
     const lo = closes.map((_, i) => mid[i] - mult * atr[i]);
     return { mid, up, lo, atr };
   },
-  donchian(highs, lows, n = 20) {
+  donchian(highs: number[], lows: number[], n = 20) {
     const up = new Array(highs.length).fill(NaN);
     const lo = new Array(highs.length).fill(NaN);
     for (let i = n - 1; i < highs.length; i++) {
@@ -172,7 +173,7 @@ export const IND = {
     const mid = up.map((h, i) => (h + lo[i]) / 2);
     return { up, lo, mid };
   },
-  superTrend(highs, lows, closes, n = 10, mult = 3) {
+  superTrend(highs: number[], lows: number[], closes: number[], n = 10, mult = 3) {
     const atr = IND.atr(highs, lows, closes, n);
     const len = closes.length;
     const hl2 = closes.map((_, i) => (highs[i] + lows[i]) / 2);
@@ -193,7 +194,7 @@ export const IND = {
     }
     return { st, dir };
   },
-  vwap(highs, lows, closes, volumes) {
+  vwap(highs: number[], lows: number[], closes: number[], volumes: number[]) {
     const out = new Array(closes.length).fill(NaN);
     let cumPV = 0, cumV = 0;
     let lastDay = -1;
@@ -208,7 +209,7 @@ export const IND = {
     }
     return out;
   },
-  macd(arr, fast = 12, slow = 26, signal = 9) {
+  macd(arr: number[], fast = 12, slow = 26, signal = 9) {
     const f = IND.ema(arr, fast);
     const s = IND.ema(arr, slow);
     const macd = arr.map((_, i) => f[i] - s[i]);
@@ -216,7 +217,7 @@ export const IND = {
     const hist = macd.map((m, i) => m - sig[i]);
     return { macd, sig, hist };
   },
-  stoch(highs, lows, closes, n = 14, dPeriod = 3) {
+  stoch(highs: number[], lows: number[], closes: number[], n = 14, dPeriod = 3) {
     const k = new Array(closes.length).fill(NaN);
     for (let i = n - 1; i < closes.length; i++) {
       let hi = -Infinity, lo = Infinity;
@@ -229,7 +230,7 @@ export const IND = {
     const d = IND.sma(k, dPeriod);
     return { k, d };
   },
-  cci(highs, lows, closes, n = 20) {
+  cci(highs: number[], lows: number[], closes: number[], n = 20) {
     const tp = closes.map((c, i) => (highs[i] + lows[i] + c) / 3);
     const sma = IND.sma(tp, n);
     const out = new Array(closes.length).fill(NaN);
@@ -241,7 +242,7 @@ export const IND = {
     }
     return out;
   },
-  wpr(highs, lows, closes, n = 14) {
+  wpr(highs: number[], lows: number[], closes: number[], n = 14) {
     const out = new Array(closes.length).fill(NaN);
     for (let i = n - 1; i < closes.length; i++) {
       let hi = -Infinity, lo = Infinity;
@@ -253,7 +254,7 @@ export const IND = {
     }
     return out;
   },
-  mfi(highs, lows, closes, volumes, n = 14) {
+  mfi(highs: number[], lows: number[], closes: number[], volumes: number[], n = 14) {
     const tp = closes.map((c, i) => (highs[i] + lows[i] + c) / 3);
     const rmf = tp.map((v, i) => v * volumes[i]);
     const out = new Array(closes.length).fill(NaN);
@@ -268,14 +269,14 @@ export const IND = {
     }
     return out;
   },
-  obv(closes, volumes) {
+  obv(closes: number[], volumes: number[]) {
     const out = new Array(closes.length).fill(0);
     for (let i = 1; i < closes.length; i++) {
       out[i] = out[i - 1] + (closes[i] > closes[i - 1] ? volumes[i] : closes[i] < closes[i - 1] ? -volumes[i] : 0);
     }
     return out;
   },
-  cmf(highs, lows, closes, volumes, n = 20) {
+  cmf(highs: number[], lows: number[], closes: number[], volumes: number[], n = 20) {
     const out = new Array(closes.length).fill(NaN);
     const mfv = closes.map((c, i) => {
       const r = highs[i] - lows[i];
@@ -288,23 +289,23 @@ export const IND = {
     }
     return out;
   },
-  roc(arr, n = 10) {
+  roc(arr: number[], n = 10) {
     const out = new Array(arr.length).fill(NaN);
     for (let i = n; i < arr.length; i++) out[i] = 100 * (arr[i] / arr[i - n] - 1);
     return out;
   },
-  momentum(arr, n = 10) {
+  momentum(arr: number[], n = 10) {
     const out = new Array(arr.length).fill(NaN);
     for (let i = n; i < arr.length; i++) out[i] = arr[i] - arr[i - n];
     return out;
   },
-  zscore(arr, n = 20) {
+  zscore(arr: number[], n = 20) {
     const mean = IND.sma(arr, n);
     const sd = IND.stdev(arr, n);
     return arr.map((v, i) => (v - mean[i]) / (sd[i] || 1e-10));
   },
   /** Kaufman Adaptive Moving Average — causal. */
-  kama(arr, n = 10, fast = 2, slow = 30) {
+  kama(arr: number[], n = 10, fast = 2, slow = 30) {
     const out = new Array(arr.length).fill(NaN);
     if (!arr?.length || n < 1) return out;
     const fastSC = 2 / (fast + 1);
@@ -336,7 +337,7 @@ export const IND = {
     return out;
   },
   /** Endpoint de régression linéaire (fenêtre n) — causal. */
-  linreg(arr, n = 20) {
+  linreg(arr: number[], n = 20) {
     const out = new Array(arr.length).fill(NaN);
     if (!(n > 1)) return out;
     for (let i = n - 1; i < arr.length; i++) {
@@ -355,7 +356,7 @@ export const IND = {
     }
     return out;
   },
-  psar(highs, lows, closes, step = 0.02, max = 0.2) {
+  psar(highs: number[], lows: number[], closes: number[], step = 0.02, max = 0.2) {
     const len = closes.length;
     const sar = new Array(len).fill(NaN);
     let bull = true;
@@ -382,8 +383,8 @@ export const IND = {
     }
     return sar;
   },
-  ichimoku(highs, lows, closes, tenkan = 9, kijun = 26, senkou = 52) {
-    const midpoint = (n) => {
+  ichimoku(highs: number[], lows: number[], closes: number[], tenkan = 9, kijun = 26, senkou = 52) {
+    const midpoint = (n: number) => {
       const out = new Array(closes.length).fill(NaN);
       for (let i = n - 1; i < closes.length; i++) {
         let hi = -Infinity, lo = Infinity;
@@ -401,7 +402,7 @@ export const IND = {
     const spanB = midpoint(senkou);
     return { tk, kj, spanA, spanB };
   },
-  stochRSI(arr, n = 14) {
+  stochRSI(arr: number[], n = 14) {
     const rsi = IND.rsi(arr, n);
     const out = new Array(arr.length).fill(NaN);
     for (let i = n * 2 - 1; i < arr.length; i++) {
@@ -414,7 +415,7 @@ export const IND = {
     return out;
   },
   // Métriques statistiques
-  skew(arr, n) {
+  skew(arr: number[], n: number) {
     const out = new Array(arr.length).fill(NaN);
     for (let i = n - 1; i < arr.length; i++) {
       let mean = 0;
@@ -426,7 +427,7 @@ export const IND = {
     }
     return out;
   },
-  kurt(arr, n) {
+  kurt(arr: number[], n: number) {
     const out = new Array(arr.length).fill(NaN);
     for (let i = n - 1; i < arr.length; i++) {
       let mean = 0;
@@ -438,7 +439,7 @@ export const IND = {
     }
     return out;
   },
-  hurst(arr, n = 100) {
+  hurst(arr: number[], n = 100) {
     const out = new Array(arr.length).fill(NaN);
     for (let idx = n - 1; idx < arr.length; idx++) {
       const maxLag = Math.min(20, Math.floor(n / 2));
@@ -465,7 +466,7 @@ export const IND = {
     return out;
   },
   // VPIN (microstructure — Easley/Lopez/O'Hara)
-  vpin(closes, volumes, bucket = 50, window = 20) {
+  vpin(closes: number[], volumes: number[], bucket = 50, window = 20) {
     const out = new Array(closes.length).fill(NaN);
     const buckets = [];
     let cumV = 0, buyV = 0, sellV = 0;
