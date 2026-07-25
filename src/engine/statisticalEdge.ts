@@ -1,17 +1,83 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Statistical Edge Module 1 — grille de 10 métriques sur indicateurs (P1-EDGE).
 // Évalue la qualité statistique d'un indicateur sur fenêtre glissante N vs rendement futur t+k.
 import { IND } from "./indicators.ts";
+import type { OHLCVBar, TradingContext } from "./context.ts";
+
+/** Catalogue indicateur → série alignée aux barres. */
+export type IndicatorCatalog = Record<string, number[] | undefined>;
+
+/** MACD composite (hist / ligne / signal) — shape réelle derrière `TradingContext.macd`. */
+type MacdBundle = { hist?: number[]; macd?: number[]; signal?: number[] };
+
+export type NumPair = [number, number];
+
+export interface HitRateResult {
+  hit: number;
+  n: number;
+}
+
+export interface BestLagResult {
+  lag: number;
+  icAtLag: number;
+}
+
+export interface ZScorePercentile {
+  zScore: number;
+  percentile: number;
+  last: number;
+}
+
+export interface EvaluateIndicatorOpts {
+  horizon?: number;
+  window?: number | null;
+}
+
+/** Ligne de la grille Statistical Edge (10 métriques + score). */
+export interface IndicatorEdgeRow {
+  name: string;
+  noise: number;
+  persist: number;
+  crossovers: number;
+  corrPrice: number;
+  corrRet: number;
+  lag: number;
+  ic: number;
+  icAtLag: number;
+  hit: number;
+  edgeNet: number;
+  n: number;
+  hitN: number;
+  zScore: number;
+  percentile: number;
+  last: number;
+  score: number;
+  horizon: number;
+}
+
+export interface StatisticalEdgeOpts {
+  horizon?: number;
+  window?: number | null;
+  indicators?: IndicatorCatalog;
+}
+
+export interface StatisticalEdgeReport {
+  rows: IndicatorEdgeRow[];
+  horizon: number;
+  window: number;
+  nIndicators: number;
+  generatedAt: number;
+}
 
 /** Catalogue d'indicateurs par défaut (séries depuis le contexte moteur). */
-export function defaultIndicatorSeries(ctx) {
+export function defaultIndicatorSeries(ctx: TradingContext | null | undefined): IndicatorCatalog {
   if (!ctx) return {};
+  const macd = ctx.macd?.["12_26_9"] as MacdBundle | undefined;
   return {
     "RSI 14": ctx.rsi?.[14],
     "RSI 2": ctx.rsi?.[2],
     "ADX 14": ctx.adx14?.adx,
     "ATR 14": ctx.atr14,
-    "MACD hist": ctx.macd?.["12_26_9"]?.hist,
+    "MACD hist": macd?.hist,
     "CCI 20": ctx.cci?.[20],
     "Z-Score 20": ctx.z?.[20],
     "Hurst 100": ctx.hurst100,
@@ -24,8 +90,8 @@ export function defaultIndicatorSeries(ctx) {
   };
 }
 
-function finitePairs(a, b) {
-  const out = [];
+function finitePairs(a: number[], b: number[]): NumPair[] {
+  const out: NumPair[] = [];
   const n = Math.min(a.length, b.length);
   for (let i = 0; i < n; i++) {
     if (Number.isFinite(a[i]) && Number.isFinite(b[i])) out.push([a[i], b[i]]);
@@ -33,8 +99,8 @@ function finitePairs(a, b) {
   return out;
 }
 
-export function pearson(x, y) {
-  const pairs = Array.isArray(x[0]) ? x : finitePairs(x, y);
+export function pearson(x: number[] | NumPair[], y?: number[]): number {
+  const pairs: NumPair[] = Array.isArray(x[0]) ? (x as NumPair[]) : finitePairs(x as number[], y ?? []);
   if (pairs.length < 10) return NaN;
   let mx = 0, my = 0;
   for (const [a, b] of pairs) { mx += a; my += b; }
@@ -48,12 +114,12 @@ export function pearson(x, y) {
   return num / (Math.sqrt(dx * dy) || 1e-12);
 }
 
-export function spearman(x, y) {
+export function spearman(x: number[], y: number[]): number {
   const pairs = finitePairs(x, y);
   if (pairs.length < 10) return NaN;
-  const rank = (vals) => {
-    const idx = vals.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]);
-    const r = Array(vals.length);
+  const rank = (vals: number[]): number[] => {
+    const idx = vals.map((v, i) => [v, i] as const).sort((a, b) => a[0] - b[0]);
+    const r = Array(vals.length) as number[];
     idx.forEach(([, i], k) => { r[i] = k; });
     return r;
   };
@@ -63,7 +129,7 @@ export function spearman(x, y) {
 }
 
 /** Autocorrélation lag-1 ; Noise = 1 − |ρ|. */
-export function noiseLevel(series) {
+export function noiseLevel(series: number[]): number {
   const x = series.filter(Number.isFinite);
   if (x.length < 20) return NaN;
   const a = x.slice(0, -1);
@@ -74,8 +140,8 @@ export function noiseLevel(series) {
 }
 
 /** Fréquence de croisements de zéro (ou seuil) pour 100 barres. */
-export function crossoverRate(series, threshold = 0) {
-  const x = [];
+export function crossoverRate(series: number[], threshold = 0): number {
+  const x: number[] = [];
   for (const v of series) if (Number.isFinite(v)) x.push(v);
   if (x.length < 5) return NaN;
   let crosses = 0;
@@ -87,7 +153,7 @@ export function crossoverRate(series, threshold = 0) {
   return (crosses / x.length) * 100;
 }
 
-function predictSign(value, name) {
+function predictSign(value: number, name: string): number {
   if (/rsi/i.test(name) && !/stoch/i.test(name)) return Math.sign(value - 50);
   if (/williams|%r/i.test(name)) return Math.sign(value + 50); // W%R typiquement -100..0
   if (/mfi/i.test(name)) return Math.sign(value - 50);
@@ -95,7 +161,7 @@ function predictSign(value, name) {
 }
 
 /** Hit rate directionnel vs signe du rendement futur. */
-export function hitRate(series, fwdRet, name) {
+export function hitRate(series: number[], fwdRet: number[], name: string): HitRateResult {
   let ok = 0, n = 0;
   const len = Math.min(series.length, fwdRet.length);
   for (let i = 0; i < len; i++) {
@@ -110,7 +176,7 @@ export function hitRate(series, fwdRet, name) {
 }
 
 /** Lag optimal = horizon k∈[1..maxLag] maximisant |IC Spearman|. */
-export function bestLag(series, closes, maxLag = 10) {
+export function bestLag(series: number[], closes: number[], maxLag = 10): BestLagResult {
   let bestK = 1;
   let bestAbs = -1;
   let bestIc = NaN;
@@ -127,9 +193,9 @@ export function bestLag(series, closes, maxLag = 10) {
   return { lag: bestK, icAtLag: bestIc };
 }
 
-export function forwardReturns(closes, horizon) {
+export function forwardReturns(closes: number[], horizon: number): number[] {
   const n = closes.length;
-  const out = new Array(n).fill(NaN);
+  const out = new Array(n).fill(NaN) as number[];
   for (let i = 0; i < n; i++) {
     if (i + horizon < n && closes[i] > 0) {
       out[i] = (closes[i + horizon] - closes[i]) / closes[i];
@@ -138,7 +204,7 @@ export function forwardReturns(closes, horizon) {
   return out;
 }
 
-export function zScoreAndPercentile(series) {
+export function zScoreAndPercentile(series: number[]): ZScorePercentile {
   const vals = series.filter(Number.isFinite);
   if (vals.length < 5) return { zScore: NaN, percentile: NaN, last: NaN };
   const last = vals[vals.length - 1];
@@ -152,13 +218,18 @@ export function zScoreAndPercentile(series) {
 
 /**
  * Évalue un indicateur (série alignée aux barres).
- * @returns {object} les 10 métriques + score composite
+ * @returns les 10 métriques + score composite
  */
-export function evaluateIndicator(name, series, bars, { horizon = 5, window = null } = {}) {
+export function evaluateIndicator(
+  name: string,
+  series: number[] | null | undefined,
+  bars: OHLCVBar[],
+  { horizon = 5, window = null }: EvaluateIndicatorOpts = {},
+): IndicatorEdgeRow {
   const closes = bars.map((b) => b.c);
   const nBars = bars.length;
   const start = window != null ? Math.max(0, nBars - window) : 0;
-  const slice = (arr) => arr.slice(start);
+  const slice = <T,>(arr: T[]): T[] => arr.slice(start);
   const s = slice(series || []);
   const c = slice(closes);
   const fwd = forwardReturns(c, horizon);
@@ -182,7 +253,7 @@ export function evaluateIndicator(name, series, bars, { horizon = 5, window = nu
   const { zScore, percentile, last } = zScoreAndPercentile(s);
 
   // Score 0–100 : favorise IC fort, edge net, faible bruit, persist ≠ 0.5
-  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
   const score =
     100 * (
       0.30 * clamp(Math.abs(ic || 0) / 0.15, 0, 1)
@@ -217,11 +288,15 @@ export function evaluateIndicator(name, series, bars, { horizon = 5, window = nu
 /**
  * Lance Statistical Edge sur le catalogue d'indicateurs.
  */
-export function runStatisticalEdge(bars, ctx, opts = {}) {
+export function runStatisticalEdge(
+  bars: OHLCVBar[],
+  ctx: TradingContext | null | undefined,
+  opts: StatisticalEdgeOpts = {},
+): StatisticalEdgeReport {
   const horizon = opts.horizon ?? 5;
   const window = opts.window ?? null;
   const catalog = opts.indicators || defaultIndicatorSeries(ctx);
-  const rows = [];
+  const rows: IndicatorEdgeRow[] = [];
   for (const [name, series] of Object.entries(catalog)) {
     if (!series || !series.length) continue;
     rows.push(evaluateIndicator(name, series, bars, { horizon, window }));
@@ -237,7 +312,7 @@ export function runStatisticalEdge(bars, ctx, opts = {}) {
 }
 
 /** CSV de la grille métriques (10 colonnes + score). */
-export function metricsToCSV(rows) {
+export function metricsToCSV(rows: IndicatorEdgeRow[] | null | undefined): string {
   const header = [
     "name", "noise", "persist", "crossovers", "corr_price", "corr_ret",
     "lag", "ic", "hit_pct", "edge_net_pct", "n", "z_score", "percentile", "score",
@@ -255,22 +330,26 @@ export function metricsToCSV(rows) {
 }
 
 /** CSV séries alignées (timestamp + indicateurs sélectionnés). */
-export function seriesToCSV(bars, catalog, names = null) {
+export function seriesToCSV(
+  bars: OHLCVBar[],
+  catalog: IndicatorCatalog | null | undefined,
+  names: string[] | null = null,
+): string {
   const keys = names || Object.keys(catalog || {});
   const header = ["t", "close", ...keys.map((k) => JSON.stringify(k))].join(",");
-  const lines = [];
+  const lines: string[] = [];
   for (let i = 0; i < bars.length; i++) {
-    const row = [bars[i].t, bars[i].c];
+    const row: (string | number)[] = [bars[i].t, bars[i].c];
     for (const k of keys) {
-      const v = catalog[k]?.[i];
-      row.push(Number.isFinite(v) ? v : "");
+      const v = catalog?.[k]?.[i];
+      row.push(Number.isFinite(v) ? (v as number) : "");
     }
     lines.push(row.join(","));
   }
   return [header, ...lines].join("\n");
 }
 
-function num(v, d = 6) {
+function num(v: number | null | undefined, d = 6): string {
   if (v == null || !Number.isFinite(Number(v))) return "";
   return Number(v).toFixed(d);
 }
