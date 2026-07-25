@@ -1,16 +1,42 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — pré-calcul de tous les indicateurs sur une série.
 import { IND } from "./indicators.ts";
 import { computeVPIN } from "./vpin.ts";
 
-export function buildContext(bars) {
+// Barre OHLCV brute consommée par buildContext.
+export interface OHLCVBar {
+  o: number; h: number; l: number; c: number; v: number; t: number;
+}
+
+// Contexte d'indicateurs pré-calculés, partagé par tout le moteur (recherche + exécution).
+// Cartes indexées par période (number) pour les séries simples, par clé composite
+// (string "n_m", "f_s_sig", …) pour les indicateurs multi-paramètres. Les valeurs composites
+// restent `unknown` ici : leur shape est fixée par indicators.ts (encore souple, à typer ensuite).
+export interface TradingContext {
+  open: number[]; high: number[]; low: number[]; close: number[]; volume: number[]; time: number[];
+  sma: Record<number, number[]>; ema: Record<number, number[]>; dema: Record<number, number[]>;
+  tema: Record<number, number[]>; hma: Record<number, number[]>; wma: Record<number, number[]>;
+  rsi: Record<number, number[]>; wpr: Record<number, number[]>; cci: Record<number, number[]>;
+  mfi: Record<number, number[]>; roc: Record<number, number[]>; mom: Record<number, number[]>;
+  z: Record<number, number[]>; kama: Record<number, number[]>; linreg: Record<number, unknown>;
+  bb: Record<string, unknown>; kelt: Record<string, unknown>; st: Record<string, unknown>;
+  macd: Record<string, unknown>; stoch: Record<string, unknown>; psar: Record<string, unknown>;
+  ich: Record<string, unknown>; don: Record<number, unknown>;
+  atr10: number[]; atr14: number[]; atr20: number[];
+  adx14: { plusDI: number[]; minusDI: number[]; adx: number[] };
+  vwap: number[]; obv: number[]; cmf20: number[]; stochRSI: number[];
+  hurst100: number[]; skew20: number[]; skew50: number[]; kurt50: number[];
+  vpin: number[]; vpinBvc: number[]; vpinCdf: number[]; tsi: number[]; trix: number[];
+}
+
+export function buildContext(bars: OHLCVBar[]): TradingContext {
   const open   = bars.map(b => b.o);
   const high   = bars.map(b => b.h);
   const low    = bars.map(b => b.l);
   const close  = bars.map(b => b.c);
   const volume = bars.map(b => b.v);
   const time   = bars.map(b => b.t);
-  const ctx = { open, high, low, close, volume, time };
+  // Assemblé incrémentalement ci-dessous ; le cast déclare la shape finale garantie au retour.
+  const ctx = { open, high, low, close, volume, time } as TradingContext;
 
   // Moyennes mobiles multiples
   const periods = [3, 5, 9, 10, 12, 20, 21, 26, 30, 34, 50, 60, 100, 200, 400];
