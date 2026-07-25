@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Stress-test historique sur l'équité du portefeuille Usine (P1-PORT).
 // Scénarios stylisés (ordres de grandeur SPX) : GFC 2008, Flash Crash 2010, COVID mars 2020.
 // Pendant la fenêtre de stress, la décorrélation du panier s'effondre (corrSpike)
@@ -7,11 +6,21 @@
 /** Seuil institutionnel : MaxDD stressé au-delà → FAIL scénario. */
 export const STRESS_MAX_DD_LIMIT = 0.4;
 
+interface StressScenario {
+  id: string;
+  label: string;
+  year: number;
+  description?: string;
+  corrSpike?: number;
+  beta?: number;
+  marketReturns: number[];
+}
+
 /**
  * Chemin géométrique déterministe : crash jusqu'à `trough` (ex. 0.45 = −55 %),
  * puis récupération jusqu'à `recoverTo` (ex. 0.65 = 65 % du pic).
  */
-export function geometricCrashRecover({ trough, crashDays, recoverDays, recoverTo }) {
+export function geometricCrashRecover({ trough, crashDays, recoverDays, recoverTo }: { trough: number; crashDays: number; recoverDays: number; recoverTo: number }) {
   const rets = [];
   const cDays = Math.max(1, crashDays | 0);
   const rDays = Math.max(1, recoverDays | 0);
@@ -27,7 +36,7 @@ export function flashCrashPath() {
   return [-0.01, -0.025, -0.09, 0.05, 0.035, 0.02, 0.015, 0.01];
 }
 
-export const STRESS_SCENARIOS = [
+export const STRESS_SCENARIOS: StressScenario[] = [
   {
     id: "gfc_2008",
     label: "Crise 2008 (GFC)",
@@ -57,7 +66,7 @@ export const STRESS_SCENARIOS = [
   },
 ];
 
-export function metricsFromCurve(curve) {
+export function metricsFromCurve(curve: number[]) {
   if (!curve || curve.length === 0) {
     return { maxDD: 0, final: 0, peak: 0, trough: 0, totalPnL: 0 };
   }
@@ -83,7 +92,7 @@ export function metricsFromCurve(curve) {
  * Applique un scénario sur une courbe d'équité.
  * Pendant la fenêtre : r* = (1−λ)·r_port + λ·β·r_mkt (λ = corrSpike).
  */
-export function applyScenario(curve, scenario, { beta } = {}) {
+export function applyScenario(curve: number[], scenario: StressScenario, { beta }: { beta?: number } = {}) {
   if (!curve || curve.length < 2 || !scenario?.marketReturns?.length) return null;
   const b = beta ?? scenario.beta ?? 1;
   const lambda = scenario.corrSpike ?? 0.85;
@@ -131,7 +140,10 @@ export function applyScenario(curve, scenario, { beta } = {}) {
  * @param {{ curve: number[], maxDD?: number }} portfolio
  * @param {{ maxDDLimit?: number, scenarios?: typeof STRESS_SCENARIOS, beta?: number }} [opts]
  */
-export function stressPortfolio(portfolio, opts = {}) {
+export function stressPortfolio(
+  portfolio: { curve: number[]; maxDD?: number },
+  opts: { maxDDLimit?: number; scenarios?: StressScenario[]; beta?: number } = {},
+) {
   if (!portfolio?.curve || portfolio.curve.length < 2) return null;
   const maxDDLimit = opts.maxDDLimit ?? STRESS_MAX_DD_LIMIT;
   const scenarios = opts.scenarios || STRESS_SCENARIOS;
@@ -139,7 +151,7 @@ export function stressPortfolio(portfolio, opts = {}) {
     const r = applyScenario(portfolio.curve, s, opts);
     if (!r) return null;
     return { ...r, pass: r.maxDD <= maxDDLimit };
-  }).filter(Boolean);
+  }).filter((x) => x !== null);
 
   if (results.length === 0) return null;
   const worst = results.reduce((a, b) => (a.maxDD >= b.maxDD ? a : b));

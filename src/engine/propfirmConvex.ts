@@ -1,11 +1,13 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Propfirm Convex — Monte-Carlo d'un challenge type prop firm (FTMO 100K).
 // Resampling bloc des PnL journaliers issus des trades, N chemins jour par jour.
 import { seededRandom } from "./random.ts";
 
+interface PropChallenge { accountSize?: number; target?: number; maxDailyLoss?: number; maxTotalLoss?: number; maxDays?: number; }
+interface PropOptions { nPaths?: number; seed?: number; riskScales?: number[]; feePerAttempt?: number; }
+
 // Agrège les trades en PnL journaliers (par jour UTC).
-export function tradesToDailyPnL(trades) {
-  const byDay = new Map();
+export function tradesToDailyPnL(trades: { exitTime: number; pnl: number }[]) {
+  const byDay = new Map<number, number>();
   for (const t of trades) {
     const day = Math.floor(t.exitTime / 86400000);
     byDay.set(day, (byDay.get(day) || 0) + t.pnl);
@@ -14,7 +16,7 @@ export function tradesToDailyPnL(trades) {
 }
 
 // challenge : { target, maxDailyLoss, maxTotalLoss, maxDays, accountSize }
-export function runPropfirmConvex(dailyPnL, challenge = {}, options = {}) {
+export function runPropfirmConvex(dailyPnL: number[], challenge: PropChallenge = {}, options: PropOptions = {}) {
   const {
     accountSize = 100000, target = 0.10, maxDailyLoss = 0.05, maxTotalLoss = 0.10, maxDays = 30,
   } = challenge;
@@ -26,7 +28,7 @@ export function runPropfirmConvex(dailyPnL, challenge = {}, options = {}) {
   const dailyLossAbs = accountSize * maxDailyLoss;
   const totalLossAbs = accountSize * maxTotalLoss;
 
-  const simulateScale = (scale, rnd) => {
+  const simulateScale = (scale: number, rnd: () => number) => {
     let pass = 0, fail = 0;
     const daysToPass = [];
     const maxDDs = [];
@@ -51,7 +53,7 @@ export function runPropfirmConvex(dailyPnL, challenge = {}, options = {}) {
     const passRate = (pass / nPaths) * 100;
     daysToPass.sort((a, b) => a - b);
     maxDDs.sort((a, b) => a - b);
-    const pct = (arr, q) => (arr.length ? arr[Math.min(arr.length - 1, Math.floor(arr.length * q))] : NaN);
+    const pct = (arr: number[], q: number) => (arr.length ? arr[Math.min(arr.length - 1, Math.floor(arr.length * q))] : NaN);
     return {
       scale, passRate,
       timeP50: pct(daysToPass, 0.5), timeP90: pct(daysToPass, 0.9),

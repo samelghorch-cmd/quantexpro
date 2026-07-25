@@ -1,17 +1,16 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Investor Tearsheet PDF — rapport institutionnel par dossier de stratégie (P1-PDF).
 import { buildTextPdf } from "./pdfLite.ts";
 
-const fmtN = (v, d = 2) => (v == null || !Number.isFinite(Number(v)) ? "—" : Number(v).toFixed(d));
-const fmtPct = (v) => (v == null || !Number.isFinite(Number(v)) ? "—" : `${Number(v).toFixed(1)}%`);
-const fmtUsd = (v) => (v == null || !Number.isFinite(Number(v)) ? "—" : `$${Number(v).toFixed(2)}`);
-const iso = (t) => (t ? new Date(t).toISOString().slice(0, 19).replace("T", " ") : "—");
+const fmtN = (v: unknown, d = 2) => (v == null || !Number.isFinite(Number(v)) ? "—" : Number(v).toFixed(d));
+const fmtPct = (v: unknown) => (v == null || !Number.isFinite(Number(v)) ? "—" : `${Number(v).toFixed(1)}%`);
+const fmtUsd = (v: unknown) => (v == null || !Number.isFinite(Number(v)) ? "—" : `$${Number(v).toFixed(2)}`);
+const iso = (t: number | null | undefined) => (t ? new Date(t).toISOString().slice(0, 19).replace("T", " ") : "—");
 
 /**
  * Modèle structuré du tearsheet (testable sans PDF).
  * @param {object} dossier
  */
-export function buildTearsheetModel(dossier) {
+export function buildTearsheetModel(dossier: any) {
   if (!dossier || typeof dossier !== "object") {
     throw new Error("dossier requis");
   }
@@ -70,7 +69,7 @@ export function buildTearsheetModel(dossier) {
     validator: validator
       ? {
           verdict: validator.verdict,
-          gates: (validator.gates || []).map((g) => ({ name: g.name, verdict: g.verdict })),
+          gates: (validator.gates || []).map((g: { name?: string; verdict?: string }) => ({ name: g.name, verdict: g.verdict })),
         }
       : null,
     reco: reco
@@ -88,7 +87,7 @@ export function buildTearsheetModel(dossier) {
 }
 
 /** Transforme le modèle en lignes texte pour le PDF. */
-export function tearsheetLines(model) {
+export function tearsheetLines(model: ReturnType<typeof buildTearsheetModel>) {
   const m = model;
   const lines = [];
   lines.push("## INVESTOR TEARSHEET");
@@ -141,7 +140,7 @@ export function tearsheetLines(model) {
   lines.push("## 6. Validation");
   if (m.validator) {
     lines.push(`Verdict : ${m.validator.verdict || "—"}`);
-    (m.validator.gates || []).forEach((g) => lines.push(`  Gate ${g.name} : ${g.verdict}`));
+    (m.validator.gates || []).forEach((g: { name?: string; verdict?: string }) => lines.push(`  Gate ${g.name} : ${g.verdict}`));
   } else {
     lines.push("(validator non rattache)");
   }
@@ -169,7 +168,7 @@ export function tearsheetLines(model) {
  * Génère les octets PDF du tearsheet pour un dossier.
  * @returns {{ bytes: Uint8Array, model: object, filename: string }}
  */
-export function generateTearsheetPdf(dossier, opts = {}) {
+export function generateTearsheetPdf(dossier: any, opts: { generatedAt?: number; filename?: string } = {}) {
   const model = buildTearsheetModel(dossier);
   if (opts.generatedAt) model.generatedAt = opts.generatedAt;
   const lines = tearsheetLines(model);
