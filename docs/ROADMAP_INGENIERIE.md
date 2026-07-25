@@ -176,6 +176,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P10 — Engine 100 % TypeScript (bulk)
 
 - [x] **P10-TS-ENGINE** tous les modules `src/engine/*.js` → `.ts` (sauf `factory.worker.js`) ✅
+- [ ] **P11-TS-WORKER** `factory.worker.js` → `.ts` + URL dans `strategyFactory.ts` (PR 2026-07-26)
   - `allowImportingTsExtensions` · imports `.ts` (Node strip-types + Vite)
   - Collector + test parité causality
   - Garde-fous : typecheck + **347** tests

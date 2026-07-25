@@ -250,7 +250,7 @@ export async function runFactory(
     const workers: Worker[] = [];
     for (let w = 0; w < nWorkers; w++) {
       if (buckets[w].length === 0) { active--; continue; }
-      const worker = new Worker(new URL("./factory.worker.js", import.meta.url), { type: "module" });
+      const worker = new Worker(new URL("./factory.worker.ts", import.meta.url), { type: "module" });
       workers.push(worker);
       worker.onmessage = (e: MessageEvent<WorkerMsg>) => {
         const msg = e.data;
