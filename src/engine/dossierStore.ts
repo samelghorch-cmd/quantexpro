@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // DOSSIER DE STRATÉGIE — enregistrement unique qui traverse tout le cycle de vie et accumule
 // TOUT, sans perte : paramètres saisis, résultat COMPLET de chaque outil (backtest équity+trades,
 // FAO, Validator, Reco…), note figée (Reco Finale + lettre A-F), et sessions de démo live.
@@ -7,18 +6,57 @@ import { idbPut, idbGet, idbAll, idbDelete, idbClear, DOSSIERS } from "./dataSto
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+export interface DossierGrade {
+  verdict: unknown;
+  score: unknown;
+  letter: string;
+  components: unknown[];
+  gradedAt: number;
+}
+
+export interface DemoSession {
+  id: string;
+  updatedAt: number;
+  [key: string]: unknown;
+}
+
+export interface DossierRecord {
+  id: string;
+  name: string;
+  strategyId: number | string | null;
+  symbol: string | null;
+  tf: string | null;
+  dataMode: string | null;
+  params: Record<string, unknown>;
+  stages: Record<string, unknown>;
+  toolsApplied: string[];
+  grade: DossierGrade | null;
+  demoSessions: DemoSession[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CreateDossierInput {
+  name?: string;
+  strategyId?: number | string | null;
+  symbol?: string | null;
+  tf?: string | null;
+  dataMode?: string | null;
+  params?: Record<string, unknown>;
+}
+
 // File d'écriture : toutes les opérations lecture-modification-écriture sont sérialisées,
 // sinon deux outils écrivant en même temps (ex. Forward Test + Reco) se perdraient mutuellement
 // leurs mises à jour (lost update).
-let writeChain = Promise.resolve();
-function serialized(fn) {
+let writeChain: Promise<unknown> = Promise.resolve();
+function serialized<T>(fn: () => Promise<T>): Promise<T> {
   const p = writeChain.then(fn, fn);
   writeChain = p.catch(() => {});
   return p;
 }
 
 // Lettre A-F dérivée du score Reco Finale (0-100) et du verdict.
-export function gradeLetter(score, verdict) {
+export function gradeLetter(score: unknown, verdict: unknown): string {
   const v = String(verdict || "").toUpperCase();
   if (v === "NO-GO" || v === "NOGO") return "F";
   const s = Number(score) || 0;
@@ -29,8 +67,10 @@ export function gradeLetter(score, verdict) {
   return "E";
 }
 
-export async function createDossier({ name, strategyId = null, symbol = null, tf = null, dataMode = null, params = {} } = {}) {
-  const rec = {
+export async function createDossier({
+  name, strategyId = null, symbol = null, tf = null, dataMode = null, params = {},
+}: CreateDossierInput = {}): Promise<DossierRecord> {
+  const rec: DossierRecord = {
     id: uid(),
     name: name || "Stratégie",
     strategyId,
@@ -47,18 +87,20 @@ export async function createDossier({ name, strategyId = null, symbol = null, tf
   return rec;
 }
 
-export async function getDossier(id) { return id ? idbGet(id, DOSSIERS) : null; }
-export async function listDossiers() {
-  const all = await idbAll(DOSSIERS);
+export async function getDossier(id: IDBValidKey | null | undefined): Promise<DossierRecord | null> {
+  return id ? (idbGet(id, DOSSIERS) as Promise<DossierRecord | null>) : null;
+}
+export async function listDossiers(): Promise<DossierRecord[]> {
+  const all = await idbAll(DOSSIERS) as DossierRecord[];
   return all.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 }
-export async function deleteDossier(id) { return idbDelete(id, DOSSIERS); }
+export async function deleteDossier(id: IDBValidKey) { return idbDelete(id, DOSSIERS); }
 export async function clearDossiers() { return idbClear(DOSSIERS); }
-export function updateDossier(id, patch) {
+export function updateDossier(id: IDBValidKey, patch: Partial<DossierRecord>) {
   return serialized(async () => {
     const d = await getDossier(id);
     if (!d) return null;
-    const rec = { ...d, ...patch, updatedAt: Date.now() };
+    const rec: DossierRecord = { ...d, ...patch, id: d.id, updatedAt: Date.now() };
     await idbPut(rec, DOSSIERS);
     return rec;
   });
@@ -66,41 +108,41 @@ export function updateDossier(id, patch) {
 
 // Rattache le résultat COMPLET d'un outil au dossier (aucune perte entre outils).
 // stageKey : "backtest" | "fao" | "postFao" | "quantOpt" | "validator" | "reco" | "geneticOptim" | …
-export function attachStage(dossierId, stageKey, toolLabel, fullResult) {
+export function attachStage(dossierId: IDBValidKey, stageKey: string, toolLabel: string, fullResult: Record<string, unknown>) {
   return serialized(async () => {
     const d = await getDossier(dossierId);
     if (!d) return null;
     const stages = { ...(d.stages || {}), [stageKey]: { ranAt: Date.now(), tool: toolLabel, ...fullResult } };
     const toolsApplied = Array.from(new Set([...(d.toolsApplied || []), toolLabel]));
-    const rec = { ...d, stages, toolsApplied, updatedAt: Date.now() };
+    const rec: DossierRecord = { ...d, stages, toolsApplied, updatedAt: Date.now() };
     await idbPut(rec, DOSSIERS);
     return rec;
   });
 }
 
 // Fige la note issue de la Reco Finale + lettre A-F.
-export function setGrade(dossierId, { verdict, score, components } = {}) {
+export function setGrade(dossierId: IDBValidKey, { verdict, score, components }: { verdict?: unknown; score?: unknown; components?: unknown[] } = {}) {
   return serialized(async () => {
     const d = await getDossier(dossierId);
     if (!d) return null;
-    const grade = { verdict, score, letter: gradeLetter(score, verdict), components: components || [], gradedAt: Date.now() };
-    const rec = { ...d, grade, updatedAt: Date.now() };
+    const grade: DossierGrade = { verdict, score, letter: gradeLetter(score, verdict), components: components || [], gradedAt: Date.now() };
+    const rec: DossierRecord = { ...d, grade, updatedAt: Date.now() };
     await idbPut(rec, DOSSIERS);
     return rec;
   });
 }
 
 // Ajoute / met à jour une session de démo live (data accumulée au fil de l'eau).
-export function upsertDemoSession(dossierId, session) {
+export function upsertDemoSession(dossierId: IDBValidKey, session: Partial<DemoSession> & Record<string, unknown>) {
   return serialized(async () => {
     const d = await getDossier(dossierId);
     if (!d) return null;
     const sessions = [...(d.demoSessions || [])];
     const idx = session.id ? sessions.findIndex((s) => s.id === session.id) : -1;
-    const rec2 = { id: session.id || uid(), updatedAt: Date.now(), ...session };
+    const rec2: DemoSession = { id: session.id || uid(), updatedAt: Date.now(), ...session };
     if (idx >= 0) sessions[idx] = { ...sessions[idx], ...rec2 };
     else sessions.push(rec2);
-    const rec = { ...d, demoSessions: sessions, updatedAt: Date.now() };
+    const rec: DossierRecord = { ...d, demoSessions: sessions, updatedAt: Date.now() };
     await idbPut(rec, DOSSIERS);
     return rec2.id;
   });
