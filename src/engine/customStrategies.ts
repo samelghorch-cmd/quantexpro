@@ -1,15 +1,16 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Stratégies CUSTOM — la boucle création → librairie.
 // Une règle créée dans Core Mode ou l'Importer est validée, persistée (localStorage),
 // puis compilée et FUSIONNÉE dans la librairie : elle devient une stratégie numérotée
 // (#9001+) utilisable partout — Backtest, Optimizer, FAO, dossiers, collector 24/7.
 // IDs ≥ 9001 : jamais de collision avec les stratégies intégrées (1..~701).
-import { compileRules, RULE_SOURCES, RULE_OPS } from "./ruleBuilder.ts";
+import { compileRules, RULE_SOURCES, RULE_OPS, type RuleCond, type RuleSet } from "./ruleBuilder.ts";
 import { buildStrategyLibrary } from "./strategyLibrary.ts";
 
 const LS_KEY = "quantexpro:customStrategies:v1";
 export const CUSTOM_ID_BASE = 9000;
 export const CUSTOM_CAT = "z";
+
+interface CustomDef { id: number; name: string; rules: RuleSet; createdAt: number; }
 
 const SOURCE_IDS = new Set(RULE_SOURCES.map((s) => s.id));
 const OP_IDS = new Set(RULE_OPS.map((o) => o.id));
@@ -18,10 +19,10 @@ const hasLS = () => typeof localStorage !== "undefined";
 // Validation STRICTE d'un jeu de règles — lève une Error explicite (jamais d'échec
 // silencieux : une config invalide qui donnerait « 0 trades » sans raison est un piège).
 // Retourne les règles normalisées (champs connus uniquement).
-export function validateRules(rules) {
+export function validateRules(rules: any): RuleSet {
   if (!rules || typeof rules !== "object") throw new Error("Champ 'rules' manquant ou invalide (objet { long, short } attendu).");
-  const sides = ["long", "short"];
-  const norm = { long: [], short: [] };
+  const sides = ["long", "short"] as const;
+  const norm: { long: RuleCond[]; short: RuleCond[] } = { long: [], short: [] };
   for (const side of sides) {
     const conds = rules[side] ?? [];
     if (!Array.isArray(conds)) throw new Error(`'rules.${side}' doit être un tableau de conditions.`);
@@ -42,17 +43,17 @@ export function validateRules(rules) {
   return norm;
 }
 
-export function loadCustomDefs() {
+export function loadCustomDefs(): CustomDef[] {
   if (!hasLS()) return [];
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]") || []; } catch { return []; }
 }
 
-function persist(defs) {
+function persist(defs: CustomDef[]) {
   if (hasLS()) localStorage.setItem(LS_KEY, JSON.stringify(defs));
 }
 
 // Valide + persiste une définition. Retourne la def complète (avec id attribué).
-export function saveCustomDef({ name, rules }) {
+export function saveCustomDef({ name, rules }: { name?: string; rules?: unknown }): CustomDef {
   const norm = validateRules(rules);
   const defs = loadCustomDefs();
   const id = defs.reduce((m, d) => Math.max(m, d.id), CUSTOM_ID_BASE) + 1;
@@ -61,13 +62,13 @@ export function saveCustomDef({ name, rules }) {
   return def;
 }
 
-export function deleteCustomDef(id) {
+export function deleteCustomDef(id: number) {
   persist(loadCustomDefs().filter((d) => d.id !== id));
 }
 
 // Def JSON → entrée de librairie (même forme que les stratégies intégrées, + custom/rules
 // pour que les consommateurs — collector, export — sachent transporter la définition).
-export function compileCustomDef(def) {
+export function compileCustomDef(def: CustomDef) {
   return { id: def.id, name: def.name, cat: CUSTOM_CAT, eval: compileRules(def.rules), custom: true, rules: def.rules };
 }
 
