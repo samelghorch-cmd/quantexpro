@@ -1,25 +1,115 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Orchestrateur de l'Usine à Stratégies (thread principal).
 // Récupère les données réelles, distribue le travail sur un pool de Web Workers,
 // agrège les variantes, construit la corrélation inter-stratégies et un portefeuille diversifié.
-import { fetchCandles, findSymbol } from "./marketData.ts";
-import { TF_MAP } from "./marketData.ts";
+import { fetchCandles, TF_MAP } from "./marketData.ts";
 import { buildStrategyLibrary } from "./strategyLibrary.ts";
 import { blockedStrategyIds, ensureSeeded } from "./antiLibrary.ts";
 import { stressPortfolio } from "./portfolioStress.ts";
+import type { OHLCVBar } from "./context.ts";
 
 // Espace de recherche par défaut (respecte « tous les actifs connectés » avec un actif fort par classe).
 export const FACTORY_DEFAULT_ASSETS = ["BTC", "SPX", "NDX", "EURUSD", "GOLD", "WTI"];
 export const FACTORY_DEFAULT_TFS = [12, 48, 288]; // 1h, 4h, 1j
 
+export interface FactoryDailyBar {
+  day: number;
+  pnl: number;
+}
+
+/** Variante raffinée renvoyée par le worker Usine. */
+export interface FactoryVariant {
+  stratId: number | string;
+  name: string;
+  cat: string;
+  asset: string;
+  tf: string;
+  classId: string;
+  key: string;
+  params: Record<string, unknown>;
+  score: number;
+  trainScore: number;
+  oosScore: number;
+  robustness: number;
+  oos: boolean;
+  nTrials: number;
+  dsr: number | null;
+  srStar: number | null;
+  metrics: Record<string, unknown>;
+  isMetrics: Record<string, unknown>;
+  daily: FactoryDailyBar[];
+}
+
+export interface FactoryPortfolio {
+  picks: FactoryVariant[];
+  curve: number[];
+  sharpe: number;
+  maxDD: number;
+  avgCorr: number;
+  totalPnL: number;
+  days: number;
+  corrMatrix: number[][];
+  corrLabels: string[];
+}
+
+export interface FactoryProgress {
+  phase: string;
+  label: string;
+  pct: number;
+  pairsDone?: number;
+  totalPairs?: number;
+}
+
+export interface FactoryOptions {
+  assets?: string[];
+  tfs?: number[];
+  topK?: number;
+}
+
+export type FactoryProgressCb = (patch: FactoryProgress) => void;
+
+interface FactoryPair {
+  key: string;
+  bars: OHLCVBar[];
+  classId: string;
+  assetLabel: string;
+  tfLabel: string;
+}
+
+interface FactoryPerPair {
+  key: string;
+  asset: string;
+  tf: string;
+  screened: number;
+  refinedCount: number;
+  nTrials: number;
+  rejectedByDsr: number;
+  rejectedByAnti: number;
+}
+
+type WorkerPairDone = {
+  type: "pair-done";
+  key: string;
+  assetLabel: string;
+  tfLabel: string;
+  screenedCount: number;
+  refined: FactoryVariant[];
+  nTrials: number;
+  rejectedByDsr?: number;
+  rejectedByAnti?: number;
+};
+
+type WorkerBatchDone = { type: "batch-done" };
+type WorkerPairError = { type: "pair-error"; key?: string; error?: string };
+type WorkerMsg = WorkerPairDone | WorkerBatchDone | WorkerPairError | { type: string };
+
 // Taille de l'espace couvert (pour l'affichage « des millions de configurations »).
-export function coveredSpace(nAssets, nTfs, nStrats = 700, paramCombos = 54) {
+export function coveredSpace(nAssets: number, nTfs: number, nStrats = 700, paramCombos = 54) {
   const stratAssetTf = nStrats * nAssets * nTfs;
   return { stratAssetTf, total: stratAssetTf * paramCombos };
 }
 
 // ---- Corrélation & portefeuille ----
-function corr(a, b) {
+function corr(a: number[], b: number[]): number {
   const n = Math.min(a.length, b.length);
   if (n < 5) return 0;
   let ma = 0, mb = 0;
@@ -31,26 +121,29 @@ function corr(a, b) {
 }
 
 // Aligne les rendements journaliers de chaque variante sur un axe de jours commun.
-function alignDaily(variants) {
-  const days = new Set();
+function alignDaily(variants: FactoryVariant[]) {
+  const days = new Set<number>();
   variants.forEach((v) => v.daily.forEach((d) => days.add(d.day)));
   const axis = [...days].sort((a, b) => a - b);
   const idx = new Map(axis.map((d, i) => [d, i]));
   const vectors = variants.map((v) => {
-    const vec = new Array(axis.length).fill(0);
-    v.daily.forEach((d) => { vec[idx.get(d.day)] = d.pnl; });
+    const vec = new Array(axis.length).fill(0) as number[];
+    v.daily.forEach((d) => { vec[idx.get(d.day)!] = d.pnl; });
     return vec;
   });
   return { axis, vectors };
 }
 
 // Sélection gloutonne d'un panier diversifié (faible corrélation, score élevé).
-export function buildPortfolio(variants, { maxN = 8, maxCorr = 0.5 } = {}) {
+export function buildPortfolio(
+  variants: FactoryVariant[],
+  { maxN = 8, maxCorr = 0.5 }: { maxN?: number; maxCorr?: number } = {},
+): FactoryPortfolio | null {
   if (variants.length === 0) return null;
   const pool = [...variants].sort((a, b) => b.score - a.score).slice(0, 40);
   const { axis, vectors } = alignDaily(pool);
   const n = pool.length;
-  const cmat = Array.from({ length: n }, () => Array(n).fill(0));
+  const cmat = Array.from({ length: n }, () => Array(n).fill(0) as number[]);
   for (let i = 0; i < n; i++) for (let j = i; j < n; j++) { const c = i === j ? 1 : corr(vectors[i], vectors[j]); cmat[i][j] = c; cmat[j][i] = c; }
 
   const selected = [0]; // meilleur score en premier
@@ -65,7 +158,7 @@ export function buildPortfolio(variants, { maxN = 8, maxCorr = 0.5 } = {}) {
 
   const picks = selected.map((i) => pool[i]);
   // portefeuille équipondéré
-  const combined = new Array(axis.length).fill(0);
+  const combined = new Array(axis.length).fill(0) as number[];
   selected.forEach((i) => vectors[i].forEach((v, k) => (combined[k] += v / selected.length)));
   // équité + métriques du portefeuille
   let eq = 100000, peak = 100000, maxDD = 0;
@@ -88,9 +181,13 @@ export function buildPortfolio(variants, { maxN = 8, maxCorr = 0.5 } = {}) {
 }
 
 // ---- Récupération des données ----
-async function fetchAllPairs(assets, tfs, onData) {
-  const pairs = [];
-  const jobs = [];
+async function fetchAllPairs(
+  assets: string[],
+  tfs: number[],
+  onData?: (done: number, total: number) => void,
+): Promise<FactoryPair[]> {
+  const pairs: FactoryPair[] = [];
+  const jobs: { a: string; tf: number }[] = [];
   for (const a of assets) for (const tf of tfs) jobs.push({ a, tf });
   // concurrence limitée pour ne pas saturer Yahoo
   let done = 0;
@@ -102,7 +199,14 @@ async function fetchAllPairs(assets, tfs, onData) {
       try {
         const { bars, symbol } = await fetchCandles(a, tf);
         if (bars && bars.length >= 120) {
-          pairs.push({ key: `${a}:${tf}`, bars, classId: symbol.classId, assetLabel: symbol.label, tfLabel: TF_MAP[tf].label });
+          const tfMeta = (TF_MAP as Record<number, { label: string }>)[tf];
+          pairs.push({
+            key: `${a}:${tf}`,
+            bars: bars as OHLCVBar[],
+            classId: symbol.classId as string,
+            assetLabel: symbol.label as string,
+            tfLabel: tfMeta.label,
+          });
         }
       } catch { /* actif indisponible sur ce TF → ignoré */ }
       done++; onData && onData(done, jobs.length);
@@ -113,8 +217,11 @@ async function fetchAllPairs(assets, tfs, onData) {
 }
 
 // ---- Point d'entrée : lance l'usine ----
-export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTORY_DEFAULT_TFS, topK = 6 } = {}, onProgress) {
-  const emit = (patch) => onProgress && onProgress(patch);
+export async function runFactory(
+  { assets = FACTORY_DEFAULT_ASSETS, tfs = FACTORY_DEFAULT_TFS, topK = 6 }: FactoryOptions = {},
+  onProgress?: FactoryProgressCb,
+) {
+  const emit = (patch: FactoryProgress) => onProgress && onProgress(patch);
 
   emit({ phase: "fetch", label: "Récupération des données réelles…", pct: 0 });
   const pairs = await fetchAllPairs(assets, tfs, (d, t) => emit({ phase: "fetch", label: `Données ${d}/${t}`, pct: (d / t) * 100 }));
@@ -122,11 +229,11 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
 
   // Pool de workers
   const nWorkers = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, pairs.length, 8));
-  const buckets = Array.from({ length: nWorkers }, () => []);
+  const buckets: FactoryPair[][] = Array.from({ length: nWorkers }, () => []);
   pairs.forEach((p, i) => buckets[i % nWorkers].push(p));
 
-  const allRefined = [];
-  const perPair = [];
+  const allRefined: FactoryVariant[] = [];
+  const perPair: FactoryPerPair[] = [];
   let pairsDone = 0;
   let rejectedByDsr = 0;
   let rejectedByAnti = 0;
@@ -138,22 +245,32 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
 
   emit({ phase: "compute", label: `Analyse en cours sur ${nWorkers} cœurs…`, pct: 0, pairsDone, totalPairs });
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve) => {
     let active = nWorkers;
-    const workers = [];
+    const workers: Worker[] = [];
     for (let w = 0; w < nWorkers; w++) {
       if (buckets[w].length === 0) { active--; continue; }
       const worker = new Worker(new URL("./factory.worker.js", import.meta.url), { type: "module" });
       workers.push(worker);
-      worker.onmessage = (e) => {
+      worker.onmessage = (e: MessageEvent<WorkerMsg>) => {
         const msg = e.data;
         if (msg.type === "pair-done") {
-          allRefined.push(...msg.refined);
-          rejectedByDsr += msg.rejectedByDsr || 0;
-          rejectedByAnti += msg.rejectedByAnti || 0;
-          perPair.push({ key: msg.key, asset: msg.assetLabel, tf: msg.tfLabel, screened: msg.screenedCount, refinedCount: msg.refined.length, nTrials: msg.nTrials, rejectedByDsr: msg.rejectedByDsr || 0, rejectedByAnti: msg.rejectedByAnti || 0 });
+          const done = msg as WorkerPairDone;
+          allRefined.push(...done.refined);
+          rejectedByDsr += done.rejectedByDsr || 0;
+          rejectedByAnti += done.rejectedByAnti || 0;
+          perPair.push({
+            key: done.key,
+            asset: done.assetLabel,
+            tf: done.tfLabel,
+            screened: done.screenedCount,
+            refinedCount: done.refined.length,
+            nTrials: done.nTrials,
+            rejectedByDsr: done.rejectedByDsr || 0,
+            rejectedByAnti: done.rejectedByAnti || 0,
+          });
           pairsDone++;
-          emit({ phase: "compute", label: `${msg.assetLabel} ${msg.tfLabel} terminé`, pct: (pairsDone / totalPairs) * 100, pairsDone, totalPairs });
+          emit({ phase: "compute", label: `${done.assetLabel} ${done.tfLabel} terminé`, pct: (pairsDone / totalPairs) * 100, pairsDone, totalPairs });
         } else if (msg.type === "batch-done") {
           worker.terminate();
           active--;
@@ -162,7 +279,7 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
           pairsDone++;
         }
       };
-      worker.onerror = (err) => { active--; if (active === 0) resolve(); };
+      worker.onerror = () => { active--; if (active === 0) resolve(); };
       worker.postMessage({ pairs: buckets[w], topK, blockedIds });
     }
     if (active === 0) resolve();
@@ -172,7 +289,7 @@ export async function runFactory({ assets = FACTORY_DEFAULT_ASSETS, tfs = FACTOR
   allRefined.sort((a, b) => b.score - a.score);
 
   // meilleure variante par actif
-  const bestByAsset = {};
+  const bestByAsset: Record<string, FactoryVariant> = {};
   for (const v of allRefined) { if (!bestByAsset[v.asset] || v.score > bestByAsset[v.asset].score) bestByAsset[v.asset] = v; }
 
   const portfolio = buildPortfolio(allRefined, { maxN: 8, maxCorr: 0.5 });
