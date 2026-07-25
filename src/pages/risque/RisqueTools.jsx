@@ -1,7 +1,7 @@
 // Kelly/EV, Robustesse, Audit, Historique — outils de risque sur le dernier backtest.
 // P4-AUDIT-UI : page Audit = checklist qualité locale + journal serveur append-only.
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { drawdownDistribution, varCvar } from "../../engine/quantToolbox/index.ts";
 import { deflatedSharpe } from "../../engine/backtestMetrics.ts";
 import {

@@ -1,7 +1,7 @@
 // Labs — Sentiment RSS légal (Module 6 / P2-SCRAPE).
 // Pas de scraping social (X / StockTwits / Telegram / TV) — ToS.
 import { useCallback, useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import {
   listSentimentFeeds,
   fetchSentimentFeed,

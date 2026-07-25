@@ -2,7 +2,7 @@
 // Fait tourner une stratégie sur le flux réel (Binance/Yahoo) et simule un compte démo qui se met
 // à jour à chaque nouvelle bougie. AUCUN ordre réel, aucun identifiant broker — 100 % simulation.
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { evalForwardTest } from "../../engine/forwardTest.ts";
 import { logBacktest } from "../../engine/strategyStore.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";

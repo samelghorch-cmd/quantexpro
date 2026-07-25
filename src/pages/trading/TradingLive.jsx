@@ -1,6 +1,6 @@
 // Modules TRADING "live" (démo synthétique) : Chart Live, Cockpit, Master Cockpit, Orchestrateur, News React, Live Optim.
 import { useState, useMemo, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { useSyntheticLiveFeed } from "../../hooks/useSyntheticLiveFeed.ts";
 import { buildContext } from "../../engine/context.ts";
 import { runFAO } from "../../engine/fao.ts";

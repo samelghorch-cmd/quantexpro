@@ -1,6 +1,6 @@
 // Monte Carlo + Walk-Forward — réutilise les moteurs v4 sur le dernier backtest.
 import { useState, useCallback } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { monteCarlo } from "../../engine/montecarlo.ts";
 import { walkForward } from "../../engine/walkforward.ts";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";

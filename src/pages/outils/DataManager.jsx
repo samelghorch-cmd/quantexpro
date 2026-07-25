@@ -8,7 +8,7 @@ import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 import { useState, useEffect, useCallback } from "react";
-import { usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePersistentState } from "../../state/PipelineContext.tsx";
 
 const TF_OPTS = [{ v: 3, l: "15m" }, { v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }];
 const fmtBytes = (b) => b > 1e6 ? `${(b / 1e6).toFixed(1)} Mo` : b > 1e3 ? `${(b / 1e3).toFixed(0)} Ko` : `${b} o`;

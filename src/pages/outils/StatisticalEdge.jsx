@@ -1,6 +1,6 @@
 // Statistical Edge — Module 1 : grille 10 métriques + oscillateurs Z/Hurst/régimes (P4-OSC).
 import { useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import {
   runStatisticalEdge,
   metricsToCSV,

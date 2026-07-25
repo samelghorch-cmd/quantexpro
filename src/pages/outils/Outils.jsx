@@ -1,7 +1,7 @@
 // OUTILS : VPIN, Analyse Quant, Logs, Statistical Edge, Data Manager.
 // Quant Toolbox / Performance : canonical sous Optimisation / Trading (aliases P2-UI).
 import { useMemo, useState } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { IND } from "../../engine/indicators.ts";
 import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.ts";
 import { annualFactor } from "../../engine/annualize.ts";

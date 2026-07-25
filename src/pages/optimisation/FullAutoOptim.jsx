@@ -1,6 +1,6 @@
 // Full Auto Optim (FAO) — tête du pipeline scientifique.
 import { useState, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { runFAO } from "../../engine/fao.ts";
 import { findBlockingEntry } from "../../engine/antiLibrary.ts";
 import { Panel, Button, Field, NumberInput, DataTable, MetricCard, MetricGrid, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";

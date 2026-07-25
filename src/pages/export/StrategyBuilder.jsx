@@ -2,7 +2,7 @@
 // LA SAUVEGARDE durablement (IndexedDB) avec ses paramètres, et affiche les stratégies
 // enregistrées + le journal des backtests de tous les outils.
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { downloadJSON } from "../../engine/exportUtils.ts";
 import { generateEA, downloadMq5, listSupportedFamilies, resolveFamily } from "../../engine/mql5Export.ts";
 import { saveStrategy, listStrategies, deleteStrategy, listBacktests } from "../../engine/strategyStore.ts";

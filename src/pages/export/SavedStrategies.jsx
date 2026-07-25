@@ -1,7 +1,7 @@
 // Mes Stratégies — gestionnaire des stratégies sauvegardées (persistées IndexedDB).
 // Rejouer un backtest sur les données courantes, comparer, exporter en MQL5/JSON, supprimer.
 import { useState, useEffect, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { listStrategies, deleteStrategy, clearStrategies, logBacktest } from "../../engine/strategyStore.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { downloadJSON } from "../../engine/exportUtils.ts";
@@ -21,7 +21,7 @@ function exportMq5(s) {
 }
 
 export function SavedStrategiesPage() {
-  const { bars, ctx, library, symbol, tf, dataMode } = usePipeline();
+  const { bars, ctx, library, symbol, tf, dataMode, setAssetKey, setTf, setDataMode, setPipe, navigate } = usePipeline();
   const [rows, setRows] = useState([]);
   const [replayed, setReplayed] = useState({}); // id → res (rejeu sur données courantes)
   const [busy, setBusy] = useState(null);
@@ -44,6 +44,15 @@ export function SavedStrategiesPage() {
   const remove = useCallback(async (id) => { await deleteStrategy(id); refresh(); }, [refresh]);
   const removeAll = useCallback(async () => { await clearStrategies(); setReplayed({}); refresh(); }, [refresh]);
 
+  // Recharge une stratégie sauvée comme stratégie ACTIVE du pipeline (actif/TF/params),
+  // puis ouvre le Backtest → elle reprend le fil « étape suivante ».
+  const resume = useCallback((s) => {
+    if (s.symbol) { setAssetKey(s.symbol); setDataMode(s.dataMode || "live"); }
+    if (s.tf) setTf(Number(s.tf));
+    setPipe({ selectedStrategyId: s.strategyId, strategyParams: s.params || {} });
+    navigate("backtest");
+  }, [setAssetKey, setDataMode, setTf, setPipe, navigate]);
+
   const cols = [
     { key: "name", label: "Stratégie", render: (r) => <span>#{r.strategyId} {r.name}</span> },
     { key: "symbol", label: "Actif", render: (r) => r.symbol || "—" },
@@ -58,7 +67,8 @@ export function SavedStrategiesPage() {
     { key: "date", label: "Enregistrée", render: (r) => new Date(r.updatedAt || r.savedAt).toLocaleString("fr-FR") },
     { key: "act", label: "Actions", render: (r) => (
       <span style={{ display: "flex", gap: 6, whiteSpace: "nowrap" }}>
-        <Button onClick={() => replay(r)} disabled={busy === r.id}>{busy === r.id ? "…" : "▶ Rejouer"}</Button>
+        <Button primary onClick={() => resume(r)}>▶ Reprendre</Button>
+        <Button onClick={() => replay(r)} disabled={busy === r.id}>{busy === r.id ? "…" : "↻ Rejouer"}</Button>
         <Button onClick={() => exportMq5(r)}>⬇ MQL5</Button>
         <Button onClick={() => downloadJSON(r, `strategy_${r.strategyId}_${r.symbol || "x"}.json`)}>JSON</Button>
         <span onClick={() => remove(r.id)} title="Supprimer" style={{ cursor: "pointer", color: T.red, fontSize: 14, alignSelf: "center" }}>✕</span>
@@ -83,7 +93,7 @@ export function SavedStrategiesPage() {
         </MetricGrid>
         <div style={{ marginTop: 12 }}>
           {rows.length === 0
-            ? <div style={{ fontSize: 12, color: T.textFaint, padding: "22px 0", textAlign: "center" }}>Aucune stratégie sauvegardée. Depuis Backtest → Strategy Builder (ou Optim Génétique), clique « 💾 Sauvegarder ».</div>
+            ? <div style={{ fontSize: 12, color: T.textFaint, padding: "22px 0", textAlign: "center" }}>Aucune stratégie sauvegardée. Va dans <b style={{ color: T.orange }}>⚡ Usine à Stratégies</b>, lance une recherche, puis clique « 💾 Enregistrer dans Mes Stratégies ».</div>
             : <DataTable columns={cols} rows={rows} maxHeight={460} />}
         </div>
       </Panel>

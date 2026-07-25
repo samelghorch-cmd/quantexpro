@@ -1,6 +1,6 @@
 // Backtest étendu — 20+ métriques, config complète, courbe équité, distribution PnL.
 import { useState, useMemo, useCallback } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { advancedMetrics } from "../../engine/backtestMetrics.ts";
 import { logBacktest } from "../../engine/strategyStore.ts";

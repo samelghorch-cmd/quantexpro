@@ -1,7 +1,7 @@
 // Composants UI partagés v5.
 import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from "react";
 import { T, S } from "./theme.ts";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 
 export function Panel({
   title,

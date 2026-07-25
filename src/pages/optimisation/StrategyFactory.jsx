@@ -1,7 +1,7 @@
 // Usine à Stratégies — orchestrateur « 1 bouton » : screening → refine → portefeuille corrélé,
 // résultats PERSISTANTS (survivent au changement de page) + enchaînement vers l'étape suivante.
 import { useState, useCallback, useMemo } from "react";
-import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
+import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { runFactory, coveredSpace, FACTORY_DEFAULT_ASSETS, FACTORY_DEFAULT_TFS } from "../../engine/strategyFactory.ts";
 import { ASSET_CLASSES } from "../../engine/marketData.ts";
 import { CATS } from "../../engine/strategyLibrary.ts";
@@ -10,6 +10,8 @@ import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, ScoreGauge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 import { STRESS_MAX_DD_LIMIT } from "../../engine/portfolioStress.ts";
+import { saveStrategy } from "../../engine/strategyStore.ts";
+import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
 
 const TF_OPTS = [{ v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }, { v: 3, l: "15m" }];
 
@@ -20,11 +22,14 @@ export function StrategyFactoryPage() {
   const [tfs, setTfs] = usePersistentState("factory:tfs", FACTORY_DEFAULT_TFS);
   const [result, setResult] = usePersistentState("factory:result", null);
   const [selectedIdx, setSelectedIdx] = usePersistentState("factory:selIdx", 0);
+  // id des variantes déjà enregistrées (clé variante → id record) → évite les doublons + coche "✓"
+  const [savedIds, setSavedIds] = usePersistentState("factory:savedIds", {});
   // état transitoire (UI uniquement)
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState(null);
   const [stressIdx, setStressIdx] = useState(0);
+  const [savedMsg, setSavedMsg] = useState(null);
 
   const space = useMemo(() => coveredSpace(assets.length, tfs.length), [assets, tfs]);
   const toggleAsset = (k) => setAssets((a) => a.includes(k) ? a.filter((x) => x !== k) : [...a, k]);
@@ -46,15 +51,53 @@ export function StrategyFactoryPage() {
     } finally { setRunning(false); }
   }, [assets, tfs, setResult, setSelectedIdx, log]);
 
-  // Envoie une variante vers l'étape suivante (charge le bon actif/TF + paramètres, puis navigue)
-  const sendTo = useCallback((variant, target) => {
+  const variantKey = (v) => `${v.key}#${v.stratId}`;
+
+  // Enregistre 1 clic une variante dans « Mes Stratégies » (IndexedDB, persistant).
+  // Réutilise l'id si déjà enregistrée → met à jour au lieu de créer un doublon.
+  const saveVariant = useCallback(async (variant) => {
+    if (!variant) return null;
+    const [aKey, tfStr] = variant.key.split(":");
+    const vk = variantKey(variant);
+    const verdict = variant.oos
+      ? (variant.robustness >= 70 ? "GO" : variant.robustness >= 40 ? "WARN" : "NO-GO")
+      : null;
+    const rec = await saveStrategy({
+      id: savedIds[vk],
+      name: variant.name,
+      strategyId: variant.stratId,
+      symbol: aKey,
+      tf: tfStr,
+      dataMode: "live",
+      params: variant.params,
+      metrics: { ...variant.metrics, score: variant.score },
+      verdict,
+      note: `Usine · score ${Math.round(variant.score)}${variant.oos ? ` · robust ${Math.round(variant.robustness)}%` : ""}${variant.dsr != null ? ` · DSR ${Math.round(variant.dsr * 100)}%` : ""}`,
+    });
+    setSavedIds((m) => ({ ...m, [vk]: rec.id }));
+    setSavedMsg(`✓ « #${variant.stratId} ${variant.name} · ${variant.asset} ${variant.tf} » enregistrée dans Mes Stratégies`);
+    log("Usine", `💾 Enregistrée : #${variant.stratId} ${variant.asset} ${variant.tf}`);
+    return rec;
+  }, [savedIds, setSavedIds, log]);
+
+  // Enregistre les N meilleures variantes du leaderboard en un clic.
+  const saveTop = useCallback(async (n = 6) => {
+    const top = (result?.leaderboard || []).slice(0, n);
+    for (const v of top) await saveVariant(v);
+    setSavedMsg(`✓ ${top.length} stratégies enregistrées dans Mes Stratégies`);
+  }, [result, saveVariant]);
+
+  // Envoie une variante vers l'étape suivante — ENREGISTRE d'abord (aucune perte), charge
+  // le bon actif/TF + paramètres comme stratégie active, puis navigue.
+  const sendTo = useCallback(async (variant, target) => {
     if (!variant) return;
+    await saveVariant(variant);
     const [aKey, tfStr] = variant.key.split(":");
     setDataMode("live"); setAssetKey(aKey); setTf(Number(tfStr));
     setPipe({ selectedStrategyId: variant.stratId, strategyParams: { ...variant.params, contract: "MES" } });
     log("Usine", `→ ${target} : #${variant.stratId} sur ${variant.asset} ${variant.tf}`);
     navigate(target);
-  }, [setDataMode, setAssetKey, setTf, setPipe, log, navigate]);
+  }, [saveVariant, setDataMode, setAssetKey, setTf, setPipe, log, navigate]);
 
   const selected = result?.leaderboard?.[selectedIdx] || result?.leaderboard?.[0] || null;
 
@@ -77,6 +120,7 @@ export function StrategyFactoryPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <NextStepBar current="factory" />
       <Panel>
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={{ fontSize: 28 }}>⚡</div>
@@ -138,7 +182,7 @@ export function StrategyFactoryPage() {
         <>
           {/* ÉTAPE SUIVANTE — enchaînement */}
           {selected && (
-            <Panel title="→ Étape suivante" style={{ border: `1px solid ${T.orange}55` }}>
+            <Panel title="→ Étape suivante" style={{ border: `1px solid ${T.orange}55` }} right={<Button onClick={() => saveTop(6)}>💾 Enregistrer le top 6</Button>}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: 220 }}>
                   <div style={{ fontSize: 11, color: T.textDim }}>Variante sélectionnée (clique une ligne du leaderboard pour changer)</div>
@@ -150,13 +194,22 @@ export function StrategyFactoryPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <Button primary onClick={() => saveVariant(selected)}>
+                    {savedIds[variantKey(selected)] ? "✓ Enregistrée" : "💾 Enregistrer dans Mes Stratégies"}
+                  </Button>
                   <Button onClick={() => sendTo(selected, "backtest")}>🔍 Backtest détaillé</Button>
                   <Button onClick={() => sendTo(selected, "validator")}>🛡️ Valider (robustesse)</Button>
-                  <Button primary onClick={() => sendTo(selected, "propfirm")}>🏆 Simuler prop firm</Button>
+                  <Button onClick={() => sendTo(selected, "propfirm")}>🏆 Simuler prop firm</Button>
                 </div>
               </div>
+              {savedMsg && (
+                <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: "8px 12px", borderRadius: 8, background: "transparent", border: `1px solid ${T.green}55` }}>
+                  <span style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>{savedMsg}</span>
+                  <Button onClick={() => navigate("savedStrategies")}>Ouvrir Mes Stratégies →</Button>
+                </div>
+              )}
               <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint }}>
-                Ces boutons chargent l'actif <b>{selected.asset}</b> en {selected.tf} avec les paramètres trouvés, puis ouvrent l'étape choisie.
+                « Enregistrer » sauve la variante dans <b>Mes Stratégies</b> (persistant, sur l'écran — aucune manip fichier). Les boutons d'étape <b>enregistrent aussi</b> puis chargent l'actif <b>{selected.asset}</b> en {selected.tf} avec les paramètres trouvés.
                 Score {fmt(selected.score, 0)} {selected.oos ? "(out-of-sample)" : ""} · robustesse {selected.oos ? `${fmt(selected.robustness, 0)}%` : "—"}. Recommandé : Valider → Prop firm avant toute décision.
               </div>
             </Panel>

@@ -1,5 +1,5 @@
 // Fil du pipeline scientifique, partagé par les pages OPTIMISATION.
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { Button } from "./ui.tsx";
 import { T } from "./theme.ts";
 
@@ -13,10 +13,7 @@ const STEPS = [
 ] as const;
 
 export function PipelineStepper({ current }: { current: string }) {
-  const { pipeline, navigate } = usePipeline() as {
-    pipeline: Record<string, unknown>;
-    navigate: (id: string) => void;
-  };
+  const { pipeline, navigate } = usePipeline();
   const idx = STEPS.findIndex((s) => s.id === current);
   const next = idx >= 0 ? STEPS[idx + 1] : null;
   const prev = idx > 0 ? STEPS[idx - 1] : null;

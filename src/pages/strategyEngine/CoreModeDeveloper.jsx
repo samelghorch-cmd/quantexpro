@@ -1,6 +1,6 @@
 // Core Mode Developer — 4 onglets : INDICATEURS, CONFLUENCE (Rule Builder), PATTERNS LIBRARY 616, JSON.
 import { useState, useMemo, useCallback } from "react";
-import { usePipeline } from "../../state/PipelineContext.jsx";
+import { usePipeline } from "../../state/PipelineContext.tsx";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { compileRules, RULE_SOURCES, RULE_OPS, describeRule } from "../../engine/ruleBuilder.ts";
 import { saveCustomDef } from "../../engine/customStrategies.ts";
