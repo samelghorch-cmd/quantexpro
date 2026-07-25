@@ -1,8 +1,10 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — combinaison pondérée de stratégies.
-export function ensembleEval(components) {
-  // components = [{ eval, weight }]
-  return (ctx, i) => {
+type EnsembleEval = (ctx: any, i: number) => { long?: boolean; short?: boolean };
+interface EnsembleComponent { eval: EnsembleEval; weight: number; }
+
+// components = [{ eval, weight }]
+export function ensembleEval(components: EnsembleComponent[]) {
+  return (ctx: any, i: number) => {
     let longScore = 0, shortScore = 0, totalW = 0;
     components.forEach(({ eval: fn, weight }) => {
       const s = fn(ctx, i);

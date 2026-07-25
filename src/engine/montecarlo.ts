@@ -1,8 +1,7 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — Monte Carlo par permutation des trades.
 import { seededRandom } from "./random.ts";
 
-export function monteCarlo(trades, initial, nSims = 500) {
+export function monteCarlo(trades: { pnl: number }[], initial: number, nSims = 500) {
   if (!trades || trades.length === 0) return { curves: [], stats: null };
   const pnls = trades.map(t => t.pnl);
   const curves = [];
@@ -30,7 +29,7 @@ export function monteCarlo(trades, initial, nSims = 500) {
   }
   finals.sort((a, b) => a - b);
   maxDDs.sort((a, b) => a - b);
-  const pct = (arr, p) => arr[Math.floor(arr.length * p)];
+  const pct = (arr: number[], p: number) => arr[Math.floor(arr.length * p)];
   return {
     curves,
     stats: {

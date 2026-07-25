@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Forward-test « démo live » — PAPER TRADING sur données RÉELLES en temps quasi-réel.
 // Exécute une stratégie sur les barres réelles jusqu'à l'instant présent et simule un compte démo.
 // AUCUN ordre réel n'est passé, aucun identifiant broker n'est requis : c'est du paper trading.
@@ -6,7 +5,13 @@
 import { runBacktestExt } from "./backtestExtended.ts";
 
 // startTs = timestamp (ms) du début de session → sépare l'historique du « live » depuis le démarrage.
-export function evalForwardTest(bars, ctx, strat, params, startTs) {
+export function evalForwardTest(
+  bars: Parameters<typeof runBacktestExt>[0],
+  ctx: Parameters<typeof runBacktestExt>[1],
+  strat: { eval: Parameters<typeof runBacktestExt>[2] },
+  params: Parameters<typeof runBacktestExt>[3],
+  startTs: number,
+) {
   const res = runBacktestExt(bars, ctx, strat.eval, params);
   const i = bars.length - 1;
   const sig = i > 50 && strat ? strat.eval(ctx, i) : { long: false, short: false };
