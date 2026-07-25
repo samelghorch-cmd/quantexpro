@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { garchVol, hmmRegimes, varCvar, boostedStumps, pcaAnomaly, drawdownDistribution, tradeClustering } from "../../engine/quantToolbox/index.ts";
-import { LineChart } from "../../components/charts/LineChart.jsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
 import { Panel, Tabs, MetricCard, MetricGrid, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 

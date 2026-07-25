@@ -9,7 +9,7 @@ import {
 } from "../../engine/statisticalEdge.ts";
 import { buildMarketOscillators, oscillatorsToCSV } from "../../engine/oscillators.ts";
 import { downloadCSV } from "../../engine/exportUtils.ts";
-import { LineChart } from "../../components/charts/LineChart.jsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, fmt, fmtPct } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 

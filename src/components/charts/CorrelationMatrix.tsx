@@ -1,7 +1,13 @@
-// Extrait de v4core.js — matrice de corrélation.
-export function CorrelationMatrix({ matrix, labels }) {
+// Matrice de corrélation.
+export function CorrelationMatrix({
+  matrix,
+  labels,
+}: {
+  matrix: number[][];
+  labels: string[];
+}) {
   const cellW = 60, cellH = 24;
-  const colorOf = v => {
+  const colorOf = (v: number) => {
     if (isNaN(v)) return "#0a0d12";
     if (v >= 0) return `rgba(0, 229, 160, ${Math.min(1, v) * 0.8 + 0.1})`;
     return `rgba(255, 77, 106, ${Math.min(1, -v) * 0.8 + 0.1})`;
@@ -11,7 +17,7 @@ export function CorrelationMatrix({ matrix, labels }) {
       <thead>
         <tr>
           <th></th>
-          {labels.map(l => <th key={l} style={{ padding: 4, color: "#7d8590", fontSize: 9, fontWeight: 400, transform: "rotate(-30deg)", height: 40, width: cellW }}>{l.substr(0, 20)}</th>)}
+          {labels.map((l) => <th key={l} style={{ padding: 4, color: "#7d8590", fontSize: 9, fontWeight: 400, transform: "rotate(-30deg)", height: 40, width: cellW }}>{l.substr(0, 20)}</th>)}
         </tr>
       </thead>
       <tbody>

@@ -1,9 +1,23 @@
-// Extrait de v4core.js — heatmap générique.
-export function Heatmap({ matrix, rowLabels, colLabels, cellW = 32, cellH = 22, title }) {
+// Heatmap générique.
+export function Heatmap({
+  matrix,
+  rowLabels,
+  colLabels,
+  cellW = 32,
+  cellH = 22,
+  title,
+}: {
+  matrix: number[][];
+  rowLabels: string[];
+  colLabels: string[];
+  cellW?: number;
+  cellH?: number;
+  title?: string;
+}) {
   if (!matrix || matrix.length === 0) return null;
-  const flat = matrix.flat().filter(v => !isNaN(v));
+  const flat = matrix.flat().filter((v) => !isNaN(v));
   const max = Math.max(...flat.map(Math.abs)) || 1;
-  const colorOf = v => {
+  const colorOf = (v: number) => {
     if (isNaN(v)) return "#0a0d12";
     const norm = v / max;
     if (norm >= 0) return `rgba(0, 229, 160, ${0.15 + Math.min(1, norm) * 0.75})`;
@@ -16,7 +30,7 @@ export function Heatmap({ matrix, rowLabels, colLabels, cellW = 32, cellH = 22, 
         <thead>
           <tr>
             <th style={{ width: 40 }}></th>
-            {colLabels.map(c => <th key={c} style={{ width: cellW, color: "#7d8590", fontWeight: 400, padding: 2 }}>{c}</th>)}
+            {colLabels.map((c) => <th key={c} style={{ width: cellW, color: "#7d8590", fontWeight: 400, padding: 2 }}>{c}</th>)}
           </tr>
         </thead>
         <tbody>

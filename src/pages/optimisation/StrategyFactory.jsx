@@ -6,7 +6,7 @@ import { runFactory, coveredSpace, FACTORY_DEFAULT_ASSETS, FACTORY_DEFAULT_TFS }
 import { ASSET_CLASSES } from "../../engine/marketData.ts";
 import { CATS } from "../../engine/strategyLibrary.ts";
 import { downloadJSON } from "../../engine/exportUtils.ts";
-import { EquityChart } from "../../components/charts/EquityChart.jsx";
+import { EquityChart } from "../../components/charts/EquityChart.tsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, ScoreGauge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 import { STRESS_MAX_DD_LIMIT } from "../../engine/portfolioStress.ts";

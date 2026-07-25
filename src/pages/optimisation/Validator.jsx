@@ -4,7 +4,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runValidator } from "../../engine/syntheticValidator.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, Field, NumberInput, SimBadge, fmt, fmtUsd } from "../../components/shared/ui.tsx";
-import { Histogram } from "../../components/charts/Histogram.jsx";
+import { Histogram } from "../../components/charts/Histogram.tsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
 import { T, verdictColor } from "../../components/shared/theme.ts";
 

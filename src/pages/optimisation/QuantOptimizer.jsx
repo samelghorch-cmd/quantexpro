@@ -5,7 +5,7 @@ import { runQuantOptimizer } from "../../engine/quantOptimizer.ts";
 import { Panel, Button, Field, NumberInput, DataTable, ScoreGauge, SimBadge, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
-import { LineChart } from "../../components/charts/LineChart.jsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function QuantOptimizerPage() {

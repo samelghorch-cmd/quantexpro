@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
 import { evalForwardTest } from "../../engine/forwardTest.ts";
 import { logBacktest } from "../../engine/strategyStore.ts";
-import { EquityChart } from "../../components/charts/EquityChart.jsx";
+import { EquityChart } from "../../components/charts/EquityChart.tsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, NumberInput, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";

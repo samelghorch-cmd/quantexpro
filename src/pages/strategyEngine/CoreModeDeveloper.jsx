@@ -5,7 +5,7 @@ import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { compileRules, RULE_SOURCES, RULE_OPS, describeRule } from "../../engine/ruleBuilder.ts";
 import { saveCustomDef } from "../../engine/customStrategies.ts";
 import { buildPatternsLibrary, filterPatterns, PATTERN_FILTERS } from "../../engine/patternsLibrary.ts";
-import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
+import { CandlestickChart } from "../../components/charts/CandlestickChart.tsx";
 import { Panel, Tabs, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 

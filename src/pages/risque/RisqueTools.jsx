@@ -24,7 +24,7 @@ import {
   ssoRedirectUri,
 } from "../../engine/ssoAuth.ts";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
-import { Histogram } from "../../components/charts/Histogram.jsx";
+import { Histogram } from "../../components/charts/Histogram.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 function NoBt() { return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest — ces outils l'analysent.</div></Panel>; }
