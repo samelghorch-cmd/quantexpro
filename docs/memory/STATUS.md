@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-25** (P11-TS-LEAVES-7 prêt / PR #17)
+> Dernière maj : **2026-07-25** (P11-TS-LEAVES-8 PR)
 
 ---
 
@@ -9,32 +9,39 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Branche git | `p11-ts-leaves-7` (base `main` @ `a785293` + merge `origin/main`) |
+| Branche git | `p11-ts-leaves-8` (base `main` @ `c6d015b`) |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **347** · typecheck ✅ |
-| Commit HEAD main | `a785293` (merge PR #16 leaves-6) — déjà dans main |
+| Commit HEAD main | `c6d015b` (merge PR #17 leaves-7) |
 | P0–P10 | ✅ clôturés |
 | Scorecard HF | **28/35** (desk institutionnel soft) |
-| Prochaine action | Merger **PR #17** (leaves-7) · suite feuilles (`syntheticValidator`, `strategyFactory`, `marketData`…) |
+| Prochaine action | Merger **PR leaves-8** · suite feuilles (`marketData`, `analyticsAdvanced`…) |
+
+---
+
+## Session 2026-07-25 — P11-TS-LEAVES-8 (lot #8)
+
+**Livré / PR** — retrait `@ts-nocheck` + typage strict de 2 feuilles :
+
+1. `src/engine/syntheticValidator.ts` — `ValidatorStrategy` / `ValidatorParams` / `ValidatorOptions` / `ValidatorResult` ; gates typées ; aligné `runBacktestExt` + `OHLCVBar` / `StrategyEvalFn`
+2. `src/engine/strategyFactory.ts` — `FactoryVariant` / `FactoryPortfolio` / `FactoryProgress` ; `buildPortfolio` + `runFactory` + messages worker typés ; import `findSymbol` inutilisé retiré (noUnusedLocals)
+
+- Engine `@ts-nocheck` : **6 → 4** (base main post leaves-7)
+- `tsc --noEmit` : **0 erreur**
+- `npm test` : **347 verts**
+- 0 collateral runtime (annotation / casts uniquement)
+- Pas d’autres feuilles ajoutées (restantes ≥196 LOC)
+
+**Base** : merge de `origin/main` (leaves-7 **mergé** via PR #17 @ `c6d015b`).
+
+**Restant `@ts-nocheck` engine** (4) :
+- `marketData`, `analyticsAdvanced`, `statisticalEdge`, `mql5Export`
 
 ---
 
 ## Session 2026-07-25 — P11-TS-LEAVES-7 (lot #7)
 
-**Livré / PR #17** — retrait `@ts-nocheck` + typage strict de 2 feuilles :
-
-1. `src/engine/fao.ts` — `FaoContext` / `FaoStrategy` / `FaoComboParams` ; `FAO_SPACE` en `as const` ; aligné `runBacktestExt` + `BacktestExtParams` ; filtre régime typé (`StrategyEvalFn`)
-2. `src/engine/geneticOptimizer.ts` — `Genome` / `EvaluatedGenome` / `CreateGAOptions` ; `scoreOf` + `createGA` alignés `runBacktestExt` / `BacktestStrategy`
-
-- Engine `@ts-nocheck` : **8 → 6** (base main post leaves-6)
-- `tsc --noEmit` : **0 erreur**
-- `npm test` : **347 verts**
-- 0 collateral runtime (annotation / casts uniquement)
-
-**Base** : merge de `origin/main` (leaves-6 **déjà mergé** via PR #16 @ `a785293`). Compteur recalibré vs lot historique 12→10 (base pre-leaves-6).
-
-**Restant `@ts-nocheck` engine** (6) :
-- `syntheticValidator`, `strategyFactory`, `marketData`, `analyticsAdvanced`, `statisticalEdge`, `mql5Export`
+**Livré / PR #17 mergé** — `p11-ts-leaves-7` @ `ef717f6` → `main` @ `c6d015b` : fao · geneticOptimizer.
 
 ---
 
@@ -55,4 +62,4 @@
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh` + `docs/OPS_GO_LIVE.md`.  
-- Dev : typer feuilles restantes → `syntheticValidator` / `strategyFactory` / `marketData` → gros modules (`analyticsAdvanced`, `statisticalEdge`, `mql5Export`) · merger leaves-7 (#17).
+- Dev : typer feuilles restantes → `marketData` / `analyticsAdvanced` → gros modules (`statisticalEdge`, `mql5Export`).
