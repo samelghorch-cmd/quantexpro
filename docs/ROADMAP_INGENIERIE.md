@@ -178,7 +178,8 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 - [x] **P10-TS-ENGINE** tous les modules `src/engine/*.js` → `.ts` (sauf `factory.worker.js`) ✅
 - [x] **P11-TS-WORKER** `factory.worker.js` → `.ts` + URL dans `strategyFactory.ts` ✅ (PR #22)
 - [x] **P12-TS-UI-1** feuilles UI : `theme` · `registry` · hooks · `quantToolbox` · `main` → `.ts(x)` ✅ (PR #23)
-- [ ] **P12-TS-UI-2** shared + layout → `.tsx` (PR)
+- [x] **P12-TS-UI-2** shared + layout → `.tsx` ✅ (PR #24)
+- [ ] **P12-TS-UI-3** charts → `.tsx` (PR)
   - `allowImportingTsExtensions` · imports `.ts` (Node strip-types + Vite)
   - Collector + test parité causality
   - Garde-fous : typecheck + **347** tests

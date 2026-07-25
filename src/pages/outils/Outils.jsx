@@ -7,7 +7,7 @@ import { computeVPIN, VPIN_PRESETS, resolveVpinClass } from "../../engine/vpin.t
 import { annualFactor } from "../../engine/annualize.ts";
 import { findSymbol } from "../../engine/marketData.ts";
 import { LiveVpinPanel } from "../../components/shared/LiveVpinPanel.tsx";
-import { LineChart } from "../../components/charts/LineChart.jsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, ScoreGauge, Select, fmt, fmtPct } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 

@@ -68,7 +68,7 @@ Monolithe navigateur (69 modules) + **même moteur JS** importé par le collecto
 12. **Audit 2026-07-25** — ✅ scorecard **28/35** · P0–P10 clos · dette `@ts-nocheck` documentée  
 13. **P11-TS-LEAVES** — ✅ lots #1–#11 · `src/engine/` **0** `@ts-nocheck` (clôture 2026-07-26)  
 14. **P11-TS-WORKER** — ✅ `factory.worker.ts` (PR #22)  
-15. **P12-TS-UI** — lot #1 ✅ (PR #23) · lot #2 PR : shared + layout → `.tsx`
+15. **P12-TS-UI** — lots #1–#2 ✅ · lot #3 PR : charts → `.tsx`
 
 Détail modules 1–7 : `docs/AUDIT_INSTITUTIONNEL.md`.
 

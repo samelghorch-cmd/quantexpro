@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.tsx";
 import { fetchCot, COT_MARKETS } from "../../engine/cotData.ts";
-import { LineChart } from "../../components/charts/LineChart.jsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
 import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 

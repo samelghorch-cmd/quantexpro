@@ -4,8 +4,8 @@ import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx
 import { runSensitivity2D, paretoFront, runCrossTF, runCrossSymbol, runPairsTrading } from "../../engine/analyticsAdvanced.ts";
 import { generateBasket, SYNTH_ASSETS } from "../../engine/multiAssetSynthetic.ts";
 import { runFAO } from "../../engine/fao.ts";
-import { Heatmap } from "../../components/charts/Heatmap.jsx";
-import { LineChart } from "../../components/charts/LineChart.jsx";
+import { Heatmap } from "../../components/charts/Heatmap.tsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
 import { Panel, Button, Field, Select, DataTable, SimBadge, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";

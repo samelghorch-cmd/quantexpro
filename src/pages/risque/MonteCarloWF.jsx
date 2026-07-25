@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.tsx";
 import { monteCarlo } from "../../engine/montecarlo.ts";
 import { walkForward } from "../../engine/walkforward.ts";
-import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
+import { MCEnvelope } from "../../components/charts/MCEnvelope.tsx";
 import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";
