@@ -7,7 +7,7 @@ import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const SAMPLE = JSON.stringify({
   name: "EMA Cross + RSI filter",

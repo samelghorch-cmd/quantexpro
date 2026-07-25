@@ -8,9 +8,37 @@ import {
   parseDepthSnapshot,
   parseBookTicker,
   mergeBookState,
+  type BookLevel,
+  type BookTicker,
+  type DepthBook,
 } from "../engine/binanceOrderBook.ts";
 
-const empty = () => ({
+export interface OrderBookState {
+  connected: boolean;
+  real: boolean;
+  bids: BookLevel[];
+  asks: BookLevel[];
+  mid: number;
+  spread: number;
+  spreadBps: number;
+  imbalance: number;
+  bestBid: number;
+  bestAsk: number;
+  bestBidSize: number;
+  bestAskSize: number;
+  bidVol: number;
+  askVol: number;
+  updatedAt: number | null;
+  error: string | null;
+  msgs: number;
+}
+
+export interface UseBinanceOrderBookOpts {
+  enabled?: boolean;
+  levels?: number;
+}
+
+const empty = (): OrderBookState => ({
   connected: false,
   real: false,
   bids: [],
@@ -30,14 +58,13 @@ const empty = () => ({
   msgs: 0,
 });
 
-/**
- * @param {string|null} ticker — ex. BTCUSDT
- * @param {{ enabled?: boolean, levels?: number }} opts
- */
-export function useBinanceOrderBook(ticker, { enabled = false, levels = 20 } = {}) {
-  const [state, setState] = useState(empty);
-  const depthRef = useRef(null);
-  const tickerRef = useRef(null);
+export function useBinanceOrderBook(
+  ticker: string | null | undefined,
+  { enabled = false, levels = 20 }: UseBinanceOrderBookOpts = {},
+): OrderBookState {
+  const [state, setState] = useState<OrderBookState>(empty);
+  const depthRef = useRef<DepthBook | null>(null);
+  const tickerRef = useRef<BookTicker | null>(null);
   const lastFlush = useRef(0);
   const msgCount = useRef(0);
 
@@ -49,9 +76,9 @@ export function useBinanceOrderBook(ticker, { enabled = false, levels = 20 } = {
       return;
     }
 
-    let ws = null;
+    let ws: WebSocket | null = null;
     let alive = true;
-    let refreshTimer = null;
+    let refreshTimer: ReturnType<typeof setInterval> | null = null;
     depthRef.current = null;
     tickerRef.current = null;
     msgCount.current = 0;
@@ -76,7 +103,8 @@ export function useBinanceOrderBook(ticker, { enabled = false, levels = 20 } = {
       try {
         ws = new WebSocket(url);
       } catch (e) {
-        setState((s) => ({ ...s, error: String(e.message || e), connected: false }));
+        const err = e instanceof Error ? e.message : String(e);
+        setState((s) => ({ ...s, error: err, connected: false }));
         return;
       }
       ws.onopen = () => alive && setState((s) => ({ ...s, connected: true, error: null }));
@@ -87,16 +115,16 @@ export function useBinanceOrderBook(ticker, { enabled = false, levels = 20 } = {
         if (enabled) setTimeout(() => alive && connect(), 3000);
       };
       ws.onmessage = (ev) => {
-        let raw;
-        try { raw = JSON.parse(ev.data); } catch { return; }
+        let raw: unknown;
+        try { raw = JSON.parse(String(ev.data)); } catch { return; }
         const wrapped = unwrapCombinedMessage(raw);
         if (!wrapped) return;
         const { data } = wrapped;
         msgCount.current++;
         if (isDepthPayload(data)) {
-          depthRef.current = parseDepthSnapshot(data, levels);
+          depthRef.current = parseDepthSnapshot(data as Parameters<typeof parseDepthSnapshot>[0], levels);
         } else if (isBookTickerPayload(data)) {
-          tickerRef.current = parseBookTicker(data);
+          tickerRef.current = parseBookTicker(data as Parameters<typeof parseBookTicker>[0]);
         }
         publish();
       };
@@ -107,7 +135,7 @@ export function useBinanceOrderBook(ticker, { enabled = false, levels = 20 } = {
 
     return () => {
       alive = false;
-      clearInterval(refreshTimer);
+      if (refreshTimer) clearInterval(refreshTimer);
       if (ws) {
         ws.onclose = null;
         try { ws.close(); } catch { /* noop */ }

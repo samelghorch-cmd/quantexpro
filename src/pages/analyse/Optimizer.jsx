@@ -5,7 +5,7 @@ import { runFAO } from "../../engine/fao.ts";
 import { downloadCSV } from "../../engine/exportUtils.ts";
 import { Panel, Button, Field, Select, NumberInput, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const CATEGORIES = ["SL", "TP", "Break-Even", "Signal", "Regime", "Direction", "Risk", "ATR", "HTF", "Session", "Order Blocks", "Reverse-Range", "Signal Decay", "Adaptive", "PropFirm Guard", "ATR Regime"];
 

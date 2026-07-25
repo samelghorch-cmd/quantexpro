@@ -6,7 +6,7 @@ import { Panel, Button, Field, NumberInput, DataTable, ScoreGauge, SimBadge, Bad
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function QuantOptimizerPage() {
   const { bars, ctx, library, symbol, pipeline, setPipe, log, attachToActive } = usePipeline();

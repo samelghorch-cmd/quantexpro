@@ -11,7 +11,7 @@ import {
   deskToCsv,
 } from "../../engine/portfolioDesk.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const inputStyle = {
   width: "100%",

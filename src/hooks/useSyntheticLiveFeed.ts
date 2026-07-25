@@ -1,7 +1,25 @@
 // Flux live SIMULÉ : rejoue les barres du marché synthétique une par une (playback).
 import { useEffect, useRef, useState } from "react";
 
-export function useSyntheticLiveFeed(bars, { speed = 700, autoStart = false } = {}) {
+export interface SyntheticBar {
+  t?: number;
+  o?: number;
+  h?: number;
+  l?: number;
+  c?: number;
+  v?: number;
+  [key: string]: unknown;
+}
+
+export interface UseSyntheticLiveFeedOpts {
+  speed?: number;
+  autoStart?: boolean;
+}
+
+export function useSyntheticLiveFeed(
+  bars: SyntheticBar[],
+  { speed = 700, autoStart = false }: UseSyntheticLiveFeedOpts = {},
+) {
   const [idx, setIdx] = useState(Math.min(100, bars.length));
   const [playing, setPlaying] = useState(autoStart);
   const speedRef = useRef(speed);

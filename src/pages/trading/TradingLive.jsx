@@ -1,12 +1,12 @@
 // Modules TRADING "live" (démo synthétique) : Chart Live, Cockpit, Master Cockpit, Orchestrateur, News React, Live Optim.
 import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { useSyntheticLiveFeed } from "../../hooks/useSyntheticLiveFeed.js";
+import { useSyntheticLiveFeed } from "../../hooks/useSyntheticLiveFeed.ts";
 import { buildContext } from "../../engine/context.ts";
 import { runFAO } from "../../engine/fao.ts";
 import { CandlestickChart } from "../../components/charts/CandlestickChart.jsx";
 import { Panel, Button, Badge, SimBadge, MetricCard, MetricGrid, DataTable, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T, sideColor } from "../../components/shared/theme.js";
+import { T, sideColor } from "../../components/shared/theme.ts";
 
 function LiveControls({ feed }) {
   return (

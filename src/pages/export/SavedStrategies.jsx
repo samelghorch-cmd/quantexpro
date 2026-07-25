@@ -7,7 +7,7 @@ import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { downloadJSON } from "../../engine/exportUtils.ts";
 import { generateEA, downloadMq5 } from "../../engine/mql5Export.ts";
 import { Panel, Button, Badge, DataTable, MetricCard, MetricGrid, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T, verdictColor } from "../../components/shared/theme.js";
+import { T, verdictColor } from "../../components/shared/theme.ts";
 
 function exportMq5(s) {
   const ea = generateEA({

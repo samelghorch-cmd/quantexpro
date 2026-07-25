@@ -1,8 +1,8 @@
 // Carnet L2 Binance live (@depth + @bookTicker) — remplace le mock quand crypto.
 import { useState } from "react";
-import { useBinanceOrderBook } from "../../hooks/useBinanceOrderBook.js";
+import { useBinanceOrderBook } from "../../hooks/useBinanceOrderBook.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, fmt, fmtPct } from "./ui.jsx";
-import { T } from "./theme.js";
+import { T } from "./theme.ts";
 
 function BookSide({ rows, side, maxSize }) {
   const color = side === "ask" ? T.red : T.green;

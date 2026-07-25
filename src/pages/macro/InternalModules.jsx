@@ -3,9 +3,9 @@ import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runCPCV, runFeatureMining, runSymbolicGP } from "../../engine/analyticsAdvanced.ts";
 import { dataSynthPreview } from "../../engine/dataSynth.ts";
-import { varCvar } from "../../engine/quantToolbox/index.js";
+import { varCvar } from "../../engine/quantToolbox/index.ts";
 import { generateBasket, basketCorrelation } from "../../engine/multiAssetSynthetic.ts";
-import { hmmRegimes } from "../../engine/quantToolbox/index.js";
+import { hmmRegimes } from "../../engine/quantToolbox/index.ts";
 import { generateOrderBook } from "../../engine/microstructure.ts";
 import { computeVPIN } from "../../engine/vpin.ts";
 import { findSymbol } from "../../engine/marketData.ts";
@@ -16,7 +16,7 @@ import { LineChart } from "../../components/charts/LineChart.jsx";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
 import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, Badge, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function CPCVPage() {
   const { bars, ctx, library, symbol, pipeline } = usePipeline();

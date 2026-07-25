@@ -1,6 +1,6 @@
 // P4-OSC / P5-TS-MORE — oscillateurs multi-courbes Z-Score / Hurst / régimes (Module 1).
 // Séries causales pour overlay chart — pas de look-ahead.
-import { hmmRegimes, HMM_REGIME_LABELS } from "./quantToolbox/index.js";
+import { hmmRegimes, HMM_REGIME_LABELS } from "./quantToolbox/index.ts";
 
 export interface OscBar {
   t?: number;

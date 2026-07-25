@@ -4,7 +4,7 @@ import {
   hmmRegimes,
   mapClustersToRegimes,
   HMM_REGIME_LABELS,
-} from "../../src/engine/quantToolbox/index.js";
+} from "../../src/engine/quantToolbox/index.ts";
 import { seededRandom } from "../../src/engine/random.ts";
 
 function synthReturns({ n, drift, vol, seed }) {

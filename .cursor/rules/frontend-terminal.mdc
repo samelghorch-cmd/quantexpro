@@ -6,8 +6,8 @@ alwaysApply: false
 
 # Frontend terminal
 
-- Thème : `theme.js` — fond `#0D0F12`, accent marque `#FF6B00`. Long/short sémantiques : viser `#00e676` / `#ff1744` sans casser l’existant.
+- Thème : `theme.ts` — fond `#0D0F12`, accent marque `#FF6B00`. Long/short sémantiques : viser `#00e676` / `#ff1744` sans casser l’existant.
 - Style inline objets JS (convention actuelle) ; pas de lib chart externe.
 - Données externes absentes → `EmptyStateExternalData` / badge SIMULÉ — jamais de faux chiffres.
 - Résultats pipeline via `PipelineContext` (ne pas recopier l’état localement si déjà dans le pipe).
-- Navigation : source de vérité = `src/registry.js`.
+- Navigation : source de vérité = `src/registry.ts`.

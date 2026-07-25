@@ -1,5 +1,5 @@
 // Line chart SVG générique (multi-séries), sans dépendance externe.
-import { T } from "../shared/theme.js";
+import { T } from "../shared/theme.ts";
 
 export function LineChart({ series, height = 180, showZero = false, yFormat }) {
   const all = series.flatMap((s) => s.data.filter((v) => v != null && !Number.isNaN(v)));

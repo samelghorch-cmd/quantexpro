@@ -8,7 +8,7 @@ import {
   parseOptionsImport,
 } from "../../engine/gex.ts";
 import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function OptionsGammaPage() {
   const [currency, setCurrency] = useState("BTC");

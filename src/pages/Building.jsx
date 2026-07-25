@@ -1,6 +1,6 @@
 // Placeholder temporaire pendant la construction (Wave en cours).
 // Sera remplacé par le module réel avant la fin de la session.
-import { T } from "../components/shared/theme.js";
+import { T } from "../components/shared/theme.ts";
 
 export function Building({ name }) {
   return (

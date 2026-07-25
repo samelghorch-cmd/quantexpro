@@ -140,7 +140,7 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 
 ## P6 — Polish produit (post-P5)
 
-- [x] **P6-THEME** Tokens long/short `#00e676` / `#ff1744` + `T.card` (`theme.js`) ✅
+- [x] **P6-THEME** Tokens long/short `#00e676` / `#ff1744` + `T.card` (`theme.ts`) ✅
 - [x] **P6-TS-MORE** `antiLibrary` + `antiLibrarySync` → TypeScript ✅
 - [x] **P6-HMM-BW** Baum-Welch Gaussian 1D (`hmm_bw.py` · `engine=baum_welch`) ✅
 
@@ -176,7 +176,8 @@ Backlog exécutable pour **Cursor + Claude Code**, aligné sur `docs/AUDIT_INSTI
 ## P10 — Engine 100 % TypeScript (bulk)
 
 - [x] **P10-TS-ENGINE** tous les modules `src/engine/*.js` → `.ts` (sauf `factory.worker.js`) ✅
-- [ ] **P11-TS-WORKER** `factory.worker.js` → `.ts` + URL dans `strategyFactory.ts` (PR 2026-07-26)
+- [x] **P11-TS-WORKER** `factory.worker.js` → `.ts` + URL dans `strategyFactory.ts` ✅ (PR #22)
+- [ ] **P12-TS-UI-1** feuilles UI : `theme` · `registry` · hooks · `quantToolbox` · `main` → `.ts(x)` (WIP)
   - `allowImportingTsExtensions` · imports `.ts` (Node strip-types + Vite)
   - Collector + test parité causality
   - Garde-fous : typecheck + **347** tests

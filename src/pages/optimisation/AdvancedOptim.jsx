@@ -8,7 +8,7 @@ import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { Panel, Button, Field, Select, DataTable, SimBadge, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function Sensitivity2DPage() {
   const { bars, ctx, library, symbol, pipeline } = usePipeline();

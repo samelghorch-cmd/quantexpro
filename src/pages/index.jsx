@@ -6,7 +6,7 @@
 import { lazy } from "react";
 import { Building } from "./Building.jsx";
 import { makeExternalPage } from "./macro/ExternalModules.jsx";
-import { ALL_MODULES, MODULE_ALIASES } from "../registry.js";
+import { ALL_MODULES, MODULE_ALIASES } from "../registry.ts";
 
 // Charge un export NOMMÉ d'un module en lazy (React.lazy attend un default).
 const L = (loader, name) => lazy(() => loader().then((m) => ({ default: m[name] })));

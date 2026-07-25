@@ -16,7 +16,7 @@ import {
 } from "../../engine/tca.ts";
 import { COST_MODELS } from "../../engine/costModel.ts";
 import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const verdictMeta = {
   BETTER_THAN_MODEL: { label: "Meilleur que le modèle", color: T.green },

@@ -2,7 +2,7 @@
 // Cliquable (navigue vers l'étape) + bouton « Étape suivante » qui enchaîne sans rien perdre.
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { Button } from "./ui.jsx";
-import { T } from "./theme.js";
+import { T } from "./theme.ts";
 
 const STEPS = [
   { key: "lastBacktest", label: "Backtest", id: "backtest" },

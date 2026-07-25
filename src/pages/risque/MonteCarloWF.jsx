@@ -6,7 +6,7 @@ import { walkForward } from "../../engine/walkforward.ts";
 import { MCEnvelope } from "../../components/charts/MCEnvelope.jsx";
 import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 function NoBt() { return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest (onglet Backtest) — ce module s'appuie dessus.</div></Panel>; }
 

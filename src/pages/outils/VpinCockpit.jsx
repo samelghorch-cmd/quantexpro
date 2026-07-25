@@ -1,9 +1,9 @@
 // Cockpit VPIN Live — toxicité du flux d'ordres en TEMPS RÉEL sur plusieurs cryptos.
 // Une toxicité qui monte simultanément sur BTC/ETH/SOL = stress de marché généralisé.
 import { useState } from "react";
-import { useBinanceVpinFeed } from "../../hooks/useBinanceVpinFeed.js";
+import { useBinanceVpinFeed } from "../../hooks/useBinanceVpinFeed.ts";
 import { Panel, Button, Badge, ScoreGauge, fmt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 const ASSETS = [
   { t: "BTCUSDT", l: "Bitcoin" },

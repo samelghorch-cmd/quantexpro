@@ -10,16 +10,16 @@ import {
   generateOrderBook,
 } from "../../engine/microstructure.ts";
 import { computeGexProfile, computeMaxPain, fetchDeribitOptions } from "../../engine/gex.ts";
-import { hmmRegimes } from "../../engine/quantToolbox/index.js";
+import { hmmRegimes } from "../../engine/quantToolbox/index.ts";
 import { CATS } from "../../engine/strategyLibrary.ts";
 import { findSymbol } from "../../engine/marketData.ts";
 import { eventsToCsv, filterEvents } from "../../engine/signalConsole.ts";
-import { useSignalConsole } from "../../hooks/useSignalConsole.js";
+import { useSignalConsole } from "../../hooks/useSignalConsole.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { LiveOrderBookPanel } from "../../components/shared/LiveOrderBookPanel.jsx";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, SimBadge, Field, NumberInput, Select, Button, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 function downloadText(text, filename) {
   const blob = new Blob([text], { type: "text/csv;charset=utf-8" });

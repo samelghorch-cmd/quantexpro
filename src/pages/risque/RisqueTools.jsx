@@ -2,7 +2,7 @@
 // P4-AUDIT-UI : page Audit = checklist qualité locale + journal serveur append-only.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { drawdownDistribution, varCvar } from "../../engine/quantToolbox/index.js";
+import { drawdownDistribution, varCvar } from "../../engine/quantToolbox/index.ts";
 import { deflatedSharpe } from "../../engine/backtestMetrics.ts";
 import {
   fetchAuditLog,
@@ -25,7 +25,7 @@ import {
 } from "../../engine/ssoAuth.ts";
 import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 function NoBt() { return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest — ces outils l'analysent.</div></Panel>; }
 

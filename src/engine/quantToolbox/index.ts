@@ -2,19 +2,28 @@
 // Chaque fonction est documentée comme heuristique / approximation, jamais présentée
 // comme un modèle industriel.
 
+export interface HmmFeature {
+  vol: number;
+  efficiency: number;
+}
+
+export interface HmmCentroid extends HmmFeature {
+  n?: number;
+}
+
 // ---------- Drawdown Distribution ----------
-export function drawdownDistribution(equityCurve) {
+export function drawdownDistribution(equityCurve: number[] | null | undefined) {
   if (!equityCurve || equityCurve.length < 2) return null;
   let peak = equityCurve[0];
-  const dds = [];
-  let inDD = false, ddStart = 0, recSum = 0, recCount = 0, curLen = 0, maxLen = 0;
-  const ulcerSq = [];
-  equityCurve.forEach((e, i) => {
+  const dds: number[] = [];
+  let inDD = false, recSum = 0, recCount = 0, curLen = 0, maxLen = 0;
+  const ulcerSq: number[] = [];
+  equityCurve.forEach((e) => {
     if (e > peak) { peak = e; if (inDD) { recSum += curLen; recCount++; inDD = false; curLen = 0; } }
     const dd = (peak - e) / peak;
     dds.push(dd);
     ulcerSq.push(dd * dd);
-    if (dd > 1e-9) { if (!inDD) { inDD = true; ddStart = i; } curLen++; if (curLen > maxLen) maxLen = curLen; }
+    if (dd > 1e-9) { if (!inDD) { inDD = true; } curLen++; if (curLen > maxLen) maxLen = curLen; }
   });
   const maxDD = Math.max(...dds);
   const ulcer = Math.sqrt(ulcerSq.reduce((a, b) => a + b, 0) / ulcerSq.length) * 100;
@@ -28,7 +37,7 @@ export function drawdownDistribution(equityCurve) {
 }
 
 // ---------- Trade Clustering (autocorrélation de la séquence gains/pertes) ----------
-export function tradeClustering(pnls) {
+export function tradeClustering(pnls: number[]) {
   if (pnls.length < 5) return null;
   const bin = pnls.map((p) => (p > 0 ? 1 : -1));
   const mean = bin.reduce((a, b) => a + b, 0) / bin.length;
@@ -48,7 +57,7 @@ export function tradeClustering(pnls) {
 }
 
 // ---------- VaR / CVaR multi-méthodes ----------
-export function varCvar(pnls, alpha = 0.05) {
+export function varCvar(pnls: number[], alpha = 0.05) {
   if (pnls.length < 3) return null;
   const sorted = [...pnls].sort((a, b) => a - b);
   const k = Math.max(0, Math.floor(sorted.length * alpha));
@@ -70,7 +79,7 @@ export function varCvar(pnls, alpha = 0.05) {
 }
 
 // ---------- GARCH(1,1) approximé (vol conditionnelle) ----------
-export function garchVol(returns) {
+export function garchVol(returns: number[]) {
   if (returns.length < 20) return null;
   const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
   const varUnc = returns.reduce((a, b) => a + (b - mean) ** 2, 0) / returns.length;
@@ -96,7 +105,7 @@ export const HMM_REGIME_IDS = ["trend", "range", "vol", "choppy"];
  * Features causales par barre (fenêtre ``win`` close).
  * @returns {{ vol: number, efficiency: number }[]}
  */
-export function hmmFeatures(returns, win = 20) {
+export function hmmFeatures(returns: number[], win = 20): HmmFeature[] {
   const out = [];
   for (let i = 0; i < returns.length; i++) {
     if (i + 1 < win) {
@@ -121,15 +130,15 @@ export function hmmFeatures(returns, win = 20) {
 }
 
 /** Assigne les ids de clusters → Trend/Range/Vol/Choppy selon centroïdes. */
-export function mapClustersToRegimes(centroids) {
+export function mapClustersToRegimes(centroids: HmmFeature[]): Record<number, number> {
   // centroids[k] = { vol, efficiency }
   const idx = centroids.map((_, i) => i);
   const byVol = [...idx].sort((a, b) => centroids[a].vol - centroids[b].vol);
   const byEff = [...idx].sort((a, b) => centroids[b].efficiency - centroids[a].efficiency);
   const used = new Set();
-  const remap = {}; // cluster → regime index 0..3
+  const remap: Record<number, number> = {}; // cluster → regime index 0..3
 
-  const take = (list, regimeIdx) => {
+  const take = (list: number[], regimeIdx: number) => {
     for (const c of list) {
       if (!used.has(c)) {
         used.add(c);
@@ -150,12 +159,12 @@ export function mapClustersToRegimes(centroids) {
  * @param {number} [nStates=4]
  * @param {number} [iters=15]
  */
-export function hmmRegimes(returns, nStates = 4, iters = 15) {
+export function hmmRegimes(returns: number[] | null | undefined, nStates = 4, iters = 15) {
   if (!returns || returns.length < 40) return null;
   const nK = Math.min(Math.max(nStates, 2), 4);
   const win = 20;
   const feats = hmmFeatures(returns, win);
-  const validIdx = [];
+  const validIdx: number[] = [];
   for (let i = 0; i < feats.length; i++) {
     if (Number.isFinite(feats[i].vol) && Number.isFinite(feats[i].efficiency)) validIdx.push(i);
   }
@@ -165,10 +174,10 @@ export function hmmRegimes(returns, nStates = 4, iters = 15) {
   const effs = validIdx.map((i) => feats[i].efficiency);
   const volSorted = [...vols].sort((a, b) => a - b);
   const effSorted = [...effs].sort((a, b) => a - b);
-  const q = (arr, p) => arr[Math.min(arr.length - 1, Math.floor(arr.length * p))];
+  const q = (arr: number[], p: number) => arr[Math.min(arr.length - 1, Math.floor(arr.length * p))];
 
   // Init centroïdes sur grille vol × efficacité
-  let centroids = [];
+  let centroids: HmmFeature[] = [];
   if (nK === 4) {
     centroids = [
       { vol: q(volSorted, 0.4), efficiency: q(effSorted, 0.8) }, // trend-ish
@@ -183,7 +192,7 @@ export function hmmRegimes(returns, nStates = 4, iters = 15) {
     }
   }
 
-  const dist2 = (a, b) => {
+  const dist2 = (a: HmmFeature, b: HmmFeature) => {
     const dv = (a.vol - b.vol) / (q(volSorted, 0.9) + 1e-12);
     const de = a.efficiency - b.efficiency;
     return dv * dv + de * de;
@@ -241,7 +250,7 @@ export function hmmRegimes(returns, nStates = 4, iters = 15) {
       ? HMM_REGIME_LABELS.slice()
       : Array.from({ length: nK }, (_, i) => `S${i}`);
   const orderedCentroids = labels.map((_, regimeIdx) => {
-    const cluster = Object.keys(remap).find((c) => remap[c] === regimeIdx);
+    const cluster = Object.keys(remap).find((c) => remap[Number(c)] === regimeIdx);
     return cluster != null ? centroids[Number(cluster)] : { vol: 0, efficiency: 0 };
   });
 
@@ -264,17 +273,17 @@ export function hmmRegimes(returns, nStates = 4, iters = 15) {
 
 // ---------- "XGBoost" heuristique : ensemble de stumps boostés (badge heuristique JS) ----------
 // Prédit le signe du rendement futur à partir de features simples. Retourne l'accuracy in-sample.
-export function boostedStumps(features, labels, nRounds = 30, lr = 0.3) {
+export function boostedStumps(features: number[][], labels: number[], nRounds = 30, lr = 0.3) {
   if (features.length < 20) return null;
   const n = features.length, d = features[0].length;
   let pred = Array(n).fill(0);
   const stumps = [];
-  const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+  const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
   for (let r = 0; r < nRounds; r++) {
     // gradient résiduel (log-loss)
     const grad = pred.map((p, i) => sigmoid(p) - (labels[i] > 0 ? 1 : 0));
     // meilleur stump : feature + seuil qui réduit le plus le gradient
-    let best = null;
+    let best: { f: number; thr: number; lv: number; rv: number; gain: number } | null = null;
     for (let f = 0; f < d; f++) {
       const vals = features.map((row) => row[f]).sort((a, b) => a - b);
       const thr = vals[Math.floor(vals.length / 2)];
@@ -298,7 +307,7 @@ export function boostedStumps(features, labels, nRounds = 30, lr = 0.3) {
 }
 
 // ---------- "Autoencoder" anomalies : PCA (power iteration) + erreur de reconstruction ----------
-export function pcaAnomaly(data, k = 2) {
+export function pcaAnomaly(data: number[][], k = 2) {
   if (data.length < 5) return null;
   const n = data.length, d = data[0].length;
   const mean = Array(d).fill(0);
@@ -308,15 +317,15 @@ export function pcaAnomaly(data, k = 2) {
   const cov = Array.from({ length: d }, () => Array(d).fill(0));
   centered.forEach((row) => { for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] += (row[a] * row[b]) / n; });
   // power iteration pour k composantes principales
-  const comps = [];
+  const comps: number[][] = [];
   const covWork = cov.map((r) => r.slice());
   for (let c = 0; c < k; c++) {
     let v = Array(d).fill(0).map(() => Math.random());
     for (let it = 0; it < 50; it++) {
       const nv = Array(d).fill(0);
       for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) nv[a] += covWork[a][b] * v[b];
-      const norm = Math.sqrt(nv.reduce((s, x) => s + x * x, 0)) || 1e-9;
-      v = nv.map((x) => x / norm);
+      const norm = Math.sqrt(nv.reduce((s: number, x: number) => s + x * x, 0)) || 1e-9;
+      v = nv.map((x: number) => x / norm);
     }
     comps.push(v);
     // deflation
@@ -328,7 +337,7 @@ export function pcaAnomaly(data, k = 2) {
   const errors = centered.map((row) => {
     const proj = comps.map((c) => c.reduce((s, cv, j) => s + cv * row[j], 0));
     const recon = Array(d).fill(0);
-    comps.forEach((c, ci) => c.forEach((cv, j) => (recon[j] += proj[ci] * cv)));
+    comps.forEach((c, ci) => c.forEach((cv, j) => { recon[j] += proj[ci] * cv; }));
     return Math.sqrt(row.reduce((s, v, j) => s + (v - recon[j]) ** 2, 0));
   });
   const meanErr = errors.reduce((a, b) => a + b, 0) / errors.length;

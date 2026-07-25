@@ -8,7 +8,7 @@ import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
 import { apiFetch, getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.ts";
 import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function PromptModePage() {
   const { bars, ctx, symbol, refreshLibrary, setPipe, navigate } = usePipeline();

@@ -4,7 +4,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runPostFAO } from "../../engine/postFaoSynth.ts";
 import { Panel, Button, DataTable, SimBadge, Badge, ScoreGauge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
-import { T } from "../../components/shared/theme.js";
+import { T } from "../../components/shared/theme.ts";
 
 export function PostFaoSynthPage() {
   const { bars, ctx, pipeline, setPipe, log, attachToActive } = usePipeline();

@@ -4,7 +4,7 @@ import { analyzeTrades } from "../../engine/analytics.ts";
 import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { Panel, MetricCard, MetricGrid, fmt, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
-import { T, sideColor } from "../../components/shared/theme.js";
+import { T, sideColor } from "../../components/shared/theme.ts";
 
 function NoBacktest() {
   return <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Lance d'abord un backtest (onglet Backtest) — ce module analyse ses trades.</div></Panel>;

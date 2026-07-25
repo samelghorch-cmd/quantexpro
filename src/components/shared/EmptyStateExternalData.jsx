@@ -2,7 +2,7 @@
 // AUCUN chiffre inventé n'est affiché comme réel : tant qu'aucune clé n'est branchée,
 // on montre un état vide + un formulaire de connexion (stocké en localStorage, zéro requête réseau).
 import { useState } from "react";
-import { T, S } from "./theme.js";
+import { T, S } from "./theme.ts";
 import { Badge } from "./ui.jsx";
 
 export function EmptyStateExternalData({ moduleKey, title, description, providers = [], fields = ["Clé API"] }) {
