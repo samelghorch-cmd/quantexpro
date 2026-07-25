@@ -95,8 +95,9 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
   const [seed, setSeed] = useState(42);
   const [tf, setTf] = useState(1);
 
-  // Mode données : synthétique vs réel
-  const [dataMode, setDataMode] = useState("synthetic");
+  // Mode données : RÉEL par défaut (vraie donnée Binance/Yahoo, sans clé API).
+  // Le mode "synthetic" reste dispo comme bac à sable rapide (données générées, hors-ligne).
+  const [dataMode, setDataMode] = useState("live");
   const [assetKey, setAssetKey] = useState("BTC");
   const [liveBars, setLiveBars] = useState<OHLCVBar[] | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
