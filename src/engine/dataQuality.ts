@@ -1,9 +1,10 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Couche qualité des données : nettoie les bougies brutes des fournisseurs avant tout backtest.
 // Tri chronologique, déduplication, suppression des OHLC invalides, détection de gaps, score de santé.
 // Des données propres = des backtests fiables = des stratégies qui tiennent.
 
-function isValidBar(b) {
+interface QBar { o: number; h: number; l: number; c: number; t: number; }
+
+function isValidBar(b: QBar | null | undefined) {
   if (!b) return false;
   const { o, h, l, c } = b;
   if (![o, h, l, c].every((v) => Number.isFinite(v) && v > 0)) return false;
@@ -13,7 +14,7 @@ function isValidBar(b) {
 }
 
 // Intervalle médian entre bougies (pour repérer les trous).
-function medianStep(bars) {
+function medianStep(bars: QBar[]) {
   if (bars.length < 3) return 0;
   const steps = [];
   for (let i = 1; i < bars.length; i++) steps.push(bars[i].t - bars[i - 1].t);
@@ -21,7 +22,7 @@ function medianStep(bars) {
   return steps[Math.floor(steps.length / 2)] || 0;
 }
 
-export function cleanBars(rawBars, { assetClass } = {}) {
+export function cleanBars(rawBars: QBar[], { assetClass }: { assetClass?: string } = {}) {
   const initial = rawBars ? rawBars.length : 0;
   if (!rawBars || initial === 0) return { bars: [], report: { initial: 0, kept: 0, removed: 0, dupes: 0, gaps: 0, health: 0 } };
 
@@ -29,7 +30,7 @@ export function cleanBars(rawBars, { assetClass } = {}) {
   let bars = [...rawBars].sort((a, b) => a.t - b.t);
 
   // 2) déduplication par timestamp (garde la dernière version)
-  const map = new Map();
+  const map = new Map<number, QBar>();
   bars.forEach((b) => map.set(b.t, b));
   const dupes = bars.length - map.size;
   bars = [...map.values()];
@@ -66,7 +67,7 @@ export function cleanBars(rawBars, { assetClass } = {}) {
 }
 
 // Applique l'ajustement splits/dividendes (Yahoo) : facteur = adjClose / close, appliqué à O/H/L/C.
-export function applyAdjustment(bars, adjClose) {
+export function applyAdjustment(bars: QBar[], adjClose: number[]) {
   if (!adjClose || adjClose.length !== bars.length) return bars;
   return bars.map((b, i) => {
     const adj = adjClose[i];
