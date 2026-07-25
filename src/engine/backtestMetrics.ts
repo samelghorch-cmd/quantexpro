@@ -1,9 +1,29 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Métriques avancées PROTOS calculées à partir des trades + série de prix.
 // MinTRL (Bailey & López de Prado), Beta vs Asset, Quality LZ, Kyle's lambda, Adverse Selection.
 
+// Barre minimale lue par les métriques marché : close requis, volume et timestamp optionnels.
+export interface MetricBar {
+  t?: number | null;
+  c: number;
+  v?: number;
+}
+
+// Trade minimal consommé ici : seuls pnl / entry / side / entryTime sont lus.
+export interface MetricTrade {
+  pnl: number;
+  entry: number;
+  side: number;
+  entryTime: number;
+}
+
+// Résultat de backtest en entrée d'advancedMetrics (sous-ensemble utilisé).
+export interface AdvancedMetricsInput {
+  trades: MetricTrade[];
+  equityCurve: number[];
+}
+
 // Moments d'une série
-function moments(x) {
+function moments(x: number[]) {
   const n = x.length || 1;
   const mean = x.reduce((a, b) => a + b, 0) / n;
   let m2 = 0, m3 = 0, m4 = 0;
@@ -14,13 +34,13 @@ function moments(x) {
 }
 
 // Sharpe non-annualisé des rendements par trade
-function tradeSharpe(pnls) {
+function tradeSharpe(pnls: number[]) {
   const { mean, sd } = moments(pnls);
   return sd ? mean / sd : 0;
 }
 
 // Probabilistic Sharpe Ratio contre un benchmark SR* = 0
-export function probabilisticSharpe(pnls, srStar = 0) {
+export function probabilisticSharpe(pnls: number[], srStar = 0) {
   if (pnls.length < 3) return 0;
   const sr = tradeSharpe(pnls);
   const { skew, kurt } = moments(pnls);
@@ -32,7 +52,7 @@ export function probabilisticSharpe(pnls, srStar = 0) {
 
 // Minimum Track Record Length (Bailey & López de Prado 2012)
 // Nombre de trades nécessaires pour que le SR soit statistiquement > srStar au seuil de confiance.
-export function minTRL(pnls, srStar = 0, conf = 0.95) {
+export function minTRL(pnls: number[], srStar = 0, conf = 0.95) {
   if (pnls.length < 3) return { minTrl: NaN, sr: 0 };
   const sr = tradeSharpe(pnls);
   const { skew, kurt } = moments(pnls);
@@ -44,7 +64,7 @@ export function minTRL(pnls, srStar = 0, conf = 0.95) {
 
 // Espérance du Sharpe MAXIMUM sous H0 (aucun skill) sur nTrials essais indépendants.
 // López de Prado (2014), "The Deflated Sharpe Ratio". sigmaSR = dispersion des SR sous H0.
-export function expectedMaxSharpe(nTrials, sigmaSR) {
+export function expectedMaxSharpe(nTrials: number, sigmaSR: number) {
   if (!(nTrials > 1) || !(sigmaSR > 0)) return 0;
   const gamma = 0.5772156649015329; // constante d'Euler-Mascheroni
   const z1 = invNormCdf(1 - 1 / nTrials);
@@ -56,7 +76,7 @@ export function expectedMaxSharpe(nTrials, sigmaSR) {
 // nTrials configurations. C'est LE garde-fou anti-overfitting : un Sharpe élevé trouvé
 // parmi des milliers d'essais est probablement de la chance. On déflate le seuil PSR par
 // le Sharpe maximum attendu sous l'hypothèse nulle sur nTrials essais.
-export function deflatedSharpe(pnls, nTrials = 1) {
+export function deflatedSharpe(pnls: number[], nTrials = 1) {
   if (!pnls || pnls.length < 3) return { dsr: NaN, sr: 0, srStar: 0, sigmaSR: NaN, nTrials };
   const sr = tradeSharpe(pnls);
   const { skew, kurt } = moments(pnls);
@@ -68,11 +88,11 @@ export function deflatedSharpe(pnls, nTrials = 1) {
 }
 
 // Beta de la stratégie contre le buy&hold de l'actif (régression des rendements)
-export function betaVsAsset(equityCurve, bars, capital) {
+export function betaVsAsset(equityCurve: number[], bars: MetricBar[], capital: number) {
   if (!equityCurve || equityCurve.length < 3 || !bars || bars.length < 3) return NaN;
-  const stratRet = [];
+  const stratRet: number[] = [];
   for (let i = 1; i < equityCurve.length; i++) stratRet.push((equityCurve[i] - equityCurve[i - 1]) / capital);
-  const assetRet = [];
+  const assetRet: number[] = [];
   const offset = bars.length - equityCurve.length;
   for (let i = 1; i < equityCurve.length; i++) {
     const bi = Math.max(1, offset + i);
@@ -90,7 +110,7 @@ export function betaVsAsset(equityCurve, bars, capital) {
 
 // Quality LZ : complexité de Lempel-Ziv de la séquence binarisée gains/pertes,
 // normalisée. Faible = trades très auto-corrélés (suspect), élevé = imprévisible/robuste.
-export function qualityLZ(pnls) {
+export function qualityLZ(pnls: number[]) {
   if (pnls.length < 4) return 0;
   const s = pnls.map((p) => (p > 0 ? "1" : "0")).join("");
   let i = 0, c = 1, l = 1, k = 1, kMax = 1, n = s.length;
@@ -110,10 +130,11 @@ export function qualityLZ(pnls) {
 }
 
 // Kyle's lambda : impact prix par unité de volume (régression |ΔP| ~ volume)
-export function kylesLambda(bars) {
+export function kylesLambda(bars: MetricBar[]) {
   if (!bars || bars.length < 10) return NaN;
-  const dp = [], vol = [];
-  for (let i = 1; i < bars.length; i++) { dp.push(Math.abs(bars[i].c - bars[i - 1].c)); vol.push(bars[i].v); }
+  const dp: number[] = [], vol: number[] = [];
+  // Volume optionnel : Number(undefined) = NaN → propage NaN et renvoie NaN (comportement inchangé).
+  for (let i = 1; i < bars.length; i++) { dp.push(Math.abs(bars[i].c - bars[i - 1].c)); vol.push(Number(bars[i].v)); }
   const n = dp.length;
   let mx = 0, my = 0;
   for (let i = 0; i < n; i++) { mx += vol[i]; my += dp[i]; }
@@ -125,9 +146,9 @@ export function kylesLambda(bars) {
 
 // Adverse Selection % : proportion de trades dont le prix bouge contre nous
 // dans les N barres suivant l'entrée (mesure de mauvais timing d'entrée).
-export function adverseSelection(trades, bars, lookahead = 5) {
+export function adverseSelection(trades: MetricTrade[], bars: MetricBar[], lookahead = 5) {
   if (!trades || trades.length === 0 || !bars) return NaN;
-  const byTime = new Map(bars.map((b, i) => [b.t, i]));
+  const byTime = new Map(bars.map((b, i) => [b.t, i] as const));
   let adverse = 0, counted = 0;
   for (const t of trades) {
     const idx = byTime.get(t.entryTime);
@@ -141,7 +162,7 @@ export function adverseSelection(trades, bars, lookahead = 5) {
 }
 
 // Regroupe toutes les métriques avancées
-export function advancedMetrics(result, bars, capital) {
+export function advancedMetrics(result: AdvancedMetricsInput, bars: MetricBar[], capital: number) {
   const pnls = result.trades.map((t) => t.pnl);
   const { minTrl } = minTRL(pnls, 0, 0.95);
   return {
@@ -155,15 +176,15 @@ export function advancedMetrics(result, bars, capital) {
 }
 
 // --- utilitaires distribution normale ---
-export function normCdf(x) {
+export function normCdf(x: number) {
   return 0.5 * (1 + erf(x / Math.SQRT2));
 }
-function erf(x) {
+function erf(x: number) {
   const t = 1 / (1 + 0.3275911 * Math.abs(x));
   const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
   return x >= 0 ? y : -y;
 }
-export function invNormCdf(p) {
+export function invNormCdf(p: number) {
   // Approximation de Acklam
   const a = [-39.6968302866538, 220.946098424521, -275.928510446969, 138.357751867269, -30.6647980661472, 2.50662827745924];
   const b = [-54.4760987982241, 161.585836858041, -155.698979859887, 66.8013118877197, -13.2806815528857];
