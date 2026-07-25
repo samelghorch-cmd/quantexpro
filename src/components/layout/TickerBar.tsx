@@ -2,9 +2,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { T } from "../shared/theme.ts";
 import { seededRandom } from "../../engine/random.ts";
-import { probeAllFeeds, feedStatusTone, summarizeFeeds } from "../../engine/feedStatus.ts";
+import {
+  probeAllFeeds,
+  feedStatusTone,
+  summarizeFeeds,
+  type FeedHealth,
+  type FeedStatus,
+  type FeedTone,
+} from "../../engine/feedStatus.ts";
 
-const INSTRUMENTS = [
+interface Instrument {
+  sym: string;
+  base: number;
+  vol: number;
+  price: number;
+  chg: number;
+}
+
+const INSTRUMENTS: Omit<Instrument, "price" | "chg">[] = [
   { sym: "BTC", base: 62000, vol: 0.004 }, { sym: "ETH", base: 3400, vol: 0.005 },
   { sym: "SOL", base: 145, vol: 0.008 }, { sym: "EUR/USD", base: 1.083, vol: 0.0008 },
   { sym: "GBP/USD", base: 1.264, vol: 0.0009 }, { sym: "USD/JPY", base: 151.2, vol: 0.001 },
@@ -16,14 +31,14 @@ const INSTRUMENTS = [
   { sym: "VIX", base: 14.2, vol: 0.02 },
 ];
 
-const TONE = {
+const TONE: Record<FeedTone, string> = {
   green: T.green,
   red: T.red,
   yellow: T.yellow,
   dim: T.textFaint,
 };
 
-function statusLabel(st) {
+function statusLabel(st: FeedHealth) {
   if (st === "ok") return "OK";
   if (st === "down") return "DOWN";
   if (st === "unconfigured") return "CFG";
@@ -32,8 +47,8 @@ function statusLabel(st) {
 }
 
 export function TickerBar() {
-  const [prices, setPrices] = useState(() => INSTRUMENTS.map((x) => ({ ...x, price: x.base, chg: 0 })));
-  const [feeds, setFeeds] = useState([]);
+  const [prices, setPrices] = useState<Instrument[]>(() => INSTRUMENTS.map((x) => ({ ...x, price: x.base, chg: 0 })));
+  const [feeds, setFeeds] = useState<FeedStatus[]>([]);
   const [probing, setProbing] = useState(false);
   const rnd = useRef(seededRandom(7)).current;
 
@@ -67,7 +82,7 @@ export function TickerBar() {
     return () => clearInterval(id);
   }, [refreshFeeds]);
 
-  const fmtP = (p) => p >= 1000 ? p.toLocaleString("en-US", { maximumFractionDigits: 0 }) : p >= 10 ? p.toFixed(2) : p.toFixed(4);
+  const fmtP = (p: number) => p >= 1000 ? p.toLocaleString("en-US", { maximumFractionDigits: 0 }) : p >= 10 ? p.toFixed(2) : p.toFixed(4);
   const summary = summarizeFeeds(feeds);
 
   return (

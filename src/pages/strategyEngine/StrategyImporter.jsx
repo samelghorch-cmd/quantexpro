@@ -6,7 +6,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { compileRules } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
-import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const SAMPLE = JSON.stringify({

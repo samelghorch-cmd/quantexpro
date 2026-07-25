@@ -14,7 +14,7 @@ import {
   edgesToCsv,
 } from "../../engine/validatedEdges.ts";
 import { pushEdgesToApi, pullEdgesFromApi, isEdgesApiConfigured } from "../../engine/edgesSync.ts";
-import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, fmt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 function letterColor(letter) {

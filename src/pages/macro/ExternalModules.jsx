@@ -1,6 +1,6 @@
 // Modules qui nécessitent une vraie source de données externe — état "connecte ta source".
 // Aucune donnée n'est inventée : EmptyStateExternalData + champ clé API en localStorage.
-import { EmptyStateExternalData } from "../../components/shared/EmptyStateExternalData.jsx";
+import { EmptyStateExternalData } from "../../components/shared/EmptyStateExternalData.tsx";
 
 const EXT = {
   macroCalendar: { title: "Macro Calendar", providers: ["Trading Economics", "Finnhub", "FRED"], description: "Calendrier des événements macroéconomiques (NFP, CPI, décisions de taux…). Nécessite un flux d'agenda économique en temps réel." },

@@ -23,7 +23,7 @@ import {
   startOidcLogin,
   ssoRedirectUri,
 } from "../../engine/ssoAuth.ts";
-import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, MetricCard, MetricGrid, DataTable, Badge, Select, Button, Field, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
 import { T } from "../../components/shared/theme.ts";
 

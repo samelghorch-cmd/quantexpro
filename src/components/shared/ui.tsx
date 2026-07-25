@@ -1,8 +1,21 @@
 // Composants UI partagés v5.
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from "react";
 import { T, S } from "./theme.ts";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 
-export function Panel({ title, right, children, style, bodyStyle }) {
+export function Panel({
+  title,
+  right,
+  children,
+  style,
+  bodyStyle,
+}: {
+  title?: ReactNode;
+  right?: ReactNode;
+  children?: ReactNode;
+  style?: CSSProperties;
+  bodyStyle?: CSSProperties;
+}) {
   return (
     <div style={{ ...S.panel, ...style }}>
       {(title || right) && (
@@ -16,7 +29,19 @@ export function Panel({ title, right, children, style, bodyStyle }) {
   );
 }
 
-export function MetricCard({ label, value, sub, color, hint }) {
+export function MetricCard({
+  label,
+  value,
+  sub,
+  color,
+  hint,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  sub?: ReactNode;
+  color?: string;
+  hint?: string;
+}) {
   return (
     <div title={hint || ""} style={{ background: T.panelAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", minWidth: 0 }}>
       <div style={{ fontSize: 9.5, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</div>
@@ -26,25 +51,37 @@ export function MetricCard({ label, value, sub, color, hint }) {
   );
 }
 
-export function MetricGrid({ children, min = 130 }) {
+export function MetricGrid({ children, min = 130 }: { children?: ReactNode; min?: number }) {
   return <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${min}px, 1fr))`, gap: 8 }}>{children}</div>;
 }
 
-export function Badge({ children, color = T.textDim }) {
+export function Badge({ children, color = T.textDim }: { children?: ReactNode; color?: string }) {
   return <span style={S.chip(color)}>{children}</span>;
 }
 
 // Badge de provenance des données — DYNAMIQUE : reflète le mode courant.
-// (Historique : chip statique "SIMULÉ" qui s'affichait même sur un backtest en données réelles.)
 export function SimBadge() {
-  const { usingReal, dataMeta } = usePipeline();
+  const { usingReal, dataMeta } = usePipeline() as {
+    usingReal?: boolean;
+    dataMeta?: { symbol?: { label?: string; classLabel?: string } } | null;
+  };
   if (usingReal) {
     return <span style={{ ...S.chip(T.green), border: `1px solid ${T.green}55` }} title={`Données réelles — ${dataMeta?.symbol?.label ?? ""} (${dataMeta?.symbol?.classLabel ?? ""}), coûts propres à l'actif appliqués.`}>RÉEL</span>;
   }
   return <span style={{ ...S.chip(T.yellow), border: `1px solid ${T.yellow}55` }} title="Données synthétiques générées en interne — jamais de vraies données de marché.">SIMULÉ</span>;
 }
 
-export function Tabs({ tabs, active, onChange }) {
+type TabItem = string | { id: string; label: ReactNode };
+
+export function Tabs({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: TabItem[];
+  active: string;
+  onChange: (id: string) => void;
+}) {
   return (
     <div style={{ display: "flex", gap: 2, borderBottom: `1px solid ${T.border}`, flexWrap: "wrap" }}>
       {tabs.map((t) => {
@@ -63,11 +100,15 @@ export function Tabs({ tabs, active, onChange }) {
   );
 }
 
-export function Button({ primary, children, ...rest }) {
+export function Button({
+  primary,
+  children,
+  ...rest
+}: ButtonHTMLAttributes<HTMLButtonElement> & { primary?: boolean }) {
   return <button style={primary ? S.btnPrimary : S.btn} {...rest}>{children}</button>;
 }
 
-export function Field({ label, children }) {
+export function Field({ label, children }: { label: ReactNode; children?: ReactNode }) {
   return (
     <div>
       <label style={S.label}>{label}</label>
@@ -76,12 +117,34 @@ export function Field({ label, children }) {
   );
 }
 
-export function NumberInput({ value, onChange, step = 1, min, max }) {
+export function NumberInput({
+  value,
+  onChange,
+  step = 1,
+  min,
+  max,
+}: {
+  value: number | string;
+  onChange: (v: number | "") => void;
+  step?: number;
+  min?: number;
+  max?: number;
+}) {
   return <input type="number" value={value} step={step} min={min} max={max} style={S.input}
     onChange={(e) => onChange(e.target.value === "" ? "" : Number(e.target.value))} />;
 }
 
-export function Select({ value, onChange, options }) {
+type SelectOption = string | { value: string; label: ReactNode };
+
+export function Select({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: SelectOption[];
+}) {
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} style={S.input}>
       {options.map((o) => {
@@ -93,7 +156,7 @@ export function Select({ value, onChange, options }) {
   );
 }
 
-export function ProgressBar({ pct, color = T.orange }) {
+export function ProgressBar({ pct, color = T.orange }: { pct: number; color?: string }) {
   return (
     <div style={{ background: T.bg0, borderRadius: 4, height: 6, overflow: "hidden", border: `1px solid ${T.border}` }}>
       <div style={{ width: `${Math.max(0, Math.min(100, pct))}%`, height: "100%", background: color, transition: "width 0.2s" }} />
@@ -101,7 +164,7 @@ export function ProgressBar({ pct, color = T.orange }) {
   );
 }
 
-export function ScoreGauge({ score, size = 96, label }) {
+export function ScoreGauge({ score, size = 96, label }: { score?: number; size?: number; label?: ReactNode }) {
   const s = Math.max(0, Math.min(100, score || 0));
   const color = s >= 70 ? T.green : s >= 45 ? T.yellow : T.red;
   const r = size / 2 - 8;
@@ -120,7 +183,27 @@ export function ScoreGauge({ score, size = 96, label }) {
   );
 }
 
-export function DataTable({ columns, rows, maxHeight = 420, onRowClick, selectedIdx }) {
+export interface DataTableColumn<T = Record<string, unknown>> {
+  key: string;
+  label: ReactNode;
+  align?: "left" | "right" | "center";
+  color?: (row: T) => string;
+  render?: (row: T, i: number) => ReactNode;
+}
+
+export function DataTable<T extends Record<string, unknown>>({
+  columns,
+  rows,
+  maxHeight = 420,
+  onRowClick,
+  selectedIdx,
+}: {
+  columns: DataTableColumn<T>[];
+  rows: T[];
+  maxHeight?: number;
+  onRowClick?: (row: T, i: number) => void;
+  selectedIdx?: number;
+}) {
   return (
     <div style={{ maxHeight, overflow: "auto", border: `1px solid ${T.border}`, borderRadius: 8 }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5, fontFamily: T.mono }}>
@@ -137,7 +220,7 @@ export function DataTable({ columns, rows, maxHeight = 420, onRowClick, selected
               style={{ cursor: onRowClick ? "pointer" : "default", background: selectedIdx === i ? T.orangeSoft : "transparent" }}>
               {columns.map((c) => (
                 <td key={c.key} style={{ textAlign: c.align || "left", padding: "6px 10px", color: c.color ? c.color(row) : T.text, borderBottom: `1px solid ${T.borderSoft}`, whiteSpace: "nowrap" }}>
-                  {c.render ? c.render(row, i) : row[c.key]}
+                  {c.render ? c.render(row, i) : (row[c.key] as ReactNode)}
                 </td>
               ))}
             </tr>
@@ -151,11 +234,11 @@ export function DataTable({ columns, rows, maxHeight = 420, onRowClick, selected
   );
 }
 
-export function fmt(n, d = 2) {
+export function fmt(n: number | null | undefined, d = 2): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
   if (!Number.isFinite(n)) return n > 0 ? "∞" : "-∞";
   return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
-export function fmtInt(n) { return fmt(n, 0); }
-export function fmtPct(n, d = 1) { return n === null || n === undefined || Number.isNaN(n) ? "—" : `${fmt(n, d)}%`; }
-export function fmtUsd(n, d = 0) { return n === null || n === undefined || Number.isNaN(n) ? "—" : `$${fmt(n, d)}`; }
+export function fmtInt(n: number | null | undefined) { return fmt(n, 0); }
+export function fmtPct(n: number | null | undefined, d = 1) { return n === null || n === undefined || Number.isNaN(n) ? "—" : `${fmt(n, d)}%`; }
+export function fmtUsd(n: number | null | undefined, d = 0) { return n === null || n === undefined || Number.isNaN(n) ? "—" : `$${fmt(n, d)}`; }

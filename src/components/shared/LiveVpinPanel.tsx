@@ -1,27 +1,37 @@
 // Panneau VPIN temps réel (WebSocket Binance) — réutilisable partout.
-// Crypto uniquement : pour les autres actifs, il n'existe pas de flux tick gratuit fiable.
-// Détecteur ACTIF : alerte sonore + visuelle quand la CDF franchit le niveau toxique (krach imminent).
 import { useState, useRef, useEffect } from "react";
 import { useBinanceVpinFeed } from "../../hooks/useBinanceVpinFeed.ts";
-import { Panel, MetricCard, MetricGrid, ScoreGauge, Badge, Button, fmt } from "./ui.jsx";
+import { Panel, MetricCard, MetricGrid, ScoreGauge, Badge, Button, fmt } from "./ui.tsx";
 import { T } from "./theme.ts";
 
-export function LiveVpinPanel({ ticker, label, window = 50 }) {
+type AudioCtxCtor = typeof AudioContext;
+
+export function LiveVpinPanel({
+  ticker,
+  label,
+  window: vpinWindow = 50,
+}: {
+  ticker: string | null;
+  label?: string;
+  window?: number;
+}) {
   const [on, setOn] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [flash, setFlash] = useState(false);
-  const feed = useBinanceVpinFeed(ticker, { enabled: on && !!ticker, window });
-  const audioRef = useRef(null);
+  const feed = useBinanceVpinFeed(ticker, { enabled: on && !!ticker, window: vpinWindow });
+  const audioRef = useRef<AudioContext | null>(null);
   const prevToxic = useRef(false);
 
-  // Prépare l'audio sur le geste utilisateur (Connecter) — les navigateurs l'exigent.
   const toggle = () => {
     setOn((o) => {
       const next = !o;
       if (next && !audioRef.current) {
-        try { audioRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* pas d'audio */ }
+        try {
+          const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext?: AudioCtxCtor }).webkitAudioContext;
+          if (Ctor) audioRef.current = new Ctor();
+        } catch { /* pas d'audio */ }
       }
-      audioRef.current?.resume?.();
+      void audioRef.current?.resume?.();
       return next;
     });
   };
@@ -31,7 +41,7 @@ export function LiveVpinPanel({ ticker, label, window = 50 }) {
     if (!ctx) return;
     try {
       const t0 = ctx.currentTime;
-      [0, 0.22].forEach((dt) => { // deux bips d'alerte
+      [0, 0.22].forEach((dt) => {
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = "square"; o.frequency.value = 920;
         g.gain.setValueAtTime(0.0001, t0 + dt);
@@ -43,7 +53,6 @@ export function LiveVpinPanel({ ticker, label, window = 50 }) {
     } catch { /* noop */ }
   };
 
-  // Détecte la TRANSITION vers l'état toxique (CDF ≥ 0,99) → alerte.
   useEffect(() => {
     const toxic = feed.tox.level === "toxic";
     if (toxic && !prevToxic.current) {

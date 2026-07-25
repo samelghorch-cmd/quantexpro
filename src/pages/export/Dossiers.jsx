@@ -9,7 +9,7 @@ import { getCollectorUrl, setCollectorUrl, collectorHealth, listJobs, createJob,
 import { downloadJSON, downloadPDF } from "../../engine/exportUtils.ts";
 import { generateTearsheetPdf } from "../../engine/tearsheet.ts";
 import { promoteFromDossier, isEligibleDossier } from "../../engine/validatedEdges.ts";
-import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, Select, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T, verdictColor } from "../../components/shared/theme.ts";
 
 const gradeColor = (letter) => ({ A: T.green, B: T.green, C: T.yellow, D: T.orange, E: T.red, F: T.red }[letter] || T.textDim);

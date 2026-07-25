@@ -1,11 +1,11 @@
 import { useState, useEffect, Component, Suspense } from "react";
 import { PipelineProvider, usePipeline } from "./state/PipelineContext.jsx";
-import { Sidebar } from "./components/layout/Sidebar.jsx";
-import { TickerBar } from "./components/layout/TickerBar.jsx";
+import { Sidebar } from "./components/layout/Sidebar.tsx";
+import { TickerBar } from "./components/layout/TickerBar.tsx";
 import { T } from "./components/shared/theme.ts";
 import { ALL_MODULES } from "./registry.ts";
 import { PAGES } from "./pages/index.jsx";
-import { GlobalControls } from "./components/layout/GlobalControls.jsx";
+import { GlobalControls } from "./components/layout/GlobalControls.tsx";
 import { completeOidcCallbackFromUrl } from "./engine/ssoAuth.ts";
 
 // Garde-fou : isole les erreurs d'UN module pour que le reste de la plateforme ne plante jamais.

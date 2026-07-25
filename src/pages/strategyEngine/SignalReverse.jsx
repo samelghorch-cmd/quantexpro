@@ -9,7 +9,7 @@ import {
 } from "../../engine/signalReverse.ts";
 import { describeRule } from "../../engine/ruleBuilder.ts";
 import { validateRules, saveCustomDef } from "../../engine/customStrategies.ts";
-import { Panel, Button, MetricCard, MetricGrid, DataTable, Badge, Field, NumberInput, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, MetricCard, MetricGrid, DataTable, Badge, Field, NumberInput, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const SAMPLE = `date,side

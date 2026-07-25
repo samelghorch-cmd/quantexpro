@@ -3,7 +3,7 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { analyzeTrades } from "../../engine/analytics.ts";
 import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
-import { Panel, MetricCard, MetricGrid, fmt, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
+import { Panel, MetricCard, MetricGrid, fmt, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";
 import { T, sideColor } from "../../components/shared/theme.ts";
 
 function NoBacktest() {

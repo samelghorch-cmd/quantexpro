@@ -3,9 +3,19 @@ import { useState } from "react";
 import { T } from "../shared/theme.ts";
 import { SECTIONS, MODULE_COUNT } from "../../registry.ts";
 
-export function Sidebar({ active, onSelect, collapsed, onToggle }) {
-  const [open, setOpen] = useState(() => Object.fromEntries(SECTIONS.map((s) => [s.id, true])));
-  const toggle = (id) => setOpen((o) => ({ ...o, [id]: !o[id] }));
+export function Sidebar({
+  active,
+  onSelect,
+  collapsed,
+  onToggle,
+}: {
+  active: string;
+  onSelect: (id: string) => void;
+  collapsed?: boolean;
+  onToggle: () => void;
+}) {
+  const [open, setOpen] = useState<Record<string, boolean>>(() => Object.fromEntries(SECTIONS.map((s) => [s.id, true])));
+  const toggle = (id: string) => setOpen((o) => ({ ...o, [id]: !o[id] }));
 
   if (collapsed) {
     return (

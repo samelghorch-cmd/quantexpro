@@ -7,7 +7,7 @@ import {
   fetchDeribitOptions,
   parseOptionsImport,
 } from "../../engine/gex.ts";
-import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function OptionsGammaPage() {

@@ -3,9 +3,9 @@ import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runValidator } from "../../engine/syntheticValidator.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
-import { Panel, Button, Field, NumberInput, SimBadge, fmt, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Field, NumberInput, SimBadge, fmt, fmtUsd } from "../../components/shared/ui.tsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
-import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
+import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
 import { T, verdictColor } from "../../components/shared/theme.ts";
 
 export function ValidatorPage() {

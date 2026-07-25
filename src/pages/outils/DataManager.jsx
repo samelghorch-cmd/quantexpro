@@ -5,7 +5,7 @@ import { ASSET_CLASSES, TF_MAP, fetchCandles, importSeries, listCachedSeries, de
 import { parseImportPayload } from "../../engine/dukascopyImport.ts";
 import { pushBarsToApi, pullBarsFromApi, pingApi, isApiConfigured, TF_TO_API } from "../../engine/barsSync.ts";
 import { getApiBaseUrl, getApiKey, setApiBaseUrl, setApiKey } from "../../engine/apiClient.ts";
-import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, ProgressBar, fmt, fmtInt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.jsx";

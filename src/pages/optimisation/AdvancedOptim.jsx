@@ -6,8 +6,8 @@ import { generateBasket, SYNTH_ASSETS } from "../../engine/multiAssetSynthetic.t
 import { runFAO } from "../../engine/fao.ts";
 import { Heatmap } from "../../components/charts/Heatmap.jsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
-import { Panel, Button, Field, Select, DataTable, SimBadge, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
+import { Panel, Button, Field, Select, DataTable, SimBadge, MetricCard, MetricGrid, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function Sensitivity2DPage() {

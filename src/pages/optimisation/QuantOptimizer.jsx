@@ -2,9 +2,9 @@
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runQuantOptimizer } from "../../engine/quantOptimizer.ts";
-import { Panel, Button, Field, NumberInput, DataTable, ScoreGauge, SimBadge, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
+import { Panel, Button, Field, NumberInput, DataTable, ScoreGauge, SimBadge, Badge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
+import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
 import { LineChart } from "../../components/charts/LineChart.jsx";
 import { T } from "../../components/shared/theme.ts";
 

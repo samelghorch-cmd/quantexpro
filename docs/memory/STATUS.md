@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-26** (P12-TS-UI-1)
+> Dernière maj : **2026-07-26** (P12-TS-UI-2)
 
 ---
 
@@ -9,29 +9,26 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Branche git | `p12-ts-ui-1` (base `main` @ `54c102e`) |
+| Branche git | `p12-ts-ui-2` (base `main` @ `7bd90ea`) |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **347** · typecheck ✅ |
-| Commit HEAD main | `54c102e` (merge PR #22 worker) |
-| P0–P11 | ✅ clôturés (leaves + worker) |
-| Scorecard HF | **28/35** (desk institutionnel soft) |
-| Prochaine action | Merger **P12-TS-UI-1** · suite pages/components `.jsx` → `.tsx` |
+| Commit HEAD main | `7bd90ea` (merge PR #23 UI-1) |
+| P0–P11 | ✅ clôturés |
+| Scorecard HF | **28/35** |
+| Prochaine action | Merger **P12-TS-UI-2** · suite charts + pages `.jsx` |
 
 ---
 
-## Session 2026-07-26 — P12-TS-UI-1
+## Session 2026-07-26 — P12-TS-UI-2
 
-**Livré / PR** — premier lot typage UI (feuilles JS + entry) :
+**Livré / PR** — shared + layout → TypeScript :
 
-1. `theme.js` → `theme.ts`
-2. `registry.js` → `registry.ts`
-3. hooks : `useBinanceOrderBook` · `useBinanceVpinFeed` · `useSignalConsole` · `useSyntheticLiveFeed` → `.ts`
-4. `engine/quantToolbox/index.js` → `.ts`
-5. `main.jsx` → `main.tsx` (+ `index.html`)
-6. Imports `.js` → `.ts` mis à jour · règle frontend `theme.ts` / `registry.ts`
+1. `ui` · `StrategyPicker` · `PipelineStepper` · `NextStepBar` · `EmptyStateExternalData`
+2. `LiveOrderBookPanel` · `LiveVpinPanel`
+3. `Sidebar` · `GlobalControls` · `TickerBar`
+4. Imports pages mis à jour
 
-- `src/**/*.js` : **0** restant
-- JSX : **62 → 61** · TSX : **0 → 1**
+- JSX : **61 → 51** · TSX : **1 → 11**
 - `tsc --noEmit` : **0 erreur**
 - `npm test` : **347 verts**
 
@@ -39,5 +36,5 @@
 
 ## Notes session
 
-- Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh` + `docs/OPS_GO_LIVE.md`.  
-- Dev : engine TS complet ✅ · lot UI #1 PR · reste ~61 `.jsx`.
+- Prod : ops go-live.  
+- Dev : UI #1 mergé · UI #2 shared/layout PR · reste ~51 pages/charts `.jsx`.

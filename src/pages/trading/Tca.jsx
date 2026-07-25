@@ -15,7 +15,7 @@ import {
   TCA_BETTER_RATIO,
 } from "../../engine/tca.ts";
 import { COST_MODELS } from "../../engine/costModel.ts";
-import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, Field, NumberInput, MetricCard, MetricGrid, DataTable, Select, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const verdictMeta = {

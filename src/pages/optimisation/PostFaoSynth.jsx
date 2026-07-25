@@ -2,8 +2,8 @@
 import { useState, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.jsx";
 import { runPostFAO } from "../../engine/postFaoSynth.ts";
-import { Panel, Button, DataTable, SimBadge, Badge, ScoreGauge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { PipelineStepper } from "../../components/shared/PipelineStepper.jsx";
+import { Panel, Button, DataTable, SimBadge, Badge, ScoreGauge, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function PostFaoSynthPage() {

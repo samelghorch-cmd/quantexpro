@@ -7,9 +7,9 @@ import { logBacktest } from "../../engine/strategyStore.ts";
 import { tradesToCSV, downloadCSV } from "../../engine/exportUtils.ts";
 import { EquityChart } from "../../components/charts/EquityChart.jsx";
 import { Histogram } from "../../components/charts/Histogram.jsx";
-import { Panel, MetricCard, MetricGrid, Button, Field, Select, NumberInput, SimBadge, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { NextStepBar } from "../../components/shared/NextStepBar.jsx";
+import { Panel, MetricCard, MetricGrid, Button, Field, Select, NumberInput, SimBadge, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
+import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function BacktestPage() {

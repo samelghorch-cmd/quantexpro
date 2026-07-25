@@ -4,8 +4,22 @@ import { usePipeline } from "../../state/PipelineContext.jsx";
 import { CATS } from "../../engine/strategyLibrary.ts";
 import { T, S } from "./theme.ts";
 
-export function StrategyPicker({ value, onChange, compact }) {
-  const { library } = usePipeline();
+interface StratItem {
+  id: number | string;
+  name: string;
+  cat?: string;
+}
+
+export function StrategyPicker({
+  value,
+  onChange,
+  compact,
+}: {
+  value: number | string;
+  onChange: (id: number | string) => void;
+  compact?: boolean;
+}) {
+  const { library } = usePipeline() as { library: StratItem[] };
   const [q, setQ] = useState("");
   const filtered = useMemo(() => {
     const s = q.toLowerCase().trim();
@@ -13,6 +27,7 @@ export function StrategyPicker({ value, onChange, compact }) {
     return library.filter((x) => x.name.toLowerCase().includes(s) || String(x.id).includes(s)).slice(0, 60);
   }, [library, q]);
   const sel = library.find((x) => x.id === value);
+  const catMap = CATS as Record<string, { color?: string }>;
 
   return (
     <div>
@@ -26,7 +41,7 @@ export function StrategyPicker({ value, onChange, compact }) {
               display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", cursor: "pointer", fontSize: 11.5,
               background: on ? T.orangeSoft : "transparent", color: on ? T.orange : T.text, borderBottom: `1px solid ${T.borderSoft}`,
             }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: CATS[s.cat]?.color || T.textDim, flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: catMap[s.cat || ""]?.color || T.textDim, flexShrink: 0 }} />
               <span style={{ color: T.textFaint, fontFamily: T.mono, width: 34 }}>#{s.id}</span>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</span>
             </div>

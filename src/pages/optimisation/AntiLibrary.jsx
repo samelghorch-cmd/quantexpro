@@ -15,7 +15,7 @@ import {
 } from "../../engine/antiLibrarySync.ts";
 import { buildStrategyLibrary } from "../../engine/strategyLibrary.ts";
 import { usePipeline } from "../../state/PipelineContext.jsx";
-import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, DataTable, Field } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function AntiLibraryPage() {

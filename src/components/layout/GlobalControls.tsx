@@ -7,13 +7,32 @@ export function GlobalControls() {
   const {
     symbol, setSymbol, nBars, setNBars, seed, setSeed, tf, setTf, CONTRACTS, bars,
     dataMode, setDataMode, assetKey, setAssetKey, dataLoading, dataError, usingReal, dataMeta, reloadData,
-  } = usePipeline();
+  } = usePipeline() as {
+    symbol: string;
+    setSymbol: (v: string) => void;
+    nBars: number;
+    setNBars: (v: number) => void;
+    seed: number;
+    setSeed: (v: number) => void;
+    tf: number;
+    setTf: (v: number) => void;
+    CONTRACTS: Record<string, unknown>;
+    bars: unknown[];
+    dataMode: string;
+    setDataMode: (v: string) => void;
+    assetKey: string;
+    setAssetKey: (v: string) => void;
+    dataLoading: boolean;
+    dataError: string | null;
+    usingReal: boolean;
+    dataMeta?: { symbol?: { label?: string } } | null;
+    reloadData: () => void;
+  };
 
-  const cell = { display: "flex", flexDirection: "column", gap: 2 };
-  const lab = { fontSize: 8.5, color: T.textFaint, textTransform: "uppercase", letterSpacing: 0.5 };
+  const cell = { display: "flex", flexDirection: "column" as const, gap: 2 };
+  const lab = { fontSize: 8.5, color: T.textFaint, textTransform: "uppercase" as const, letterSpacing: 0.5 };
   const inp = { ...S.input, width: 92, padding: "4px 6px", fontSize: 11 };
 
-  // Badge de source de données
   const badge = usingReal
     ? { txt: "RÉEL", color: T.green, title: `Données réelles : ${dataMeta?.symbol?.label} · ${bars.length} bougies` }
     : dataMode === "live"
@@ -24,7 +43,6 @@ export function GlobalControls() {
     <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
       <span title={badge.title} style={{ ...S.chip(badge.color), border: `1px solid ${badge.color}55`, fontSize: 10, padding: "3px 8px" }}>{badge.txt}</span>
 
-      {/* Bascule Synthétique / Réel */}
       <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 6, overflow: "hidden" }}>
         {[{ id: "synthetic", l: "Synthétique" }, { id: "live", l: "Réel" }].map((m) => (
           <button key={m.id} onClick={() => setDataMode(m.id)} style={{

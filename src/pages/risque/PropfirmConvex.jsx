@@ -3,9 +3,9 @@ import { useState, useCallback } from "react";
 import { usePipeline, usePersistentState } from "../../state/PipelineContext.jsx";
 import { runPropfirmConvex, tradesToDailyPnL } from "../../engine/propfirmConvex.ts";
 import { runBacktestExt } from "../../engine/backtestExtended.ts";
-import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.jsx";
-import { StrategyPicker } from "../../components/shared/StrategyPicker.jsx";
-import { NextStepBar } from "../../components/shared/NextStepBar.jsx";
+import { Panel, Button, Field, NumberInput, MetricCard, MetricGrid, DataTable, SimBadge, fmt, fmtPct, fmtUsd, fmtInt } from "../../components/shared/ui.tsx";
+import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
+import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 export function PropfirmConvexPage() {

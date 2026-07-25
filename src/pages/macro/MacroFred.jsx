@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.jsx";
 import { fetchFredMany, lastVal, lastDate, yoy, FRED } from "../../engine/macroData.ts";
 import { LineChart } from "../../components/charts/LineChart.jsx";
-import { Panel, Button, Badge, MetricCard, MetricGrid, fmt } from "../../components/shared/ui.jsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, fmt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const fmtDate = (t) => t ? new Date(t).toISOString().slice(0, 10) : "—";
