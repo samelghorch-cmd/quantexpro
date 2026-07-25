@@ -1,9 +1,106 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // P2-MQL5 — Export Expert Advisor MetaTrader 5 pour familles de stratégies simples.
 // Génère un .mq5 autonome (indicateurs locaux + ATR SL/TP/BE). ≠ pont QuantEXProBridge.
 
+/** Identifiants des familles supportées (v1). */
+export type FamilyId = "maCross" | "rsiRev" | "macdCross" | "donchianBreak" | "bbBounce";
+
+export interface FamilyDef {
+  id: FamilyId;
+  label: string;
+  paramsSchema: string[];
+  mqlHandles: string[];
+}
+
+export type MaCrossParams = { type?: string; fast?: number; slow?: number };
+export type RsiRevParams = { period?: number; low?: number; high?: number };
+export type MacdCrossParams = { fast?: number; slow?: number; signal?: number };
+export type DonchianParams = { period?: number };
+export type BbBounceParams = { period?: number; deviation?: number };
+
+export type FamilyParams =
+  | MaCrossParams
+  | RsiRevParams
+  | MacdCrossParams
+  | DonchianParams
+  | BbBounceParams
+  | Record<string, unknown>;
+
+export interface StrategyExportMetaEntry {
+  family: FamilyId;
+  params: FamilyParams;
+  proxy?: boolean;
+}
+
+export interface TradeParams {
+  lots: number;
+  slAtr: number;
+  tpAtr: number;
+  beAtr: number;
+  direction: string;
+}
+
+export interface ResolveFamilyResult {
+  family: FamilyId | null;
+  params: FamilyParams | null;
+  supported: boolean;
+  strategyId: number | null;
+  proxy: boolean;
+}
+
+export interface GenerateEAOpts {
+  strategyId?: number;
+  id?: number;
+  name?: string;
+  symbol?: string;
+  magic?: number;
+  lots?: number;
+  slAtr?: number;
+  tpAtr?: number;
+  beAtr?: number;
+  direction?: string;
+  family?: FamilyId | string | null;
+  familyParams?: FamilyParams | null;
+  params?: {
+    slAtr?: number;
+    tpAtr?: number;
+    beAtr?: number;
+    direction?: string;
+    [key: string]: unknown;
+  };
+  tradeParams?: {
+    lots?: number;
+    slAtr?: number;
+    tpAtr?: number;
+    beAtr?: number;
+    direction?: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface GenerateEAResult {
+  code: string;
+  family: FamilyId | null;
+  supported: boolean;
+  warnings: string[];
+  filename: string;
+  familyParams?: FamilyParams;
+}
+
+interface CommonHeaderOpts {
+  eaName: string;
+  strategyId: number | string;
+  name: string;
+  symbol: string;
+  magic: number;
+  trade: TradeParams;
+  familyLabel: string;
+  warnings: string[];
+}
+
+type FamilyTplFn = (fp: FamilyParams) => string;
+
 /** Familles supportées (v1). */
-export const SUPPORTED_FAMILIES = {
+export const SUPPORTED_FAMILIES: Record<FamilyId, FamilyDef> = {
   maCross: {
     id: "maCross",
     label: "MA Cross",
@@ -40,7 +137,7 @@ export const SUPPORTED_FAMILIES = {
  * Meta export pour IDs canoniques (params fermés dans eval JS — non introspectables).
  * proxy:true = le nom UI est une approximation ; le template suit la famille réelle.
  */
-export const STRATEGY_EXPORT_META = {
+export const STRATEGY_EXPORT_META: Record<number, StrategyExportMetaEntry> = {
   1:  { family: "maCross", params: { type: "ema", fast: 50, slow: 200 } },
   2:  { family: "maCross", params: { type: "ema", fast: 9, slow: 21 } },
   3:  { family: "macdCross", params: { fast: 12, slow: 26, signal: 9 } },
@@ -61,7 +158,7 @@ export const STRATEGY_EXPORT_META = {
   112: { family: "maCross", params: { type: "ema", fast: 5, slow: 34 }, proxy: true },
 };
 
-const MA_METHOD = {
+const MA_METHOD: Record<string, string> = {
   sma: "MODE_SMA",
   ema: "MODE_EMA",
   dema: "MODE_DEMA",
@@ -70,12 +167,14 @@ const MA_METHOD = {
   lwma: "MODE_LWMA",
 };
 
-export function listSupportedFamilies() {
+export function listSupportedFamilies(): FamilyDef[] {
   return Object.values(SUPPORTED_FAMILIES);
 }
 
-/** @param {number|object} strategyIdOrStrat */
-export function resolveFamily(strategyIdOrStrat) {
+/** Résout la famille d'export depuis un id numérique ou un objet stratégie. */
+export function resolveFamily(
+  strategyIdOrStrat: number | { id?: number; strategyId?: number } | null | undefined,
+): ResolveFamilyResult {
   const id = typeof strategyIdOrStrat === "object" && strategyIdOrStrat != null
     ? Number(strategyIdOrStrat.id ?? strategyIdOrStrat.strategyId)
     : Number(strategyIdOrStrat);
@@ -95,23 +194,27 @@ export function resolveFamily(strategyIdOrStrat) {
   };
 }
 
-function sanitizeIdent(name) {
+function sanitizeIdent(name: unknown): string {
   const s = String(name || "Strategy").replace(/[^A-Za-z0-9_]/g, "_").replace(/_+/g, "_");
   const trimmed = s.slice(0, 48) || "Strategy";
   return /^[0-9]/.test(trimmed) ? `EA_${trimmed}` : trimmed;
 }
 
-function num(v, d) {
+function num(v: unknown, d: number): number {
   const n = Number(v);
   return Number.isFinite(n) ? n : d;
 }
 
-function escapeStr(s) {
+function escapeStr(s: unknown): string {
   return String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+function isFamilyId(v: string): v is FamilyId {
+  return Object.prototype.hasOwnProperty.call(SUPPORTED_FAMILIES, v);
+}
+
 /** Bloc commun : inputs trade + ATR helpers + position management. */
-function commonHeader({ eaName, strategyId, name, symbol, magic, trade, familyLabel, warnings }) {
+function commonHeader({ eaName, strategyId, name, symbol, magic, trade, familyLabel, warnings }: CommonHeaderOpts): string {
   const warnBlock = warnings.length
     ? warnings.map((w) => `// ⚠ ${w}`).join("\n") + "\n"
     : "";
@@ -130,7 +233,7 @@ function commonHeader({ eaName, strategyId, name, symbol, magic, trade, familyLa
 #include <Trade/Trade.mqh>
 
 ${warnBlock}//--- Trade
-input int      MagicNumber   = ${Math.trunc(num(magic, 5000 + (strategyId || 0)))};
+input int      MagicNumber   = ${Math.trunc(num(magic, 5000 + (Number(strategyId) || 0)))};
 input double   Lots          = ${num(trade.lots, 0.1)};
 input double   SL_ATR_Mult   = ${num(trade.slAtr, 2)};
 input double   TP_ATR_Mult   = ${num(trade.tpAtr, 0)};
@@ -141,7 +244,7 @@ input int      MaxSlippage   = 20;
 `;
 }
 
-function commonBodyTail() {
+function commonBodyTail(): string {
   return `
 CTrade trade;
 int    atrHandle = INVALID_HANDLE;
@@ -234,11 +337,12 @@ void OnDeinit(const int reason)
 `;
 }
 
-function tplMaCross(fp) {
-  const type = String(fp.type || "ema").toLowerCase();
+function tplMaCross(fp: FamilyParams): string {
+  const p = fp as MaCrossParams;
+  const type = String(p.type || "ema").toLowerCase();
   const method = MA_METHOD[type] || "MODE_EMA";
-  const fast = Math.trunc(num(fp.fast, 9));
-  const slow = Math.trunc(num(fp.slow, 21));
+  const fast = Math.trunc(num(p.fast, 9));
+  const slow = Math.trunc(num(p.slow, 21));
   return `
 //--- Signal MA Cross
 input int FastPeriod = ${fast};
@@ -276,10 +380,11 @@ void OnTick()
 `;
 }
 
-function tplRsiRev(fp) {
-  const period = Math.trunc(num(fp.period, 14));
-  const low = num(fp.low, 30);
-  const high = num(fp.high, 70);
+function tplRsiRev(fp: FamilyParams): string {
+  const p = fp as RsiRevParams;
+  const period = Math.trunc(num(p.period, 14));
+  const low = num(p.low, 30);
+  const high = num(p.high, 70);
   return `
 //--- Signal RSI Reversion
 input int    RSI_Period = ${period};
@@ -315,10 +420,11 @@ void OnTick()
 `;
 }
 
-function tplMacdCross(fp) {
-  const fast = Math.trunc(num(fp.fast, 12));
-  const slow = Math.trunc(num(fp.slow, 26));
-  const signal = Math.trunc(num(fp.signal, 9));
+function tplMacdCross(fp: FamilyParams): string {
+  const p = fp as MacdCrossParams;
+  const fast = Math.trunc(num(p.fast, 12));
+  const slow = Math.trunc(num(p.slow, 26));
+  const signal = Math.trunc(num(p.signal, 9));
   return `
 //--- Signal MACD Cross
 input int MACD_Fast   = ${fast};
@@ -354,8 +460,9 @@ void OnTick()
 `;
 }
 
-function tplDonchian(fp) {
-  const period = Math.trunc(num(fp.period, 20));
+function tplDonchian(fp: FamilyParams): string {
+  const p = fp as DonchianParams;
+  const period = Math.trunc(num(p.period, 20));
   return `
 //--- Signal Donchian Breakout
 input int DonchianPeriod = ${period};
@@ -388,9 +495,10 @@ void OnTick()
 `;
 }
 
-function tplBbBounce(fp) {
-  const period = Math.trunc(num(fp.period, 20));
-  const deviation = num(fp.deviation, 2);
+function tplBbBounce(fp: FamilyParams): string {
+  const p = fp as BbBounceParams;
+  const period = Math.trunc(num(p.period, 20));
+  const deviation = num(p.deviation, 2);
   return `
 //--- Signal Bollinger Bounce
 input int    BB_Period    = ${period};
@@ -427,7 +535,7 @@ void OnTick()
 `;
 }
 
-const FAMILY_TPL = {
+const FAMILY_TPL: Record<FamilyId, FamilyTplFn> = {
   maCross: tplMaCross,
   rsiRev: tplRsiRev,
   macdCross: tplMacdCross,
@@ -437,15 +545,13 @@ const FAMILY_TPL = {
 
 /**
  * Génère le code source .mq5.
- * @param {object} opts
- * @returns {{ code: string, family: string|null, supported: boolean, warnings: string[], filename: string }}
  */
-export function generateEA(opts = {}) {
+export function generateEA(opts: GenerateEAOpts = {}): GenerateEAResult {
   const strategyId = Number(opts.strategyId ?? opts.id);
   const name = opts.name || `Strategy_${strategyId || "x"}`;
   const symbol = opts.symbol || "";
   const magic = opts.magic ?? (5000 + (Number.isFinite(strategyId) ? strategyId : 0));
-  const trade = {
+  const trade: TradeParams = {
     lots: opts.lots ?? opts.tradeParams?.lots ?? 0.1,
     slAtr: opts.slAtr ?? opts.params?.slAtr ?? opts.tradeParams?.slAtr ?? 2,
     tpAtr: opts.tpAtr ?? opts.params?.tpAtr ?? opts.tradeParams?.tpAtr ?? 0,
@@ -453,9 +559,9 @@ export function generateEA(opts = {}) {
     direction: opts.direction ?? opts.params?.direction ?? opts.tradeParams?.direction ?? "both",
   };
 
-  const warnings = [];
-  let family = opts.family || null;
-  let familyParams = opts.familyParams ? { ...opts.familyParams } : null;
+  const warnings: string[] = [];
+  let family: string | null = opts.family || null;
+  let familyParams: FamilyParams | null = opts.familyParams ? { ...opts.familyParams } : null;
 
   if (!family) {
     const resolved = resolveFamily(strategyId);
@@ -471,7 +577,7 @@ export function generateEA(opts = {}) {
   const eaName = sanitizeIdent(`QX_${strategyId || 0}_${name}`);
   const filename = `${eaName}.mq5`;
 
-  if (!family || !FAMILY_TPL[family]) {
+  if (!family || !isFamilyId(family)) {
     warnings.push("Famille non supportée — stub trade seulement (pas de signal)");
     const stub = `${commonHeader({
       eaName, strategyId: strategyId || "?", name, symbol, magic, trade,
@@ -498,11 +604,11 @@ void OnTick() {}
     familyLabel: famInfo.label, warnings,
   }) + body;
 
-  return { code, family, supported: true, warnings, filename, familyParams };
+  return { code, family, supported: true, warnings, filename, familyParams: familyParams || undefined };
 }
 
 /** Helper téléchargement .mq5 (MIME texte). */
-export function downloadMq5(code, filename) {
+export function downloadMq5(code: string, filename?: string): void {
   const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
