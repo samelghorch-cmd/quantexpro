@@ -1,8 +1,9 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Couche macro réelle — FRED (Federal Reserve Economic Data), sans clé API via fredgraph.csv.
 // Séries : taux du Trésor, spreads, inflation, bilan de la Fed, VIX, spreads high yield…
 // Cache IndexedDB (mêmes helpers que les données de marché) pour éviter de re-télécharger.
 import { idbGet, idbPut } from "./dataStore.ts";
+
+interface FredPoint { t: number; v: number; }
 
 const TTL = 12 * 3600 * 1000; // 12 h
 
@@ -23,7 +24,7 @@ export const FRED = {
   DTWEXBGS: { label: "Dollar (indice large)" },
 };
 
-function parseFredCsv(text) {
+function parseFredCsv(text: string) {
   const lines = text.trim().split("\n");
   const out = [];
   for (let i = 1; i < lines.length; i++) {
@@ -35,10 +36,13 @@ function parseFredCsv(text) {
 }
 
 // Récupère une série FRED (avec cache IndexedDB).
-export async function fetchFred(id, { force = false } = {}) {
+export async function fetchFred(id: string, { force = false } = {}) {
   const cacheId = `macro:fred:${id}`;
   if (!force) {
-    try { const rec = await idbGet(cacheId); if (rec && Date.now() - rec.ts < TTL) return rec.series; } catch { /* noop */ }
+    try {
+      const rec = await idbGet(cacheId) as { ts: number; series: FredPoint[] } | undefined;
+      if (rec && Date.now() - rec.ts < TTL) return rec.series;
+    } catch { /* noop */ }
   }
   const r = await fetch(`/api/fred/graph/fredgraph.csv?id=${id}`);
   if (!r.ok) throw new Error(`FRED ${id} : ${r.status}`);
@@ -48,14 +52,14 @@ export async function fetchFred(id, { force = false } = {}) {
 }
 
 // Récupère plusieurs séries avec concurrence limitée + retry (évite le rate-limit du proxy) → { id: series }.
-export async function fetchFredMany(ids, opts) {
-  const out = {};
+export async function fetchFredMany(ids: string[], opts?: { force?: boolean }) {
+  const out: Record<string, FredPoint[]> = {};
   const queue = [...ids];
   const CONC = 4;
   const worker = async () => {
     while (queue.length) {
-      const id = queue.shift();
-      let series = [];
+      const id = queue.shift()!;
+      let series: FredPoint[] = [];
       for (let attempt = 0; attempt < 2; attempt++) {
         try { series = await fetchFred(id, opts); break; }
         catch { await new Promise((r) => setTimeout(r, 400)); }
@@ -67,11 +71,11 @@ export async function fetchFredMany(ids, opts) {
   return out;
 }
 
-export const lastVal = (series) => (series && series.length ? series[series.length - 1].v : null);
-export const lastDate = (series) => (series && series.length ? series[series.length - 1].t : null);
+export const lastVal = (series: FredPoint[] | null | undefined) => (series && series.length ? series[series.length - 1].v : null);
+export const lastDate = (series: FredPoint[] | null | undefined) => (series && series.length ? series[series.length - 1].t : null);
 
 // Variation en % sur ~1 an (pour l'inflation CPI en glissement annuel).
-export function yoy(series) {
+export function yoy(series: FredPoint[] | null | undefined) {
   if (!series || series.length < 13) return null;
   const last = series[series.length - 1];
   // cherche le point ~12 mois avant

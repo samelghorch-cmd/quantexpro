@@ -1,8 +1,9 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Extrait de v4core.js — analyse des trades + matrice de corrélation.
 import { runBacktest } from "./backtest.ts";
 
-export function analyzeTrades(trades, bars) {
+interface AnalyzedTrade { pnl: number; entryTime: number; }
+
+export function analyzeTrades(trades: AnalyzedTrade[], _bars?: unknown) {
   if (!trades || trades.length === 0) return null;
   const byHour = Array(24).fill(null).map(() => ({ n: 0, pnl: 0, wins: 0 }));
   const byDow = Array(7).fill(null).map(() => ({ n: 0, pnl: 0, wins: 0 }));
@@ -14,7 +15,7 @@ export function analyzeTrades(trades, bars) {
     const h = d.getUTCHours(), dow = d.getUTCDay();
     byHour[h].n++; byHour[h].pnl += t.pnl; if (t.pnl > 0) byHour[h].wins++;
     byDow[dow].n++; byDow[dow].pnl += t.pnl; if (t.pnl > 0) byDow[dow].wins++;
-    let sess = "asia";
+    let sess: keyof typeof bySession = "asia";
     if (h >= 7 && h < 13) sess = "london";
     else if (h >= 13 && h < 16) sess = "overlap";
     else if (h >= 16 && h < 22) sess = "ny";
@@ -31,14 +32,19 @@ export function analyzeTrades(trades, bars) {
   return { byHour, byDow, bySession, maxWinStreak, maxLossStreak, mean, stdDev, var95, cvar95, best: Math.max(...pnls), worst: Math.min(...pnls) };
 }
 
-export function strategiesCorrelation(bars, ctx, strategies, options) {
+export function strategiesCorrelation(
+  bars: Parameters<typeof runBacktest>[0],
+  ctx: Parameters<typeof runBacktest>[1],
+  strategies: { eval: Parameters<typeof runBacktest>[2] }[],
+  options: Parameters<typeof runBacktest>[3],
+) {
   const rets = strategies.map(s => {
     const bt = runBacktest(bars, ctx, s.eval, options);
     return bt.equityCurve.map((e, i) => i === 0 ? 0 : e - bt.equityCurve[i - 1]);
   });
   const n = rets.length;
   const mat = Array(n).fill(null).map(() => Array(n).fill(0));
-  const corr = (a, b) => {
+  const corr = (a: number[], b: number[]) => {
     const len = Math.min(a.length, b.length);
     let ma = 0, mb = 0;
     for (let i = 0; i < len; i++) { ma += a[i]; mb += b[i]; }

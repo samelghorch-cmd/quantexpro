@@ -1,11 +1,18 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Reco Finale — décision finale scorée agrégeant tous les étages du pipeline.
 import { minTRL, qualityLZ, deflatedSharpe } from "./backtestMetrics.ts";
 import { quantScore } from "./quantOptimizer.ts";
 
 // Combine les scores disponibles ; chaque composante manquante est neutre (50).
 // nTrials = nombre de configurations testées pour aboutir à cette stratégie (déflation anti-overfitting).
-export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult, nTrials = 1 } = {}) {
+interface RecoInput {
+  postFao?: { best?: { score100?: number | null } | null } | null;
+  quantOpt?: { best?: { score?: number | null } | null } | null;
+  validator?: { gates: { verdict: string }[]; verdict?: string } | null;
+  backtestResult?: { trades: { pnl: number }[] } | null;
+  nTrials?: number;
+}
+
+export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult, nTrials = 1 }: RecoInput = {}) {
   const components = [];
 
   // 1. Composite Post-FAO (0-100)
@@ -20,7 +27,7 @@ export function computeRecoFinale({ postFao, quantOpt, validator, backtestResult
   // 3. Robustesse Validator (issue des p-values)
   let vScore = null;
   if (validator) {
-    const map = { GO: 100, WARN: 60, "NO-GO": 20 };
+    const map: Record<string, number> = { GO: 100, WARN: 60, "NO-GO": 20 };
     vScore = validator.gates.reduce((s, g) => s + (map[g.verdict] ?? 50), 0) / validator.gates.length;
     components.push({ name: "Robustesse Synth Validator", value: vScore, weight: 0.23 });
   }
