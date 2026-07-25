@@ -1,7 +1,7 @@
 # STATUS — QuantEXPro
 
 > Fichier **vivant**. Chaque session agent doit le mettre à jour en fin de travail.  
-> Dernière maj : **2026-07-25** (P11-TS-LEAVES-8 PR)
+> Dernière maj : **2026-07-25** (P11-TS-LEAVES-9 PR)
 
 ---
 
@@ -9,33 +9,38 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Branche git | `p11-ts-leaves-8` (base `main` @ `c6d015b`) |
+| Branche git | `p11-ts-leaves-9` (base `main` @ `643e28a`) |
 | Dépôt distant | ✅ `github.com/samelghorch-cmd/quantexpro` |
 | Tests | JS **347** · typecheck ✅ |
-| Commit HEAD main | `c6d015b` (merge PR #17 leaves-7) |
+| Commit HEAD main | `643e28a` (merge PR #18 leaves-8) |
 | P0–P10 | ✅ clôturés |
 | Scorecard HF | **28/35** (desk institutionnel soft) |
-| Prochaine action | Merger **PR leaves-8** · suite feuilles (`marketData`, `analyticsAdvanced`…) |
+| Prochaine action | Merger **PR leaves-9** · suite `statisticalEdge` puis `mql5Export` |
+
+---
+
+## Session 2026-07-25 — P11-TS-LEAVES-9 (lot #9)
+
+**Livré / PR** — retrait `@ts-nocheck` + typage strict de 2 feuilles :
+
+1. `src/engine/marketData.ts` — `MarketBar` / `CatalogSymbol` / `TfMapEntry` / cache IDB typé ; Binance/Yahoo JSON castés ; `ImportableBar` pour pont `barsSync`
+2. `src/engine/analyticsAdvanced.ts` — CPCV / Feature Mining / Symbolic GP / Pairs / Sensitivity2D / Pareto / Cross-TF / Cross-Symbol typés (`OHLCVBar` + `TradingContext` + `StrategyEvalFn`)
+
+- Engine `@ts-nocheck` : **4 → 2** (base main post leaves-8)
+- `tsc --noEmit` : **0 erreur**
+- `npm test` : **347 verts**
+- 0 collateral runtime (annotation / casts uniquement)
+
+**Base** : PR #18 leaves-8 **déjà mergée** @ `643e28a`.
+
+**Restant `@ts-nocheck` engine** (2) :
+- `statisticalEdge` (~276 LOC), `mql5Export` (~513 LOC) — lots séparés
 
 ---
 
 ## Session 2026-07-25 — P11-TS-LEAVES-8 (lot #8)
 
-**Livré / PR** — retrait `@ts-nocheck` + typage strict de 2 feuilles :
-
-1. `src/engine/syntheticValidator.ts` — `ValidatorStrategy` / `ValidatorParams` / `ValidatorOptions` / `ValidatorResult` ; gates typées ; aligné `runBacktestExt` + `OHLCVBar` / `StrategyEvalFn`
-2. `src/engine/strategyFactory.ts` — `FactoryVariant` / `FactoryPortfolio` / `FactoryProgress` ; `buildPortfolio` + `runFactory` + messages worker typés ; import `findSymbol` inutilisé retiré (noUnusedLocals)
-
-- Engine `@ts-nocheck` : **6 → 4** (base main post leaves-7)
-- `tsc --noEmit` : **0 erreur**
-- `npm test` : **347 verts**
-- 0 collateral runtime (annotation / casts uniquement)
-- Pas d’autres feuilles ajoutées (restantes ≥196 LOC)
-
-**Base** : merge de `origin/main` (leaves-7 **mergé** via PR #17 @ `c6d015b`).
-
-**Restant `@ts-nocheck` engine** (4) :
-- `marketData`, `analyticsAdvanced`, `statisticalEdge`, `mql5Export`
+**Livré / PR #18 mergé** — `p11-ts-leaves-8` @ `36e5ddf` → `main` @ `643e28a` : syntheticValidator · strategyFactory.
 
 ---
 
@@ -62,4 +67,4 @@
 ## Notes session
 
 - Prod : `QX_SSO_SECRET` + `./scripts/ops_migrate.sh` + `docs/OPS_GO_LIVE.md`.  
-- Dev : typer feuilles restantes → `marketData` / `analyticsAdvanced` → gros modules (`statisticalEdge`, `mql5Export`).
+- Dev : typer feuilles restantes → `statisticalEdge` puis `mql5Export`.

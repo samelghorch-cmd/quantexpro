@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Couche de données de marché réelles — Binance (crypto) + Yahoo Finance (tout le reste),
 // gratuit, sans clé. Normalise vers le format OHLCV interne {t,o,h,l,c,v}.
 // CORS Yahoo contourné par un proxy (/api/yf) : Vite en dev, Cloudflare Function en prod.
@@ -6,8 +5,127 @@ import { aggregateBars } from "./syntheticData.ts";
 import { cleanBars, applyAdjustment } from "./dataQuality.ts";
 import { idbGet, idbPut, idbAll, idbDelete, idbClear, storageEstimate } from "./dataStore.ts";
 
+export type MarketProvider = "binance" | "yahoo";
+
+export interface MarketSymbol {
+  key: string;
+  label: string;
+  provider: MarketProvider;
+  ticker: string;
+}
+
+export interface AssetClass {
+  id: string;
+  label: string;
+  symbols: MarketSymbol[];
+}
+
+export interface CatalogSymbol extends MarketSymbol {
+  classId: string;
+  classLabel: string;
+}
+
+export type TimeframeFactor = 1 | 3 | 12 | 48 | 288;
+
+export interface TfMapEntry {
+  label: string;
+  binance: string;
+  yahoo: string;
+  yahooRange: string;
+  aggYahoo: number;
+}
+
+export interface MarketBar {
+  t: number;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v: number;
+  vBuy?: number;
+}
+
+/** Barre acceptable en entrée d'import (v optionnel — ex. pont API barsSync). */
+export type ImportableBar = {
+  t: number;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v?: number;
+  vBuy?: number;
+};
+
+export interface QualityReport {
+  initial: number;
+  kept: number;
+  removed: number;
+  dupes: number;
+  gaps: number;
+  health: number;
+  step?: number;
+}
+
+export interface CacheMeta {
+  symbolKey?: string;
+  label?: string;
+  classLabel?: string;
+  provider?: string;
+  ticker?: string;
+  tf?: number;
+  source?: string;
+  ts?: number;
+  count?: number;
+  [key: string]: unknown;
+}
+
+export interface CacheRecord {
+  id: string;
+  bars: MarketBar[];
+  report?: QualityReport;
+  meta?: CacheMeta;
+}
+
+export interface CachedPayload {
+  bars: MarketBar[];
+  report?: QualityReport;
+}
+
+export interface FetchCandlesOpts {
+  force?: boolean;
+}
+
+export interface FetchCandlesResult {
+  bars: MarketBar[];
+  symbol: CatalogSymbol;
+  cached: boolean;
+  report?: QualityReport;
+}
+
+export interface ImportSeriesOpts {
+  provider?: string;
+}
+
+export interface ImportSeriesResult {
+  count: number;
+  report: QualityReport;
+  span: [number, number] | null;
+}
+
+export interface CachedSeriesRow {
+  id: string;
+  bars: number;
+  span: [number, number] | null;
+  health?: number;
+  gaps?: number;
+  bytes: number;
+  label?: string;
+  tf?: number;
+  [key: string]: unknown;
+}
+
 // ---- Catalogue de symboles par classe d'actif ----
-export const ASSET_CLASSES = [
+export const ASSET_CLASSES: AssetClass[] = [
   {
     id: "crypto", label: "Crypto",
     symbols: [
@@ -67,12 +185,16 @@ export const ASSET_CLASSES = [
   },
 ];
 
-export const ALL_SYMBOLS = ASSET_CLASSES.flatMap((c) => c.symbols.map((s) => ({ ...s, classId: c.id, classLabel: c.label })));
-export function findSymbol(key) { return ALL_SYMBOLS.find((s) => s.key === key); }
+export const ALL_SYMBOLS: CatalogSymbol[] = ASSET_CLASSES.flatMap((c) =>
+  c.symbols.map((s) => ({ ...s, classId: c.id, classLabel: c.label })),
+);
+export function findSymbol(key: string): CatalogSymbol | undefined {
+  return ALL_SYMBOLS.find((s) => s.key === key);
+}
 
 // Timeframe interne (facteur de barres 5m) → intervalles fournisseurs.
 // 1=5m, 3=15m, 12=1h, 48=4h, 288=1d
-export const TF_MAP = {
+export const TF_MAP: Record<number, TfMapEntry> = {
   1:   { label: "5m",  binance: "5m",  yahoo: "5m",  yahooRange: "1mo",  aggYahoo: 1 },
   3:   { label: "15m", binance: "15m", yahoo: "15m", yahooRange: "1mo",  aggYahoo: 1 },
   12:  { label: "1h",  binance: "1h",  yahoo: "60m", yahooRange: "2y",   aggYahoo: 1 },
@@ -81,68 +203,107 @@ export const TF_MAP = {
 };
 
 // ---- Cache IndexedDB (gros quota, multi-années, pré-téléchargement hors-ligne) ----
-const cacheId = (provider, ticker, tf) => `${provider}:${ticker}:${tf}`;
+const cacheId = (provider: string, ticker: string, tf: number): string => `${provider}:${ticker}:${tf}`;
 
-async function readCache(provider, ticker, tf) {
+async function readCache(provider: string, ticker: string, tf: number): Promise<CachedPayload | null> {
   try {
-    const rec = await idbGet(cacheId(provider, ticker, tf));
+    const rec = (await idbGet(cacheId(provider, ticker, tf))) as CacheRecord | null;
     if (!rec) return null;
     return { bars: rec.bars, report: rec.report };
   } catch { return null; }
 }
-async function writeCache(provider, ticker, tf, payload, meta) {
+async function writeCache(
+  provider: string,
+  ticker: string,
+  tf: number,
+  payload: CachedPayload,
+  meta: CacheMeta,
+): Promise<void> {
   try {
-    await idbPut({ id: cacheId(provider, ticker, tf), bars: payload.bars, report: payload.report, meta: { ...meta, ts: Date.now(), count: payload.bars.length } });
+    await idbPut({
+      id: cacheId(provider, ticker, tf),
+      bars: payload.bars,
+      report: payload.report,
+      meta: { ...meta, ts: Date.now(), count: payload.bars.length },
+    });
   } catch { /* IDB indisponible → pas de cache */ }
 }
 
 // ---- Fournisseurs ----
-const BINANCE_BATCHES = { 288: 12, 48: 8, 12: 8, 3: 3, 1: 2 }; // profondeur par timeframe
+const BINANCE_BATCHES: Record<number, number> = { 288: 12, 48: 8, 12: 8, 3: 3, 1: 2 }; // profondeur par timeframe
 
-async function fetchBinance(ticker, tf) {
+type BinanceKline = (number | string)[];
+
+async function fetchBinance(ticker: string, tf: number): Promise<MarketBar[]> {
   const interval = TF_MAP[tf].binance;
   // pagination pour couvrir plusieurs années (max 1000 bars / requête)
   const maxBatches = BINANCE_BATCHES[tf] || 2;
-  let all = [];
+  let all: BinanceKline[] = [];
   let endTime = Date.now();
   for (let b = 0; b < maxBatches; b++) {
     const url = `https://api.binance.com/api/v3/klines?symbol=${ticker}&interval=${interval}&limit=1000&endTime=${endTime}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error(`Binance ${r.status}`);
-    const data = await r.json();
+    const data = (await r.json()) as BinanceKline[];
     if (!data.length) break;
     all = data.concat(all);
-    endTime = data[0][0] - 1;
+    endTime = Number(data[0][0]) - 1;
     if (data.length < 1000) break;
   }
   // k[9] = taker buy base volume (achats agressifs) → classification order-flow RÉELLE (pas d'estimation).
-  return all.map((k) => ({ t: k[0], o: +k[1], h: +k[2], l: +k[3], c: +k[4], v: +k[5], vBuy: +k[9] }));
+  return all.map((k) => ({
+    t: +k[0], o: +k[1], h: +k[2], l: +k[3], c: +k[4], v: +k[5], vBuy: +k[9],
+  }));
 }
 
-async function fetchYahoo(ticker, tf) {
+interface YahooQuote {
+  open: Array<number | null>;
+  high: Array<number | null>;
+  low: Array<number | null>;
+  close: Array<number | null>;
+  volume: Array<number | null>;
+}
+
+interface YahooChartResult {
+  timestamp: number[];
+  indicators: {
+    quote: YahooQuote[];
+    adjclose?: Array<{ adjclose: Array<number | null> }>;
+  };
+}
+
+interface YahooChartResponse {
+  chart?: { result?: YahooChartResult[] | null };
+}
+
+async function fetchYahoo(ticker: string, tf: number): Promise<MarketBar[]> {
   const { yahoo: interval, yahooRange: range, aggYahoo } = TF_MAP[tf];
   const url = `/api/yf/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${range}`;
   const r = await fetch(url);
   if (!r.ok) throw new Error(`Yahoo ${r.status}`);
-  const j = await r.json();
+  const j = (await r.json()) as YahooChartResponse;
   const res = j?.chart?.result?.[0];
   if (!res || !res.timestamp) throw new Error("Yahoo: pas de données");
   const q = res.indicators.quote[0];
   const adj = res.indicators.adjclose?.[0]?.adjclose; // prix ajustés splits/dividendes (daily)
-  let bars = [];
-  const adjArr = [];
+  let bars: MarketBar[] = [];
+  const adjArr: number[] = [];
   for (let i = 0; i < res.timestamp.length; i++) {
     const o = q.open[i], h = q.high[i], l = q.low[i], c = q.close[i];
     if ([o, h, l, c].some((v) => v == null)) continue;
-    bars.push({ t: res.timestamp[i] * 1000, o, h, l, c, v: q.volume[i] || 0 });
-    adjArr.push(adj ? adj[i] : c);
+    bars.push({ t: res.timestamp[i] * 1000, o: o as number, h: h as number, l: l as number, c: c as number, v: q.volume[i] || 0 });
+    adjArr.push(adj ? (adj[i] as number) : (c as number));
   }
-  if (adj) bars = applyAdjustment(bars, adjArr); // corrige splits/dividendes
-  return aggYahoo > 1 ? aggregateBars(bars, aggYahoo) : bars;
+  if (adj) bars = applyAdjustment(bars, adjArr) as MarketBar[]; // corrige splits/dividendes
+  return aggYahoo > 1 ? (aggregateBars(bars, aggYahoo) as MarketBar[]) : bars;
 }
 
 // ---- API publique ----
-export async function fetchCandles(symbolKey, tf, { force = false } = {}) {
+export async function fetchCandles(
+  symbolKey: string,
+  tf: number,
+  { force = false }: FetchCandlesOpts = {},
+): Promise<FetchCandlesResult> {
   const sym = findSymbol(symbolKey);
   if (!sym) throw new Error(`Symbole inconnu : ${symbolKey}`);
   if (!force) {
@@ -150,13 +311,24 @@ export async function fetchCandles(symbolKey, tf, { force = false } = {}) {
     if (cached) return { bars: cached.bars, symbol: sym, cached: true, report: cached.report };
   }
   const raw = sym.provider === "binance" ? await fetchBinance(sym.ticker, tf) : await fetchYahoo(sym.ticker, tf);
-  const { bars, report } = cleanBars(raw, { assetClass: sym.classId }); // nettoyage qualité
-  if (bars.length) await writeCache(sym.provider, sym.ticker, tf, { bars, report }, { symbolKey, label: sym.label, classLabel: sym.classLabel, provider: sym.provider, ticker: sym.ticker, tf });
+  const { bars, report } = cleanBars(raw, { assetClass: sym.classId }) as {
+    bars: MarketBar[];
+    report: QualityReport;
+  }; // nettoyage qualité
+  if (bars.length) {
+    await writeCache(
+      sym.provider,
+      sym.ticker,
+      tf,
+      { bars, report },
+      { symbolKey, label: sym.label, classLabel: sym.classLabel, provider: sym.provider, ticker: sym.ticker, tf },
+    );
+  }
   return { bars, symbol: sym, cached: false, report };
 }
 
 /** Lit les barres IndexedDB sans réseau (null si absent). */
-export async function loadCachedBars(symbolKey, tf) {
+export async function loadCachedBars(symbolKey: string, tf: number): Promise<MarketBar[] | null> {
   const sym = findSymbol(symbolKey);
   if (!sym) return null;
   const cached = await readCache(sym.provider, sym.ticker, tf);
@@ -168,29 +340,41 @@ export async function loadCachedBars(symbolKey, tf) {
 // Manager) les utilise exactement comme une série chargée. Format attendu : bars = [{t,o,h,l,c,v}].
 // Note : 500 Go de ticks ne tiennent pas dans le navigateur ; on n'importe ici que l'OHLCV agrégé
 // (léger : ~20 ans en 1h ≈ quelques Mo), produit en local par le script Node d'ingestion.
-export async function importSeries(symbolKey, tf, bars, { provider } = {}) {
+export async function importSeries(
+  symbolKey: string,
+  tf: number,
+  bars: ImportableBar[],
+  { provider }: ImportSeriesOpts = {},
+): Promise<ImportSeriesResult> {
   const sym = findSymbol(symbolKey);
   if (!sym) throw new Error(`Symbole inconnu : ${symbolKey} (doit exister dans ASSET_CLASSES)`);
   if (!Array.isArray(bars) || !bars.length) throw new Error("Aucune barre à importer");
-  const { bars: clean, report } = cleanBars(bars, { assetClass: sym.classId });
+  const { bars: clean, report } = cleanBars(bars as MarketBar[], { assetClass: sym.classId }) as {
+    bars: MarketBar[];
+    report: QualityReport;
+  };
   await writeCache(sym.provider, sym.ticker, tf, { bars: clean, report },
     { symbolKey, label: sym.label, classLabel: sym.classLabel, provider: provider || "dukascopy", ticker: sym.ticker, tf, source: provider || "dukascopy" });
   return { count: clean.length, report, span: clean.length ? [clean[0].t, clean[clean.length - 1].t] : null };
 }
 
 // ---- Helpers Data Manager ----
-export async function listCachedSeries() {
+export async function listCachedSeries(): Promise<CachedSeriesRow[]> {
   try {
-    const all = await idbAll();
+    const all = (await idbAll()) as CacheRecord[];
     return all.map((r) => ({
       id: r.id, ...r.meta,
       bars: r.bars.length,
-      span: r.bars.length ? [r.bars[0].t, r.bars[r.bars.length - 1].t] : null,
+      span: r.bars.length ? [r.bars[0].t, r.bars[r.bars.length - 1].t] as [number, number] : null,
       health: r.report?.health, gaps: r.report?.gaps,
       bytes: JSON.stringify(r.bars).length,
-    })).sort((a, b) => (a.label || "").localeCompare(b.label || "") || (a.tf - b.tf));
+    })).sort((a, b) => (String(a.label || "")).localeCompare(String(b.label || "")) || (Number(a.tf) - Number(b.tf)));
   } catch { return []; }
 }
-export async function deleteCachedSeries(id) { try { await idbDelete(id); } catch { /* noop */ } }
-export async function clearMarketCache() { try { await idbClear(); } catch { /* noop */ } }
+export async function deleteCachedSeries(id: IDBValidKey): Promise<void> {
+  try { await idbDelete(id); } catch { /* noop */ }
+}
+export async function clearMarketCache(): Promise<void> {
+  try { await idbClear(); } catch { /* noop */ }
+}
 export { storageEstimate };
