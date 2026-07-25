@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Générateur PDF minimal (PDF 1.4, Helvetica) — zéro dépendance.
 // Suffisant pour des tearsheets texte multi-pages A4.
 
@@ -7,14 +6,14 @@ const PAGE_H = 792;
 const MARGIN = 48;
 const LINE_H = 14;
 
-function escPdf(str) {
+function escPdf(str: unknown) {
   return String(str ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)")
     .replace(/[^\x20-\x7E]/g, (ch) => {
       // Latin-1 approximatif via hex pour accents FR courants
-      const map = {
+      const map: Record<string, string> = {
         "é": "e", "è": "e", "ê": "e", "ë": "e",
         "à": "a", "â": "a", "ä": "a",
         "ù": "u", "û": "u", "ü": "u",
@@ -33,7 +32,7 @@ function escPdf(str) {
  * @param {{ title?: string }} [opts]
  * @returns {Uint8Array}
  */
-export function buildTextPdf(lines, opts = {}) {
+export function buildTextPdf(lines: string[], opts: { title?: string } = {}) {
   const title = opts.title || "QuantEXPro";
   const maxChars = 90;
   const wrapped = [];
@@ -61,8 +60,8 @@ export function buildTextPdf(lines, opts = {}) {
   }
   if (pages.length === 0) pages.push([""]);
 
-  const objects = [];
-  const add = (body) => {
+  const objects: string[] = [];
+  const add = (body: string) => {
     objects.push(body);
     return objects.length; // 1-based id
   };
@@ -129,15 +128,15 @@ export function buildTextPdf(lines, opts = {}) {
 
   // Assemble
   const encoder = new TextEncoder();
-  const chunks = [];
+  const chunks: Uint8Array[] = [];
   let offset = 0;
   const offsets = [0]; // xref 0
 
-  const push = (bytes) => {
+  const push = (bytes: Uint8Array) => {
     chunks.push(bytes);
     offset += bytes.length;
   };
-  const pushStr = (s) => push(encoder.encode(s));
+  const pushStr = (s: string) => push(encoder.encode(s));
 
   pushStr("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
 
@@ -165,6 +164,6 @@ export function buildTextPdf(lines, opts = {}) {
   return out;
 }
 
-export function pdfToBlob(bytes) {
+export function pdfToBlob(bytes: Uint8Array) {
   return new Blob([bytes], { type: "application/pdf" });
 }
