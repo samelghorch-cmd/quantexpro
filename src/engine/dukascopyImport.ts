@@ -1,4 +1,3 @@
-// @ts-nocheck — migration bulk P10-TS-ENGINE; typage strict à reprendre fichier par fichier.
 // Schéma d'import Dukascopy / séries profondes (P2-DUKA).
 // Partagé : Data Manager (navigateur) + tools/dukascopy (Node).
 
@@ -18,7 +17,7 @@ export const DUKA_INSTRUMENT = {
  * Normalise les lignes dukascopy-node → barres {t,o,h,l,c,v}.
  * Accepte aussi des barres déjà au format interne.
  */
-export function normalizeDukaRows(rows) {
+export function normalizeDukaRows(rows: unknown) {
   if (!Array.isArray(rows)) return [];
   const bars = [];
   for (const r of rows) {
@@ -49,7 +48,7 @@ export function normalizeDukaRows(rows) {
  * Valide un objet série importable.
  * @returns {{ ok: boolean, errors: string[], series?: object }}
  */
-export function validateImportSeries(raw) {
+export function validateImportSeries(raw: any) {
   const errors = [];
   if (!raw || typeof raw !== "object") return { ok: false, errors: ["payload non-objet"] };
   const symbolKey = String(raw.symbolKey || "").toUpperCase();
@@ -90,7 +89,7 @@ export function validateImportSeries(raw) {
 }
 
 /** Parse JSON (objet ou tableau) → séries validées + rapport. */
-export function parseImportPayload(data) {
+export function parseImportPayload(data: any) {
   const list = Array.isArray(data) ? data : [data];
   const ok = [];
   const failed = [];
@@ -103,7 +102,7 @@ export function parseImportPayload(data) {
 }
 
 /** Découpe [from, to] en fenêtres annuelles (évite timeouts sur 15-20 ans). */
-export function yearChunks(from, to) {
+export function yearChunks(from: string | number | Date, to: string | number | Date) {
   const start = new Date(from);
   const end = new Date(to);
   if (!(start < end)) return [];
