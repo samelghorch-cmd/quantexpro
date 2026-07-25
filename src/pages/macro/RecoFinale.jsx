@@ -4,6 +4,7 @@ import { usePipeline } from "../../state/PipelineContext.tsx";
 import { computeRecoFinale } from "../../engine/recoFinale.ts";
 import { Panel, Button, ScoreGauge, SimBadge, ProgressBar, fmt } from "../../components/shared/ui.tsx";
 import { PipelineStepper } from "../../components/shared/PipelineStepper.tsx";
+import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
 import { T, verdictColor } from "../../components/shared/theme.ts";
 
 export function RecoFinalePage() {
@@ -33,6 +34,7 @@ export function RecoFinalePage() {
   return (
     <div>
       <PipelineStepper current="recoFinale" />
+      <NextStepBar current="recoFinale" />
       {!hasInputs ? (
         <Panel><div style={{ padding: 30, textAlign: "center", color: T.textDim }}>Fais tourner le pipeline (au moins un Backtest) avant la Reco Finale. Idéalement : Backtest → FAO → Post-FAO → Quant Optim → Validator.</div></Panel>
       ) : (
