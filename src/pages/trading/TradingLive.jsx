@@ -1,66 +1,63 @@
-// Modules TRADING "live" (démo synthétique) : Chart Live, Cockpit, Master Cockpit, Orchestrateur, News React, Live Optim.
+// Modules TRADING : Chart Live / Cockpit / Master Cockpit sont désormais RÉELS — flux
+// Binance temps réel (crypto) via useBinanceLiveBars + chart TradingView, repli historique
+// réel hors-crypto. Orchestrateur / News React / Live Optim restent sur l'historique réel.
 import { useState, useMemo, useCallback } from "react";
 import { usePipeline } from "../../state/PipelineContext.tsx";
-import { useSyntheticLiveFeed } from "../../hooks/useSyntheticLiveFeed.ts";
+import { useBinanceLiveBars } from "../../hooks/useBinanceLiveBars.ts";
 import { buildContext } from "../../engine/context.ts";
 import { runFAO } from "../../engine/fao.ts";
-import { CandlestickChart } from "../../components/charts/CandlestickChart.tsx";
+import { TvCandleChart } from "../../components/charts/TvCandleChart.tsx";
 import { Panel, Button, Badge, SimBadge, MetricCard, MetricGrid, DataTable, fmt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { T, sideColor } from "../../components/shared/theme.ts";
 
-function LiveControls({ feed }) {
-  return (
-    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-      <SimBadge />
-      <Button onClick={() => feed.setPlaying((p) => !p)}>{feed.playing ? "⏸ Pause" : "▶ Play"}</Button>
-      <Button onClick={() => feed.setIdx((i) => Math.min(feed.idx + 20, 100000))}>⏭ +20</Button>
-      <span style={{ fontSize: 11, color: T.textDim, fontFamily: T.mono }}>bar {feed.idx}</span>
-    </div>
-  );
+// Flux courant : Binance temps réel si l'actif est crypto, sinon historique réel du pipeline.
+function useLiveFeed() {
+  const { bars, dataMeta, tf } = usePipeline();
+  const sym = dataMeta?.symbol;
+  const isCrypto = sym?.provider === "binance";
+  const live = useBinanceLiveBars({ ticker: isCrypto ? sym.ticker : null, tf, warmBars: bars, enabled: isCrypto });
+  return { isCrypto, liveBars: isCrypto ? live.bars : bars, connected: live.connected, last: isCrypto ? live.last : (bars[bars.length - 1] || null) };
+}
+
+function LiveBadge({ isCrypto, connected }) {
+  if (!isCrypto) return <Badge color={T.textDim}>historique réel</Badge>;
+  return <Badge color={connected ? T.green : T.yellow}>{connected ? "● LIVE Binance" : "connexion…"}</Badge>;
 }
 
 export function ChartLivePage() {
-  const { bars } = usePipeline();
-  const feed = useSyntheticLiveFeed(bars, { autoStart: true });
-  const ctx = useMemo(() => feed.visible.length > 60 ? buildContext(feed.visible) : null, [feed.visible]);
-  const overlays = useMemo(() => ctx ? [
-    { name: "EMA20", data: ctx.ema[20], color: T.blue, width: 1.5 },
-    { name: "EMA50", data: ctx.ema[50], color: T.purple, width: 1.5 },
-    { name: "VWAP", data: ctx.vwap, color: T.yellow, width: 1.5 },
-  ] : [], [ctx]);
+  const { assetKey } = usePipeline();
+  const { isCrypto, liveBars, connected, last } = useLiveFeed();
   return (
-    <Panel title="Chart Live (rejeu synthétique)" right={<LiveControls feed={feed} />}>
-      {ctx ? <CandlestickChart bars={feed.visible} ctx={ctx} overlays={overlays} signals={[]} height={480} /> : <div style={{ padding: 20, color: T.textDim }}>Chargement du flux…</div>}
-      <div style={{ marginTop: 8, fontSize: 11, color: T.textDim }}>Dernier prix : <b style={{ color: T.text, fontFamily: T.mono }}>{feed.last?.c.toFixed(2)}</b></div>
+    <Panel title={`Chart Live · ${assetKey}`} right={<LiveBadge isCrypto={isCrypto} connected={connected} />}>
+      <TvCandleChart bars={liveBars} height={480} />
+      <div style={{ marginTop: 8, fontSize: 11, color: T.textDim }}>
+        Dernier prix : <b style={{ color: T.text, fontFamily: T.mono }}>{last?.c != null ? last.c.toFixed(2) : "—"}</b>
+        {!isCrypto && <span style={{ color: T.textFaint }}> · Flux temps réel dispo sur la crypto (Binance). Pour {assetKey}, pas de flux intraday gratuit — dernier historique réel affiché (interactif).</span>}
+      </div>
     </Panel>
   );
 }
 
 function CockpitBase({ title, master }) {
-  const { bars, ctx, library, symbol } = usePipeline();
-  const feed = useSyntheticLiveFeed(bars, { autoStart: true });
+  const { library } = usePipeline();
+  const { isCrypto, liveBars, connected, last } = useLiveFeed();
   const slots = master ? [1, 3, 21, 31, 24, 55] : [3, 21, 31];
-  const liveCtx = useMemo(() => feed.visible.length > 60 ? buildContext(feed.visible) : ctx, [feed.visible, ctx]);
-  const i = feed.visible.length - 1;
+  const liveCtx = useMemo(() => liveBars.length > 60 ? buildContext(liveBars) : null, [liveBars]);
+  const i = liveBars.length - 1;
 
   const signals = slots.map((id) => {
     const s = library.find((x) => x.id === id);
-    if (!s || i < 1) return { id, name: s?.name, long: false, short: false };
+    if (!s || i < 1 || !liveCtx) return { id, name: s?.name, long: false, short: false };
     const sig = s.eval(liveCtx, i);
     return { id, name: s.name, long: sig.long, short: sig.short };
   });
   const nLong = signals.filter((s) => s.long).length;
   const nShort = signals.filter((s) => s.short).length;
 
-  const overlays = useMemo(() => liveCtx ? [
-    { name: "EMA20", data: liveCtx.ema[20], color: T.blue, width: 1.5 },
-    { name: "VWAP", data: liveCtx.vwap, color: T.yellow, width: 1.5 },
-  ] : [], [liveCtx]);
-
   return (
     <div style={{ display: "grid", gridTemplateColumns: master ? "1fr 320px" : "1fr 280px", gap: 14, alignItems: "start" }}>
-      <Panel title={title} right={<LiveControls feed={feed} />}>
-        {liveCtx && <CandlestickChart bars={feed.visible} ctx={liveCtx} overlays={overlays} signals={[]} height={master ? 460 : 380} />}
+      <Panel title={title} right={<LiveBadge isCrypto={isCrypto} connected={connected} />}>
+        <TvCandleChart bars={liveBars} height={master ? 460 : 380} />
       </Panel>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <Panel title="Confluence live">
@@ -83,7 +80,7 @@ function CockpitBase({ title, master }) {
             </div>
           ))}
         </Panel>
-        {master && <Panel title="État marché"><MetricGrid min={110}><MetricCard label="Prix" value={feed.last?.c.toFixed(2)} /><MetricCard label="ATR14" value={liveCtx ? fmt(liveCtx.atr14[i]) : "—"} /><MetricCard label="RSI14" value={liveCtx ? fmt(liveCtx.rsi[14][i], 0) : "—"} /><MetricCard label="ADX14" value={liveCtx ? fmt(liveCtx.adx14.adx[i], 0) : "—"} /></MetricGrid></Panel>}
+        {master && <Panel title="État marché"><MetricGrid min={110}><MetricCard label="Prix" value={last?.c != null ? last.c.toFixed(2) : "—"} /><MetricCard label="ATR14" value={liveCtx ? fmt(liveCtx.atr14[i]) : "—"} /><MetricCard label="RSI14" value={liveCtx ? fmt(liveCtx.rsi[14][i], 0) : "—"} /><MetricCard label="ADX14" value={liveCtx ? fmt(liveCtx.adx14.adx[i], 0) : "—"} /></MetricGrid></Panel>}
       </div>
     </div>
   );
