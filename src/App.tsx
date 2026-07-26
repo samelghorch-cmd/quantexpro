@@ -6,6 +6,7 @@ import { T } from "./components/shared/theme.ts";
 import { ALL_MODULES } from "./registry.ts";
 import { PAGES } from "./pages/index.jsx";
 import { GlobalControls } from "./components/layout/GlobalControls.tsx";
+import { DataStatusBanner } from "./components/shared/DataStatusBanner.tsx";
 import { completeOidcCallbackFromUrl } from "./engine/ssoAuth.ts";
 
 // Garde-fou : isole les erreurs d'UN module pour que le reste de la plateforme ne plante jamais.
@@ -60,6 +61,7 @@ function Shell() {
             </div>
             <GlobalControls />
           </div>
+          <DataStatusBanner />
           <div style={{ flex: 1, overflow: "auto", padding: 18 }}>
             <ModuleErrorBoundary key={activeModule}>
               <Suspense fallback={<div style={{ color: T.textDim, fontSize: 12.5 }}>Chargement du module…</div>}>

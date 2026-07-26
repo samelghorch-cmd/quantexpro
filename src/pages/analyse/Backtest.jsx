@@ -7,6 +7,7 @@ import { logBacktest } from "../../engine/strategyStore.ts";
 import { tradesToCSV, downloadCSV } from "../../engine/exportUtils.ts";
 import { EquityChart } from "../../components/charts/EquityChart.tsx";
 import { Histogram } from "../../components/charts/Histogram.tsx";
+import { TvCandleChart } from "../../components/charts/TvCandleChart.tsx";
 import { Panel, MetricCard, MetricGrid, Button, Field, Select, NumberInput, SimBadge, fmt, fmtInt, fmtPct, fmtUsd } from "../../components/shared/ui.tsx";
 import { StrategyPicker } from "../../components/shared/StrategyPicker.tsx";
 import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
@@ -126,6 +127,9 @@ export function BacktestPage() {
               <MetricGrid min={120}>
                 {cards.map((c) => <MetricCard key={c.label} {...c} />)}
               </MetricGrid>
+            </Panel>
+            <Panel title={`Prix + trades · ${symbol}`} right={<span style={{ fontSize: 10.5, color: T.textFaint }}>glisse / zoome · ▲ achat ▼ vente ● sortie</span>}>
+              <TvCandleChart bars={bars} trades={result.res.trades} height={360} />
             </Panel>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <Panel title="Courbe d'équité" right={<span style={{ fontSize: 11, color: result.res.totalPnL >= 0 ? T.green : T.red, fontFamily: T.mono }}>{fmtUsd(result.res.finalEquity)}</span>}>
