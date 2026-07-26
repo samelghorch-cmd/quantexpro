@@ -84,7 +84,7 @@ const REAL = {
   cot: L(() => import("./macro/CotPage.jsx"), "CotPage"),
   yieldCurve: L(() => import("./macro/MacroFred.jsx"), "YieldCurvePage"),
   usdLiquidity: L(() => import("./macro/MacroFred.jsx"), "UsdLiquidityPage"),
-  riskOnOff: makeExternalPage("riskOnOff"),
+  riskOnOff: L(() => import("./macro/MacroFred.jsx"), "RiskOnOffPage"),
   inflation: L(() => import("./macro/MacroFred.jsx"), "InflationPage"),
   surpriseIndex: makeExternalPage("surpriseIndex"),
   // Labs
