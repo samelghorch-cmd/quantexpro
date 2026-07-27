@@ -90,17 +90,20 @@ export function CockpitPage() { return <CockpitBase title="Cockpit" master={fals
 export function MasterCockpitPage() { return <CockpitBase title="Master Cockpit" master={true} />; }
 
 export function OrchestrateurPage() {
-  const { bars, ctx, library } = usePipeline();
+  const { library } = usePipeline();
+  const { isCrypto, liveBars, connected } = useLiveFeed();
+  const liveCtx = useMemo(() => liveBars.length > 60 ? buildContext(liveBars) : null, [liveBars]);
   const slots = [1, 3, 4, 21, 31, 24, 55, 94];
-  const i = bars.length - 1;
+  const i = liveBars.length - 1;
   const rows = slots.map((id) => {
     const s = library.find((x) => x.id === id);
+    if (!s || !liveCtx) return { id, name: s?.name, cat: s?.cat, longCount: 0, shortCount: 0, state: "FLAT" };
     let longCount = 0, shortCount = 0;
-    for (let k = Math.max(1, bars.length - 200); k < bars.length; k++) {
-      const sig = s.eval(ctx, k);
+    for (let k = Math.max(1, liveBars.length - 200); k < liveBars.length; k++) {
+      const sig = s.eval(liveCtx, k);
       if (sig.long) longCount++; if (sig.short) shortCount++;
     }
-    const cur = i >= 1 ? s.eval(ctx, i) : { long: false, short: false };
+    const cur = i >= 1 ? s.eval(liveCtx, i) : { long: false, short: false };
     return { id, name: s.name, cat: s.cat, longCount, shortCount, state: cur.long ? "LONG" : cur.short ? "SHORT" : "FLAT" };
   });
   const columns = [
@@ -111,27 +114,27 @@ export function OrchestrateurPage() {
     { key: "shortCount", label: "Signaux S (200b)", align: "right", render: (r) => r.shortCount, color: () => T.red },
   ];
   return (
-    <Panel title="Orchestrateur multi-stratégies" right={<SimBadge />}>
+    <Panel title="Orchestrateur multi-stratégies" right={<LiveBadge isCrypto={isCrypto} connected={connected} />}>
       <DataTable columns={columns} rows={rows} maxHeight={420} />
-      <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint }}>Coordonne plusieurs stratégies en parallèle. État live évalué sur la dernière barre du marché synthétique.</div>
+      <div style={{ marginTop: 8, fontSize: 10.5, color: T.textFaint }}>Coordonne plusieurs stratégies en parallèle. État évalué sur la dernière bougie {isCrypto ? "temps réel (Binance)" : "réelle"}.</div>
     </Panel>
   );
 }
 
 export function NewsReactPage() {
-  const { bars } = usePipeline();
-  // Détecte les chocs de volatilité déjà encodés dans le générateur synthétique.
+  const { isCrypto, liveBars, connected } = useLiveFeed();
+  // Détecte les chocs de volatilité (proxy d'événements « news ») sur les données réelles.
   const events = useMemo(() => {
     const evs = [];
-    for (let i = 1; i < bars.length; i++) {
-      const range = (bars[i].h - bars[i].l) / bars[i].c;
-      const prevRange = (bars[i - 1].h - bars[i - 1].l) / bars[i - 1].c;
+    for (let i = 1; i < liveBars.length; i++) {
+      const range = (liveBars[i].h - liveBars[i].l) / liveBars[i].c;
+      const prevRange = (liveBars[i - 1].h - liveBars[i - 1].l) / liveBars[i - 1].c;
       if (range > prevRange * 3 && range > 0.008) {
-        evs.push({ i, t: bars[i].t, range: range * 100, dir: bars[i].c > bars[i].o ? "hausse" : "baisse", move: ((bars[i].c - bars[i].o) / bars[i].o) * 100 });
+        evs.push({ i, t: liveBars[i].t, range: range * 100, dir: liveBars[i].c > liveBars[i].o ? "hausse" : "baisse", move: ((liveBars[i].c - liveBars[i].o) / liveBars[i].o) * 100 });
       }
     }
     return evs.slice(-40).reverse();
-  }, [bars]);
+  }, [liveBars]);
   const columns = [
     { key: "t", label: "Barre", render: (r) => new Date(r.t).toISOString().slice(5, 16).replace("T", " ") },
     { key: "range", label: "Amplitude %", align: "right", render: (r) => fmtPct(r.range, 2), color: () => T.yellow },
@@ -139,8 +142,8 @@ export function NewsReactPage() {
     { key: "move", label: "Mouvement %", align: "right", render: (r) => fmtPct(r.move, 2), color: (r) => r.move >= 0 ? T.green : T.red },
   ];
   return (
-    <Panel title="News React — chocs de volatilité détectés" right={<SimBadge />}>
-      <div style={{ fontSize: 11, color: T.textDim, marginBottom: 10 }}>Détecte les spikes de volatilité (proxy d'événements news) encodés dans le marché synthétique. {events.length} événements sur la période.</div>
+    <Panel title="News React — chocs de volatilité détectés" right={<LiveBadge isCrypto={isCrypto} connected={connected} />}>
+      <div style={{ fontSize: 11, color: T.textDim, marginBottom: 10 }}>Détecte les spikes de volatilité (proxy d'événements « news ») sur les données {isCrypto ? "temps réel" : "réelles"}. {events.length} événements sur la période.</div>
       <DataTable columns={columns} rows={events} maxHeight={380} />
     </Panel>
   );
@@ -165,7 +168,7 @@ export function LiveOptimPage() {
   ];
   return (
     <Panel title="Live Optim — ré-optimisation continue" right={<div style={{ display: "flex", gap: 8 }}><SimBadge /><Button primary onClick={tick}>▶ Cycle d'optim</Button></div>}>
-      <div style={{ fontSize: 11, color: T.textDim, marginBottom: 10 }}>Rejoue une passe FAO allégée à chaque cycle (simule une ré-optimisation périodique sur le flux).</div>
+      <div style={{ fontSize: 11, color: T.textDim, marginBottom: 10 }}>Rejoue une passe FAO allégée à chaque cycle sur les <b style={{ color: T.textDim }}>données réelles</b> courantes ({symbol}) — simule une ré-optimisation périodique (à la demande).</div>
       <DataTable columns={columns} rows={runs} maxHeight={360} />
     </Panel>
   );
