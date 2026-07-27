@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePersistentState } from "../../state/PipelineContext.tsx";
 import { fetchFredMany, lastVal, lastDate, yoy, FRED } from "../../engine/macroData.ts";
+import { computeRiskOnOff } from "../../engine/riskOnOff.ts";
 import { LineChart } from "../../components/charts/LineChart.tsx";
-import { Panel, Button, Badge, MetricCard, MetricGrid, fmt } from "../../components/shared/ui.tsx";
+import { Panel, Button, Badge, MetricCard, MetricGrid, ScoreGauge, fmt } from "../../components/shared/ui.tsx";
 import { T } from "../../components/shared/theme.ts";
 
 const fmtDate = (t) => t ? new Date(t).toISOString().slice(0, 10) : "—";
@@ -133,6 +134,48 @@ export function UsdLiquidityPage() {
         <Panel title="Bilan de la Réserve Fédérale (milliards $)">
           <LineChart series={[{ data: data.WALCL.slice(-600).map((p) => p.v / 1000), color: T.orange }]} height={200} yFormat={(v) => `${(v / 1000).toFixed(1)}T`} />
           <div style={{ fontSize: 10.5, color: T.textFaint, marginTop: 6 }}>QE = expansion (liquidité) · QT = contraction. Source : FRED (WALCL).</div>
+        </Panel>
+      )}
+    </div>
+  );
+}
+
+/* ===================== RISK ON / OFF ===================== */
+export function RiskOnOffPage() {
+  const { data, loading, error, reload } = useFred("riskonoff", ["VIXCLS", "BAMLH0A0HYM2", "T10Y2Y", "DTWEXBGS"]);
+  const r = computeRiskOnOff({ vix: data?.VIXCLS, hy: data?.BAMLH0A0HYM2, curve: data?.T10Y2Y });
+  const vColor = r.verdict === "Risk-ON" ? T.green : r.verdict === "Risk-OFF" ? T.red : T.yellow;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <Panel title="Risk On / Off — jauge composite" right={<Source loading={loading} error={error} reload={reload} date={data && lastDate(data.VIXCLS)} />}>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+          <ScoreGauge score={r.score ?? 0} label="Risk-ON" size={120} />
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: vColor }}>{r.verdict}</div>
+            <div style={{ fontSize: 12, color: T.textDim, marginTop: 4, maxWidth: 460, lineHeight: 1.5 }}>
+              Score composite (0 = risk-off extrême · 100 = risk-on) : rang percentile <b>historique</b> du <b>VIX</b>, du <b>spread high yield</b> et de la <b>courbe des taux 10A-2A</b>, pondéré. Données réelles FRED, sans clé API.
+            </div>
+          </div>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <MetricGrid min={180}>
+            {r.components.map((c) => (
+              <MetricCard key={c.key} label={c.label}
+                value={c.value != null ? fmt(c.value, 2) : "—"}
+                sub={c.pct != null ? `${Math.round(c.pct * 100)}ᵉ percentile historique` : "—"}
+                color={c.pct == null ? T.textDim : c.contrib >= 0.5 ? T.green : T.red} />
+            ))}
+          </MetricGrid>
+        </div>
+      </Panel>
+      {data && (
+        <Panel title="VIX (peur) & spread High Yield (stress crédit) — historique">
+          <LineChart series={[
+            { data: (data.VIXCLS || []).slice(-800).map((p) => p.v), color: T.orange, width: 1.8 },
+            { data: (data.BAMLH0A0HYM2 || []).slice(-800).map((p) => p.v * 5), color: T.red, width: 1.8 },
+          ]} height={200} />
+          <div style={{ fontSize: 10.5, color: T.textFaint, marginTop: 6 }}>Orange = VIX · Rouge = spread High Yield (×5 pour l'échelle). Les pics = épisodes risk-off (2008, 2020…). Source : FRED (VIXCLS, BAMLH0A0HYM2).</div>
         </Panel>
       )}
     </div>
