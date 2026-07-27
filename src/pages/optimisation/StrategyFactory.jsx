@@ -15,6 +15,28 @@ import { NextStepBar } from "../../components/shared/NextStepBar.tsx";
 
 const TF_OPTS = [{ v: 12, l: "1h" }, { v: 48, l: "4h" }, { v: 288, l: "1j" }, { v: 3, l: "15m" }];
 
+// Edge Score composite (0-100) : croise les dimensions de robustesse déjà mesurées par
+// l'Usine — score OOS, robustesse hors-échantillon, Deflated Sharpe, drawdown.
+function edgeScore(v) {
+  const oos = Math.max(0, Math.min(100, v.score || 0));
+  const rob = v.oos ? Math.max(0, Math.min(100, v.robustness || 0)) : 40;
+  const dsr = v.dsr != null ? Math.max(0, Math.min(100, v.dsr * 100)) : 50;
+  const dd = Math.max(0, Math.min(1, Math.abs(v.metrics?.maxDD ?? 0.3)));
+  const ddScore = (1 - Math.min(dd / 0.3, 1)) * 100;
+  return Math.round(0.35 * oos + 0.25 * rob + 0.25 * dsr + 0.15 * ddScore);
+}
+
+// Garde-fous d'auto-validation : un edge n'est retenu que s'il tient sur TOUS les axes.
+function passesGates(v) {
+  const m = v.metrics || {};
+  return !!v.oos
+    && (v.dsr == null || v.dsr >= 0.5)      // Deflated Sharpe : pas de sur-optimisation
+    && (v.robustness ?? 0) >= 40            // tient hors échantillon
+    && (m.sharpe ?? 0) > 0                  // edge positif
+    && (m.profitFactor ?? 0) > 1
+    && (m.totalPnLPct ?? 0) > 0;            // PnL out-of-sample positif
+}
+
 export function StrategyFactoryPage() {
   const { setPipe, log, navigate, setDataMode, setAssetKey, setTf } = usePipeline();
   // état PERSISTANT (magasin central) → conservé quand on quitte la page
@@ -30,6 +52,7 @@ export function StrategyFactoryPage() {
   const [error, setError] = useState(null);
   const [stressIdx, setStressIdx] = useState(0);
   const [savedMsg, setSavedMsg] = useState(null);
+  const [hunt, setHunt] = useState(null); // résultat de la chasse à l'edge { winners, tested }
 
   const space = useMemo(() => coveredSpace(assets.length, tfs.length), [assets, tfs]);
   const toggleAsset = (k) => setAssets((a) => a.includes(k) ? a.filter((x) => x !== k) : [...a, k]);
@@ -37,7 +60,7 @@ export function StrategyFactoryPage() {
 
   const launch = useCallback(async () => {
     if (assets.length === 0 || tfs.length === 0) return;
-    setRunning(true); setError(null); setResult(null); setSelectedIdx(0); setStressIdx(0);
+    setRunning(true); setError(null); setResult(null); setSelectedIdx(0); setStressIdx(0); setHunt(null);
     setProgress({ phase: "fetch", label: "Démarrage…", pct: 0 });
     log("Usine", `Lancement : ${assets.length} actifs × ${tfs.length} TF × 700 stratégies`);
     try {
@@ -86,6 +109,17 @@ export function StrategyFactoryPage() {
     for (const v of top) await saveVariant(v);
     setSavedMsg(`✓ ${top.length} stratégies enregistrées dans Mes Stratégies`);
   }, [result, saveVariant]);
+
+  // 🤖 Chasse à l'edge : croise les axes de robustesse, ne retient que les variantes qui
+  // passent TOUS les garde-fous, les classe par Edge Score et les auto-enregistre. Zéro clic humain.
+  const huntEdges = useCallback(async () => {
+    const all = result?.leaderboard || [];
+    const winners = all.filter(passesGates).sort((a, b) => edgeScore(b) - edgeScore(a));
+    for (const v of winners) await saveVariant(v);
+    setHunt({ winners, tested: all.length });
+    setSavedMsg(`🤖 ${winners.length} edge(s) robuste(s) sur ${all.length} variantes — auto-enregistrés dans Mes Stratégies`);
+    log("Usine", `Chasse à l'edge : ${winners.length}/${all.length} variantes retenues et enregistrées`);
+  }, [result, saveVariant, log]);
 
   // Envoie une variante vers l'étape suivante — ENREGISTRE d'abord (aucune perte), charge
   // le bon actif/TF + paramètres comme stratégie active, puis navigue.
@@ -180,6 +214,40 @@ export function StrategyFactoryPage() {
 
       {result && (
         <>
+          {/* CHASSE À L'EDGE — découverte automatique cross-outils */}
+          <Panel title="🤖 Chasse à l'edge — découverte automatique" style={{ border: `1px solid ${T.green}55` }}
+            right={<Button primary onClick={huntEdges}>🤖 Trouver & enregistrer les meilleurs edges</Button>}>
+            <div style={{ fontSize: 11.5, color: T.textDim, lineHeight: 1.5 }}>
+              Croise les axes de robustesse (<b style={{ color: T.text }}>score OOS × robustesse hors-échantillon × Deflated Sharpe × drawdown</b>) en un <b style={{ color: T.text }}>Edge Score</b>, ne garde que les variantes qui passent <b>tous</b> les garde-fous (DSR ≥ 50 %, robustesse ≥ 40 %, Sharpe &gt; 0, PF &gt; 1, PnL OOS &gt; 0), et les <b style={{ color: T.green }}>enregistre automatiquement</b> dans Mes Stratégies — aucune décision humaine.
+            </div>
+            {hunt && (
+              <div style={{ marginTop: 12 }}>
+                <MetricGrid min={130}>
+                  <MetricCard label="Variantes testées" value={fmtInt(hunt.tested)} />
+                  <MetricCard label="Edges retenus" value={fmtInt(hunt.winners.length)} color={T.green} />
+                  <MetricCard label="Taux de survie" value={`${hunt.tested ? Math.round(hunt.winners.length / hunt.tested * 100) : 0}%`} hint="passent tous les garde-fous" />
+                </MetricGrid>
+                {hunt.winners.length > 0 ? (
+                  <div style={{ marginTop: 12 }}>
+                    <DataTable columns={[
+                      { key: "edge", label: "Edge Score", align: "right", render: (r) => fmt(edgeScore(r), 0), color: () => T.green },
+                      { key: "name", label: "Stratégie", render: (r) => <span><span style={{ color: T.textFaint }}>#{r.stratId}</span> {r.name}</span> },
+                      { key: "asset", label: "Actif", render: (r) => r.asset },
+                      { key: "tf", label: "TF", render: (r) => <Badge color={T.blue}>{r.tf}</Badge> },
+                      { key: "score", label: "Score OOS", align: "right", render: (r) => fmt(r.score, 0), color: () => T.orange },
+                      { key: "robust", label: "Robust.", align: "right", render: (r) => `${fmt(r.robustness, 0)}%` },
+                      { key: "dsr", label: "DSR", align: "right", render: (r) => r.dsr == null ? "—" : fmtPct(r.dsr * 100) },
+                      { key: "pnl", label: "PnL OOS%", align: "right", render: (r) => fmtPct(r.metrics.totalPnLPct), color: (r) => r.metrics.totalPnLPct >= 0 ? T.green : T.red },
+                    ]} rows={hunt.winners} maxHeight={300} />
+                    <div style={{ marginTop: 8 }}><Button onClick={() => navigate("savedStrategies")}>Ouvrir Mes Stratégies →</Button></div>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 10, fontSize: 12, color: T.yellow }}>Aucun edge n'a passé tous les garde-fous sur cette recherche — élargis le périmètre (plus d'actifs/TF) ou relance l'Usine.</div>
+                )}
+              </div>
+            )}
+          </Panel>
+
           {/* ÉTAPE SUIVANTE — enchaînement */}
           {selected && (
             <Panel title="→ Étape suivante" style={{ border: `1px solid ${T.orange}55` }} right={<Button onClick={() => saveTop(6)}>💾 Enregistrer le top 6</Button>}>
